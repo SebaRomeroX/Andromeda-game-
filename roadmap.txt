@@ -1,0 +1,21 @@
+NARRATIVA:
+  multiples historias
+  mapa de nodos, visual novel, toma de decisiones
+  eventos semialeatorios
+
+MECANICA PRINCIPAL:
+  reclutar equipo (3 o 4)
+  levelean y mejoran stats o skills
+  menos personajes levelean mas
+  dinamicas de grupo y narrativa afectan al reclutamiento
+
+COMBATE:
+  ves siguiente movimiento enemigo
+  eliges uno por uno movimientos de tu equipo
+  3 movimientos aleatorios y eliges uno 
+
+PERSONAJES:
+ nombre, stats, skills(4-12)
+
+
+BUG: el rival evade estando stun
