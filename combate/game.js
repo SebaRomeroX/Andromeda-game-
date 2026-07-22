@@ -7,6 +7,8 @@ const state = {
   playerTurnSkills: [],
   playerStunned: false,
   enemyStunned: false,
+  playerWounded: false,
+  enemyWounded: false,
   gameOver: false,
   turnActive: false
 };
@@ -51,12 +53,15 @@ function initGame() {
   state.playerTurnSkills = [];
   state.playerStunned = false;
   state.enemyStunned = false;
+  state.playerWounded = false;
+  state.enemyWounded = false;
   state.gameOver = false;
   state.turnActive = false;
 
   renderCharacters();
   renderHP();
   renderStats();
+  renderStatus();
   renderActions();
   clearLog();
   log(`¡Combate: ${state.player.name} vs ${state.enemy.name}!`);
@@ -70,6 +75,34 @@ function startTurn() {
   state.enemyDefense = 0;
   state.turnActive = true;
 
+  // Daño por herida al inicio del turno
+  const pWounded = state.playerWounded;
+  const eWounded = state.enemyWounded;
+  if (pWounded) {
+    state.player.currentHp = Math.max(0, state.player.currentHp - 2);
+    log(`🩸 ${state.player.name} pierde 2 HP por su herida`);
+  }
+  if (eWounded) {
+    state.enemy.currentHp = Math.max(0, state.enemy.currentHp - 2);
+    log(`🩸 ${state.enemy.name} pierde 2 HP por su herida`);
+  }
+  if (pWounded || eWounded) {
+    renderHP();
+    renderStatus();
+    if (state.player.currentHp <= 0) {
+      state.gameOver = true;
+      log(`☠️ ¡${state.player.name} ha caído! ${state.enemy.name} gana.`);
+      showRestart();
+      return;
+    }
+    if (state.enemy.currentHp <= 0) {
+      state.gameOver = true;
+      log(`🏆 ¡${state.enemy.name} ha caído! ${state.player.name} gana.`);
+      showRestart();
+      return;
+    }
+  }
+
   if (state.playerStunned) {
     log(`💫 ${state.player.name} está aturdido y pierde el turno!`);
     autoResolveTurn();
@@ -78,9 +111,9 @@ function startTurn() {
 
   if (state.enemyStunned) {
     state.enemyChoice = null;
-    state.enemyStunned = false;
     log(`💫 ${state.enemy.name} está aturdido y pierde el turno!`);
     state.playerTurnSkills = pickWeighted(state.player.skills, 3);
+    renderStatus();
     renderActions();
     return;
   }
@@ -89,6 +122,7 @@ function startTurn() {
   state.enemyChoice = pickWeighted(state.enemy.skills, 1)[0];
   const action = state.enemyChoice.type === "attack" ? "atq" : "def";
   log(`⚔️ ${state.enemy.name} se prepara para usar ${state.enemyChoice.name} (${action} ${state.enemyChoice.power})`);
+  renderStatus();
   renderActions();
 }
 
@@ -117,7 +151,7 @@ function applyEffect(actor, target, skill, isPlayer) {
   }
 
   const evasion = target.evasion ?? 0;
-  const targetStunned = isPlayer ? state.playerStunned : state.enemyStunned;
+  const targetStunned = isPlayer ? state.enemyStunned : state.playerStunned;
   if (!targetStunned && Math.random() * 100 < evasion) {
     const prefix = isPlayer ? "💥" : "💢";
     log(`${prefix} ${actor.name} usa ${skill.name}... ¡${target.name} esquiva el ataque!`);
@@ -141,6 +175,15 @@ function applyEffect(actor, target, skill, isPlayer) {
     }
     log(`⚡ ${actor.name} STUNEA a ${target.name}!`);
   }
+
+  if (skill.herida && finalDmg > 0) {
+    if (isPlayer) {
+      state.enemyWounded = true;
+    } else {
+      state.playerWounded = true;
+    }
+    log(`🩸 ${actor.name} HIERE a ${target.name}!`);
+  }
 }
 
 function playerChoose(index) {
@@ -152,10 +195,12 @@ function playerChoose(index) {
 
   log(`🗡️ ${state.player.name} usa ${skill.name} (${skill.type === "attack" ? "atq " + skill.power : "def " + skill.power})`);
 
+  const enemyWasStunned = state.enemyStunned;
+
   if (skill.type === "defense") {
     applyEffect(state.player, state.enemy, skill, true);
   }
-  if (state.enemyChoice && state.enemyChoice.type === "defense") {
+  if (state.enemyChoice && state.enemyChoice.type === "defense" && !state.enemyStunned) {
     applyEffect(state.enemy, state.player, state.enemyChoice, false);
   }
 
@@ -166,7 +211,12 @@ function playerChoose(index) {
     applyEffect(state.enemy, state.player, state.enemyChoice, false);
   }
 
+  if (enemyWasStunned && state.enemyStunned && !skill.stun) {
+    state.enemyStunned = false;
+  }
+
   renderHP();
+  renderStatus();
   checkGameOver();
 }
 
@@ -202,6 +252,7 @@ function autoResolveTurn() {
 
   state.playerStunned = false;
   renderHP();
+  renderStatus();
   checkGameOver();
 }
 
@@ -238,15 +289,31 @@ function renderStats() {
   $("enemy-evasion").textContent = `Evasión: ${state.enemy.evasion ?? 0}%`;
 }
 
+function renderStatus() {
+  function getStatusString(wounded, stunned) {
+    let parts = [];
+    if (stunned) parts.push("⚡");
+    if (wounded) parts.push("🩸");
+    return parts.length > 0 ? parts.join(" ") : "✅";
+  }
+  $("player-status").textContent =
+    `Estado: ${getStatusString(state.playerWounded, state.playerStunned)}`;
+  $("enemy-status").textContent =
+    `Estado: ${getStatusString(state.enemyWounded, state.enemyStunned)}`;
+}
+
 function renderActions() {
   const container = $("actions");
   container.innerHTML = "";
   state.playerTurnSkills.forEach((skill, i) => {
     const btn = document.createElement("button");
     btn.className = "skill-btn";
+    let effects = "";
+    if (skill.stun) effects += " ⚡";
+    if (skill.herida) effects += " 🩸";
     const label = skill.type === "attack"
-      ? `${skill.name} (⚔️ atq ${skill.power} · ${skill.precision}% prec)`
-      : `${skill.name} (🛡️ def ${skill.power} · ${skill.precision}% prec)`;
+      ? `${skill.name} (⚔️ atq ${skill.power} · ${skill.precision}% prec)${effects}`
+      : `${skill.name} (🛡️ def ${skill.power} · ${skill.precision}% prec)${effects}`;
     btn.textContent = label;
     btn.onclick = () => playerChoose(i);
     container.appendChild(btn);

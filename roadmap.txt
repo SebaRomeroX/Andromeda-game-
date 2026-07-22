@@ -10,12 +10,7 @@ MECANICA PRINCIPAL:
   dinamicas de grupo y narrativa afectan al reclutamiento
 
 COMBATE:
-  ves siguiente movimiento enemigo
-  eliges uno por uno movimientos de tu equipo
-  3 movimientos aleatorios y eliges uno 
-
-PERSONAJES:
- nombre, stats, skills(4-12)
+  cura, buff, debuff
 
 
-BUG: el rival evade estando stun
+
