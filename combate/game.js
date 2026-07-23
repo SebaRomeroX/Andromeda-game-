@@ -20,7 +20,7 @@ const $ = id => document.getElementById(id);
 function pickWeighted(items, count) {
   const pool = items.map(item => ({ item, weight: item.aparicion ?? 100 }));
   const result = [];
-  for (let i = 0; i < Math.min(count, pool.length); i++) {
+  for (let i = 0; i < count && pool.length > 0; i++) {
     const total = pool.reduce((s, p) => s + p.weight, 0);
     let r = Math.random() * total;
     for (let j = 0; j < pool.length; j++) {
@@ -135,7 +135,7 @@ function handleImgError(img, name) {
 }
 
 function initGame() {
-  const pData = characters[0];
+  const pData = characters[2];
   const eData = characters[1];
 
   state.player = { ...pData, currentHp: pData.hp };
