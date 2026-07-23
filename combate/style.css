@@ -123,6 +123,22 @@ body {
   color: #b0a890;
 }
 
+.buffs-text {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #b0a890;
+}
+
+.buff-positive {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.buff-negative {
+  color: #f44336;
+  font-weight: bold;
+}
+
 .vs-divider {
   font-size: 1.8rem;
   font-weight: bold;
