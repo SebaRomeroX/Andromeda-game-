@@ -79,7 +79,7 @@
  * @param {number} [opts.value]     - Solo buff
  * @returns {Skill}
  */
-function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, stat, value }) {
+export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, stat, value }) {
   if (!name) throw new Error('createSkill: name es requerido');
   if (!type) throw new Error('createSkill: type es requerido');
 
@@ -110,7 +110,7 @@ function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, h
  * @param {Skill[]} [opts.skills=[]]
  * @returns {Character}
  */
-function createCharacter({ name, image, hp = 100, evasion = 5, skills = [] }) {
+export function createCharacter({ name, image, hp = 100, evasion = 5, skills = [] }) {
   if (!name) throw new Error('createCharacter: name es requerido');
   if (!image) throw new Error('createCharacter: image es requerido');
 

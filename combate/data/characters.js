@@ -1,9 +1,11 @@
-/// <reference path="./models.js" />
+/// <reference path="../src/models.js" />
+
+import { createCharacter, createSkill } from '../src/models.js';
 
 const characters = [
   createCharacter({
     name: "Paladin",
-    image: "gorlag.png",
+    image: "assets/images/gorlag.png",
     hp: 120,
     evasion: 5,
     skills: [
@@ -20,7 +22,7 @@ const characters = [
   }),
   createCharacter({
     name: "Mortis, el Nigromante",
-    image: "mortis.png",
+    image: "assets/images/mortis.png",
     hp: 90,
     evasion: 8,
     skills: [
@@ -35,15 +37,16 @@ const characters = [
   }),
   createCharacter({
     name: 'Agrima',
-    image: 'gorlag.png',
+    image: 'assets/images/gorlag.png',
     hp: 200,
     evasion: 2,
     skills: [
-      createSkill({ name: 'Corte demencial', type: 'attack', power: 55, precision: 80, aparicion: 30 }),
-      createSkill({ name: 'Tajo', type: 'attack', power: 35, precision: 80, aparicion: 90 }),
-      createSkill({ name: 'Perforante', type: 'attack', power: 15, precision: 90, aparicion: 20, herida: true }),
-      createSkill({ name: "Rabia",       type: "buff",    target: "self",  stat: "attack",    value: 0.10,  precision: 95, aparicion: 50 }),
-
+      createSkill({ name: 'Corte demencial', type: 'attack',   power: 55,   precision: 80, aparicion: 30 }),
+      createSkill({ name: 'Tajo',         type: 'attack',      power: 35,   precision: 80, aparicion: 90 }),
+      createSkill({ name: 'Perforante', type: 'attack',        power: 15,   precision: 90, aparicion: 20, herida: true }),
+      createSkill({ name: "Rabia",       type: "buff",       target: "self", stat: "attack", value: 0.10,  precision: 95, aparicion: 50 }),
     ]
   })
 ];
+
+export default characters;
