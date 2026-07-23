@@ -46,6 +46,12 @@ function skillNameToId(name) {
 function applyBuff(targetKey, buffDef) {
   const list = targetKey === 'player' ? state.playerBuffs : state.enemyBuffs;
 
+  const existing = list.find(b => b.id === buffDef.id);
+  if (existing) {
+    existing.turnsLeft = 4;
+    return;
+  }
+
   if (buffDef.stat === 'precision') {
     for (let i = list.length - 1; i >= 0; i--) {
       if (list[i].stat === 'precision') {

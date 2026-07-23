@@ -5,7 +5,7 @@ const characters = [
     hp: 120,
     evasion: 5,
     skills: [
-      { name: "Corte grave", type: "attack", power: 22, precision: 8, aparicion: 70, herida: true },
+      { name: "Corte grave", type: "attack", power: 22, precision: 80, aparicion: 70, herida: true },
       { name: "Golpe de escudo", type: "attack", power: 10, precision: 80, aparicion: 8, stun: true },
       { name: "Plegaria", type: "cura", power: 15, precision: 95, aparicion: 4 },
       { name: "Postura Defensiva", type: "defense", power: 15, precision: 95, aparicion: 6 },
