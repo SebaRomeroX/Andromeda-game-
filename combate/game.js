@@ -45,19 +45,23 @@ function skillNameToId(name) {
 
 function applyBuff(targetKey, buffDef) {
   const list = targetKey === 'player' ? state.playerBuffs : state.enemyBuffs;
-  const existing = list.find(b => b.id === buffDef.id);
-  if (existing) {
-    existing.turnsLeft = 4;
-  } else {
-    list.push({
-      id: buffDef.id,
-      name: buffDef.name,
-      stat: buffDef.stat,
-      value: buffDef.value,
-      turnsLeft: 4,
-      active: false
-    });
+
+  if (buffDef.stat === 'precision') {
+    for (let i = list.length - 1; i >= 0; i--) {
+      if (list[i].stat === 'precision') {
+        list.splice(i, 1);
+      }
+    }
   }
+
+  list.push({
+    id: buffDef.id,
+    name: buffDef.name,
+    stat: buffDef.stat,
+    value: buffDef.value,
+    turnsLeft: 4,
+    active: false
+  });
 }
 
 function processBuffs() {
@@ -83,6 +87,26 @@ function getMultiplier(targetKey, stat) {
     if (b.active && b.stat === stat) sum += b.value;
   });
   return 1 + sum;
+}
+
+function getFlatBuffSum(targetKey, stat) {
+  const list = targetKey === 'player' ? state.playerBuffs : state.enemyBuffs;
+  let sum = 0;
+  list.forEach(b => {
+    if (b.active && b.stat === stat) sum += b.value;
+  });
+  return sum;
+}
+
+function getPrecision(targetKey, basePrecision) {
+  const list = targetKey === 'player' ? state.playerBuffs : state.enemyBuffs;
+  const precBuff = list.find(b => b.active && b.stat === 'precision');
+
+  if (!precBuff) return basePrecision;
+
+  if (precBuff.value >= 1) return 100;
+
+  return Math.round(basePrecision * Math.abs(precBuff.value));
 }
 
 function handleImgError(img, name) {
@@ -187,7 +211,8 @@ function startTurn() {
 }
 
 function applyEffect(actor, target, skill, isPlayer) {
-  const precision = skill.precision ?? 100;
+  const basePrecision = skill.precision ?? 100;
+  const precision = getPrecision(isPlayer ? 'player' : 'enemy', basePrecision);
   const hit = Math.random() * 100 < precision;
 
   if (skill.type === "cura") {
@@ -229,11 +254,21 @@ function applyEffect(actor, target, skill, isPlayer) {
       value: skill.value
     });
     const targetName = targetKey === 'player' ? state.player.name : state.enemy.name;
-    const pct = (Math.abs(skill.value) * 100).toFixed(0);
     const sign = skill.value > 0 ? '+' : '-';
     const emoji = skill.value > 0 ? '🔥' : '💀';
     const verb = skill.value > 0 ? 'aumenta' : 'reduce';
-    log(`${emoji} ${actor.name} usa ${skill.name}: ${verb} ${skill.stat} de ${targetName} en ${sign}${pct}%`);
+    if (skill.stat === 'defense') {
+      log(`${emoji} ${actor.name} usa ${skill.name}: ${verb} ${skill.stat} de ${targetName} en ${sign}${skill.value}`);
+    } else if (skill.stat === 'precision') {
+      if (skill.value >= 1) {
+        log(`${emoji} ${actor.name} usa ${skill.name}: precision de ${targetName} aumentada al 100%`);
+      } else {
+        log(`${emoji} ${actor.name} usa ${skill.name}: precision de ${targetName} reducida a la mitad`);
+      }
+    } else {
+      const pct = (Math.abs(skill.value) * 100).toFixed(0);
+      log(`${emoji} ${actor.name} usa ${skill.name}: ${verb} ${skill.stat} de ${targetName} en ${sign}${pct}%`);
+    }
     renderBuffs();
     renderStatus();
     return;
@@ -267,14 +302,21 @@ function applyEffect(actor, target, skill, isPlayer) {
     return;
   }
 
-  const def = isPlayer ? state.enemyDefense : state.playerDefense;
+  const defSkill = isPlayer ? state.enemyDefense : state.playerDefense;
+  const defBuffs = getFlatBuffSum(isPlayer ? 'enemy' : 'player', 'defense');
+  const def = defSkill + defBuffs;
   const atkMult = getMultiplier(isPlayer ? "player" : "enemy", "attack");
   const rawDmg = Math.round(skill.power * atkMult);
   const finalDmg = Math.max(0, rawDmg - def);
   target.currentHp = Math.max(0, target.currentHp - finalDmg);
 
   const prefix = isPlayer ? "💥" : "💢";
-  const defInfo = def > 0 ? ` (defensa rival: ${def})` : "";
+  let defInfo = "";
+  if (def > 0) {
+    defInfo = ` (defensa rival: ${def}`;
+    if (defBuffs > 0) defInfo += ` [buff: +${defBuffs}]`;
+    defInfo += `)`;
+  }
   const multInfo = atkMult !== 1 ? ` (x${atkMult.toFixed(2)} atq)` : "";
   log(`${prefix} ${actor.name} usa ${skill.name}: ${rawDmg} de ataque${multInfo}${defInfo} → ${finalDmg} de daño`);
 
@@ -448,10 +490,17 @@ function renderBuffs() {
       return;
     }
     el.innerHTML = 'Buffs: ' + active.map(b => {
-      const pct = (Math.abs(b.value) * 100).toFixed(0);
-      const sign = b.value > 0 ? '+' : '-';
-      const cls = b.value > 0 ? 'buff-positive' : 'buff-negative';
       const emoji = emojis[b.stat] || '⚔️';
+      const cls = b.value > 0 ? 'buff-positive' : 'buff-negative';
+      const sign = b.value > 0 ? '+' : '-';
+      if (b.stat === 'defense') {
+        return `<span class="${cls}">${emoji}${sign}${b.value} (${b.turnsLeft})</span>`;
+      }
+      if (b.stat === 'precision') {
+        const displayVal = b.value >= 1 ? '100%' : '½';
+        return `<span class="${cls}">${emoji}${displayVal} (${b.turnsLeft})</span>`;
+      }
+      const pct = (Math.abs(b.value) * 100).toFixed(0);
       return `<span class="${cls}">${emoji}${sign}${pct}% (${b.turnsLeft})</span>`;
     }).join(' ');
   });
@@ -472,10 +521,17 @@ function renderActions() {
     } else if (skill.type === "cura") {
       label = `${skill.name} (💚 cura ${skill.power} · ${skill.precision}% prec)${effects}`;
     } else if (skill.type === "buff") {
-      const pct = (Math.abs(skill.value) * 100).toFixed(0);
-      const sign = skill.value > 0 ? '+' : '';
       const emoji = skill.value > 0 ? '🔥' : '💀';
-      label = `${skill.name} (${emoji} ${sign}${pct}% ${skill.stat} · ${skill.precision}% prec)`;
+      const sign = skill.value > 0 ? '+' : '';
+      if (skill.stat === 'defense') {
+        label = `${skill.name} (${emoji} ${sign}${skill.value} ${skill.stat} · ${skill.precision}% prec)`;
+      } else if (skill.stat === 'precision') {
+        const displayVal = skill.value >= 1 ? '100%' : '½';
+        label = `${skill.name} (${emoji} ${displayVal} · ${skill.precision}% prec)`;
+      } else {
+        const pct = (Math.abs(skill.value) * 100).toFixed(0);
+        label = `${skill.name} (${emoji} ${sign}${pct}% ${skill.stat} · ${skill.precision}% prec)`;
+      }
     } else {
       label = `${skill.name} (🛡️ def ${skill.power} · ${skill.precision}% prec)${effects}`;
     }
