@@ -52,9 +52,9 @@ function applyBuff(targetKey, buffDef) {
     return;
   }
 
-  if (buffDef.stat === 'precision') {
+  if (buffDef.stat === 'precision' || buffDef.stat === 'evasion') {
     for (let i = list.length - 1; i >= 0; i--) {
-      if (list[i].stat === 'precision') {
+      if (list[i].stat === buffDef.stat) {
         list.splice(i, 1);
       }
     }
@@ -113,6 +113,17 @@ function getPrecision(targetKey, basePrecision) {
   if (precBuff.value >= 1) return 100;
 
   return Math.round(basePrecision * Math.abs(precBuff.value));
+}
+
+function getEvasion(targetKey, baseEvasion) {
+  const list = targetKey === 'player' ? state.playerBuffs : state.enemyBuffs;
+  const evaBuff = list.find(b => b.active && b.stat === 'evasion');
+
+  if (!evaBuff) return baseEvasion;
+
+  if (evaBuff.value === 0) return 0;
+
+  return Math.min(100, baseEvasion + evaBuff.value);
 }
 
 function handleImgError(img, name) {
@@ -271,6 +282,12 @@ function applyEffect(actor, target, skill, isPlayer) {
       } else {
         log(`${emoji} ${actor.name} usa ${skill.name}: precision de ${targetName} reducida a la mitad`);
       }
+    } else if (skill.stat === 'evasion') {
+      if (skill.value > 0) {
+        log(`${emoji} ${actor.name} usa ${skill.name}: evasión de ${targetName} aumentada en +${skill.value}`);
+      } else {
+        log(`${emoji} ${actor.name} usa ${skill.name}: evasión de ${targetName} reducida a 0`);
+      }
     } else {
       const pct = (Math.abs(skill.value) * 100).toFixed(0);
       log(`${emoji} ${actor.name} usa ${skill.name}: ${verb} ${skill.stat} de ${targetName} en ${sign}${pct}%`);
@@ -300,7 +317,9 @@ function applyEffect(actor, target, skill, isPlayer) {
     return;
   }
 
-  const evasion = target.evasion ?? 0;
+  const targetKey = isPlayer ? 'enemy' : 'player';
+  const baseEvasion = target.evasion ?? 0;
+  const evasion = getEvasion(targetKey, baseEvasion);
   const targetStunned = isPlayer ? state.enemyStunned : state.playerStunned;
   if (!targetStunned && Math.random() * 100 < evasion) {
     const prefix = isPlayer ? "💥" : "💢";
@@ -468,8 +487,10 @@ function renderHP() {
 }
 
 function renderStats() {
-  $("player-evasion").textContent = `Evasión: ${state.player.evasion ?? 0}%`;
-  $("enemy-evasion").textContent = `Evasión: ${state.enemy.evasion ?? 0}%`;
+  const pEva = getEvasion('player', state.player.evasion ?? 0);
+  const eEva = getEvasion('enemy', state.enemy.evasion ?? 0);
+  $("player-evasion").textContent = `Evasión: ${pEva}%`;
+  $("enemy-evasion").textContent = `Evasión: ${eEva}%`;
 }
 
 function renderStatus() {
@@ -506,6 +527,10 @@ function renderBuffs() {
         const displayVal = b.value >= 1 ? '100%' : '½';
         return `<span class="${cls}">${emoji}${displayVal} (${b.turnsLeft})</span>`;
       }
+      if (b.stat === 'evasion') {
+        const displayVal = b.value === 0 ? '0' : `+${b.value}`;
+        return `<span class="${cls}">${emoji}${displayVal} (${b.turnsLeft})</span>`;
+      }
       const pct = (Math.abs(b.value) * 100).toFixed(0);
       return `<span class="${cls}">${emoji}${sign}${pct}% (${b.turnsLeft})</span>`;
     }).join(' ');
@@ -534,6 +559,12 @@ function renderActions() {
       } else if (skill.stat === 'precision') {
         const displayVal = skill.value >= 1 ? '100%' : '½';
         label = `${skill.name} (${emoji} ${displayVal} · ${skill.precision}% prec)`;
+      } else if (skill.stat === 'evasion') {
+        if (skill.value === 0) {
+          label = `${skill.name} (${emoji} evasión a 0 · ${skill.precision}% prec)`;
+        } else {
+          label = `${skill.name} (${emoji} +${skill.value} evasión · ${skill.precision}% prec)`;
+        }
       } else {
         const pct = (Math.abs(skill.value) * 100).toFixed(0);
         label = `${skill.name} (${emoji} ${sign}${pct}% ${skill.stat} · ${skill.precision}% prec)`;
