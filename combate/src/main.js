@@ -5,7 +5,7 @@ import { log, clearLog } from './log.js';
 import characters from '../data/characters.js';
 
 export function initGame() {
-  const pData = characters[2];
+  const pData = characters[0];
   const eData = characters[1];
 
   initState(pData, eData);

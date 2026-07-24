@@ -37,8 +37,8 @@ export function renderHP() {
 export function renderStats() {
   const pEva = getEvasion('player', state.player.evasion ?? 0);
   const eEva = getEvasion('enemy', state.enemy.evasion ?? 0);
-  $("player-evasion").textContent = `Evasión: ${pEva}%`;
-  $("enemy-evasion").textContent = `Evasión: ${eEva}%`;
+  $("player-evasion").textContent = `🏃 ${pEva}%`;
+  $("enemy-evasion").textContent = `🏃 ${eEva}%`;
 }
 
 export function renderStatus() {
@@ -49,22 +49,22 @@ export function renderStatus() {
     return parts.length > 0 ? parts.join(" ") : "✅";
   }
   $("player-status").textContent =
-    `Estado: ${getStatusString(state.playerWounded, state.playerStunned)}`;
+    ` ${getStatusString(state.playerWounded, state.playerStunned)}`;
   $("enemy-status").textContent =
-    `Estado: ${getStatusString(state.enemyWounded, state.enemyStunned)}`;
+    ` ${getStatusString(state.enemyWounded, state.enemyStunned)}`;
 }
 
 export function renderBuffs() {
-  const emojis = { attack: '⚔️', defense: '🛡️', evasion: '💨', precision: '🎯' };
+  const emojis = { attack: '⚔️', defense: '🛡️', evasion: '🏃', precision: '🎯' };
   ['player', 'enemy'].forEach(key => {
     const list = key === 'player' ? state.playerBuffs : state.enemyBuffs;
     const el = $(`${key}-buffs`);
     const active = list.filter(b => b.active);
     if (active.length === 0) {
-      el.textContent = 'Buffs: —';
+      el.textContent = ' ';
       return;
     }
-    el.innerHTML = 'Buffs: ' + active.map(b => {
+    el.innerHTML = ' ' + active.map(b => {
       const emoji = emojis[b.stat] || '⚔️';
       const cls = b.value > 0 ? 'buff-positive' : 'buff-negative';
       const sign = b.value > 0 ? '+' : '-';
@@ -88,39 +88,46 @@ export function renderBuffs() {
 export function renderActions(skills, onChoose) {
   const container = $("actions");
   container.innerHTML = "";
+  const emojis = { attack: '⚔️', defense: '🛡️', evasion: '🏃', precision: '🎯' };
   skills.forEach((skill, i) => {
     const btn = document.createElement("button");
     btn.className = "skill-btn";
-    let effects = "";
-    if (skill.stun) effects += " ⚡";
-    if (skill.herida) effects += " 🩸";
-    let label;
+
+    let statsLine = "";
     if (skill.type === "attack") {
-      label = `${skill.name} (⚔️ atq ${skill.power} · ${skill.precision}% prec)${effects}`;
+      statsLine = `⚔️ ${skill.power} · ${skill.precision}% prec`;
     } else if (skill.type === "cura") {
-      label = `${skill.name} (💚 cura ${skill.power} · ${skill.precision}% prec)${effects}`;
+      statsLine = `💚 ${skill.power} · ${skill.precision}% prec`;
+    } else if (skill.type === "defense") {
+      statsLine = `🛡️ ${skill.power} · ${skill.precision}% prec`;
     } else if (skill.type === "buff") {
-      const emoji = skill.value > 0 ? '🔥' : '💀';
+      const emoji = emojis[skill.stat] || '⚔️';
       const sign = skill.value > 0 ? '+' : '';
       if (skill.stat === 'defense') {
-        label = `${skill.name} (${emoji} ${sign}${skill.value} ${skill.stat} · ${skill.precision}% prec)`;
+        statsLine = `${emoji} ${sign}${skill.value} · ${skill.precision}% prec`;
       } else if (skill.stat === 'precision') {
         const displayVal = skill.value >= 1 ? '100%' : '½';
-        label = `${skill.name} (${emoji} ${displayVal} · ${skill.precision}% prec)`;
+        statsLine = `${emoji} ${displayVal} · ${skill.precision}% prec`;
       } else if (skill.stat === 'evasion') {
-        if (skill.value === 0) {
-          label = `${skill.name} (${emoji} evasión a 0 · ${skill.precision}% prec)`;
-        } else {
-          label = `${skill.name} (${emoji} +${skill.value} evasión · ${skill.precision}% prec)`;
-        }
+        const displayVal = skill.value === 0 ? '0' : `${sign}${skill.value}`;
+        statsLine = `${emoji} ${displayVal} · ${skill.precision}% prec`;
       } else {
         const pct = (Math.abs(skill.value) * 100).toFixed(0);
-        label = `${skill.name} (${emoji} ${sign}${pct}% ${skill.stat} · ${skill.precision}% prec)`;
+        statsLine = `${emoji} ${sign}${pct}% · ${skill.precision}% prec`;
       }
-    } else {
-      label = `${skill.name} (🛡️ def ${skill.power} · ${skill.precision}% prec)${effects}`;
     }
-    btn.textContent = label;
+
+    let effectsLine = "";
+    if (skill.stun) effectsLine += "⚡";
+    if (skill.herida) effectsLine += " 🩸";
+
+    let html = `<div class="skill-name">${skill.name}</div>`;
+    html += `<div class="skill-stats">${statsLine}</div>`;
+    if (effectsLine) {
+      html += `<div class="skill-effects">${effectsLine}</div>`;
+    }
+
+    btn.innerHTML = html;
     btn.onclick = () => onChoose(i);
     container.appendChild(btn);
   });

@@ -33,7 +33,6 @@ body {
 }
 
 .char-box {
-  flex: 1;
   text-align: center;
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid #4a4a6a;
@@ -47,12 +46,9 @@ body {
 }
 
 .char-box img {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 3px solid #5a5a8a;
-  background: #2a2a3e;
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
   margin-bottom: 8px;
 }
 
@@ -114,19 +110,6 @@ body {
   margin-top: 6px;
   font-size: 0.8rem;
   color: #b0a890;
-  text-shadow: 0 0 6px rgba(200, 180, 120, 0.15);
-}
-
-.status-text {
-  margin-top: 4px;
-  font-size: 0.85rem;
-  color: #b0a890;
-}
-
-.buffs-text {
-  margin-top: 4px;
-  font-size: 0.8rem;
-  color: #b0a890;
 }
 
 .buff-positive {
@@ -182,21 +165,22 @@ body {
 
 #actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 12px;
 }
 
 .skill-btn {
-  flex: 1;
-  padding: 12px;
+  flex: 1 1 120px;
+  padding: 10px 8px;
   border: 2px solid #5a5a8a;
   border-radius: 10px;
   background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
   color: #e0dcd0;
   font-size: 0.9rem;
-  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  line-height: 1.4;
 }
 
 .skill-btn:hover:not(:disabled) {
@@ -209,6 +193,24 @@ body {
 .skill-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.skill-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f0e8d0;
+  margin-bottom: 3px;
+}
+
+.skill-stats {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #b0a890;
+}
+
+.skill-effects {
+  font-size: 0.7rem;
+  margin-top: 2px;
 }
 
 #restart-area {
