@@ -266,7 +266,14 @@ function resolveTurn() {
     if (state.gameOver) return;
 
     const actor = state.teams[action.team].members[action.actorIndex];
-    if (!actor || actor.currentHp <= 0) continue;
+    if (!actor || actor.currentHp <= 0 || actor.stunned) {
+      if (actor?.stunned) {
+        log(`💫 ${actor.name} está aturdido y no puede ejecutar ${action.skill.name}!`);
+        actor.stunned = false;
+        renderStatus();
+      }
+      continue;
+    }
 
     const target = state.teams[action.targetTeam].members[action.targetIdx];
     if (!target || target.currentHp <= 0) {
