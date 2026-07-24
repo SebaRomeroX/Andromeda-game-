@@ -4,8 +4,8 @@ import { createCharacter, createSkill } from '../src/models.js';
 
 const characters = [
   createCharacter({
-    name: "Paladin",
-    image: "assets/images/gorlag.png",
+    name: "Sima la audaz",
+    image: "assets/images/Sima la audaz.jpg",
     hp: 120,
     evasion: 5,
     skills: [
@@ -21,8 +21,8 @@ const characters = [
     ]
   }),
   createCharacter({
-    name: "Mortis, el Nigromante",
-    image: "assets/images/mortis.png",
+    name: "Sacerdotiza oscura",
+    image: "assets/images/Sacerdotiza oscura.jpg",
     hp: 90,
     evasion: 8,
     skills: [
