@@ -3,40 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Combate por Turnos</title>
+  <title>Combate por Equipos</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="app">
     <div id="combat-area">
-      <div class="char-box" id="player-box">
-        <img id="player-img" src="" alt="Jugador">
-        <h2 id="player-name">—</h2>
-        <div class="hp-bar">
-          <div class="hp-fill" id="player-hp-fill" style="width:100%"></div>
-          <span class="hp-text" id="player-hp-text">HP: —</span>
-        </div>
-        <p class="stat-text">
-          <span id="player-evasion"></span>
-          <span id="player-status"></span>
-          <span id="player-buffs"></span>
-        </p>
+      <div class="team-container" id="team-A-container">
+        <div class="team-label" id="team-A-name">EQUIPO A</div>
+        <div class="team-grid" id="team-A-grid"></div>
       </div>
 
       <div class="vs-divider">⚔️</div>
 
-      <div class="char-box enemy" id="enemy-box">
-        <img id="enemy-img" src="" alt="Enemigo">
-        <h2 id="enemy-name">—</h2>
-        <div class="hp-bar">
-          <div class="hp-fill" id="enemy-hp-fill" style="width:100%"></div>
-          <span class="hp-text" id="enemy-hp-text">HP: —</span>
-        </div>
-        <p class="stat-text">
-          <span id="enemy-evasion"></span>
-          <span id="enemy-status"></span>
-          <span id="enemy-buffs"></span>
-        </p>
+      <div class="team-container" id="team-B-container">
+        <div class="team-label" id="team-B-name">EQUIPO B</div>
+        <div class="team-grid" id="team-B-grid"></div>
       </div>
     </div>
 

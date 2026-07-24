@@ -1,23 +1,35 @@
 import state, { initState } from './state.js';
-import { startTurn } from './combat.js';
-import { renderCharacters, renderHP, renderStats, renderStatus, renderBuffs, renderActions } from './renderer.js';
+import { startTurn, onTargetClick } from './combat.js';
+import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
 import { log, clearLog } from './log.js';
 import characters from '../data/characters.js';
 
+document.getElementById('combat-area').addEventListener('click', (e) => {
+  const slot = e.target.closest('.member-slot.targetable');
+  if (slot) {
+    onTargetClick(slot.dataset.team, parseInt(slot.dataset.index));
+  }
+});
+
 export function initGame() {
-  const pData = characters[0];
-  const eData = characters[1];
+  const teamA = [characters[0]];
+  const teamB = [characters[1], characters[2]];
 
-  initState(pData, eData);
+  initState(teamA, teamB);
 
-  renderCharacters();
+  renderTeamsHeader();
+  renderTeams();
   renderHP();
-  renderStats();
   renderStatus();
   renderBuffs();
-  renderActions(state.playerTurnSkills, () => {});
+  clearTargets();
+  renderActions([], () => {});
   clearLog();
-  log(`¡Combate: ${state.player.name} vs ${state.enemy.name}!`);
+
+  const aNames = teamA.map(c => c.name).join(', ');
+  const bNames = teamB.map(c => c.name).join(', ');
+  log(`⚔️ ¡Combate: EQUIPO A (${aNames}) vs EQUIPO B (${bNames})!`);
+
   startTurn();
 }
 
