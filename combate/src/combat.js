@@ -1,6 +1,6 @@
 import state, { isDead, isAlive, aliveMembers, allDead } from './state.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
-import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, showRestart } from './renderer.js';
+import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, highlightSkill, clearSkillHighlight, showRestart } from './renderer.js';
 import { log } from './log.js';
 
 function pickWeighted(items, count) {
@@ -282,7 +282,7 @@ function resolveAction(index, sorted) {
   renderStatus();
   renderBuffs();
   if (checkGameOver()) return;
-  setTimeout(() => resolveAction(index + 1, sorted), 6200);
+  setTimeout(() => resolveAction(index + 1, sorted), 2200);
 }
 
 function resolveTurn() {
@@ -304,6 +304,25 @@ function resolveTurn() {
   setTimeout(() => resolveAction(0, sorted), 400);
 }
 
+function computeTargets(skill, actorIndex) {
+  if (skill.type === 'attack') {
+    return aliveMembers('B').map(t => ({ team: 'B', index: t.index }));
+  }
+  if (skill.type === 'cura') {
+    return aliveMembers('A').map(t => ({ team: 'A', index: t.index }));
+  }
+  if (skill.type === 'buff') {
+    if (skill.target === 'enemy') {
+      return aliveMembers('B').map(t => ({ team: 'B', index: t.index }));
+    }
+    return aliveMembers('A').map(t => ({ team: 'A', index: t.index }));
+  }
+  if (skill.type === 'defense') {
+    return [{ team: 'A', index: actorIndex }];
+  }
+  return [];
+}
+
 function playerSelectSkills() {
   if (state.gameOver) return;
 
@@ -322,45 +341,34 @@ function playerSelectSkills() {
 
     renderCurrentActor();
     const skills = pickWeighted(member.skills, 3);
+    state.selectedSkill = null;
     state.turnPhase = 'select_skill';
+    clearSkillHighlight();
     renderActions(skills, (skillIdx) => {
-      if (state.turnPhase !== 'select_skill') return;
       const skill = skills[skillIdx];
-      state.selectedSkill = skill;
-      state.turnPhase = 'select_target';
 
-      if (skill.type === 'defense') {
-        const actionLabel = "def";
-        log(`🛡️ ${member.name} prepara ${skill.name} (${actionLabel} ${skill.power})`);
-        state.pendingActions.push({
-          team: 'A',
-          actorIndex: i,
-          skill,
-          targetTeam: 'A',
-          targetIdx: i
-        });
-        state.actingMemberIndex = i + 1;
-        state.selectedSkill = null;
-        state.turnPhase = 'idle';
-        clearTargets();
-        playerSelectSkills();
+      if (state.turnPhase === 'select_skill') {
+        state.selectedSkill = skill;
+        highlightSkill(skillIdx);
+        state.turnPhase = 'select_target';
+        renderTargets(computeTargets(skill, i));
         return;
       }
 
-      let validTargets = [];
-      if (skill.type === 'attack') {
-        validTargets = aliveMembers('B').map(t => ({ team: 'B', index: t.index }));
-      } else if (skill.type === 'cura') {
-        validTargets = aliveMembers('A').map(t => ({ team: 'A', index: t.index }));
-      } else if (skill.type === 'buff') {
-        if (skill.target === 'enemy') {
-          validTargets = aliveMembers('B').map(t => ({ team: 'B', index: t.index }));
-        } else {
-          validTargets = aliveMembers('A').map(t => ({ team: 'A', index: t.index }));
+      if (state.turnPhase === 'select_target') {
+        if (state.selectedSkill === skill) {
+          state.selectedSkill = null;
+          state.turnPhase = 'select_skill';
+          clearSkillHighlight();
+          clearTargets();
+          return;
         }
-      }
 
-      renderTargets(validTargets);
+        state.selectedSkill = skill;
+        highlightSkill(skillIdx);
+        renderTargets(computeTargets(skill, i));
+        return;
+      }
     });
     return;
   }
@@ -409,6 +417,7 @@ export function onTargetClick(team, index) {
 
   if (skill.type === 'attack' && team !== 'B') return;
   if (skill.type === 'cura' && team !== 'A') return;
+  if (skill.type === 'defense' && (team !== 'A' || index !== state.actingMemberIndex)) return;
   if (skill.type === 'buff' && skill.target === 'enemy' && team !== 'B') return;
   if (skill.type === 'buff' && skill.target !== 'enemy' && team !== 'A') return;
 
@@ -432,5 +441,6 @@ export function onTargetClick(team, index) {
   state.selectedSkill = null;
   state.turnPhase = 'idle';
   clearTargets();
+  clearSkillHighlight();
   playerSelectSkills();
 }

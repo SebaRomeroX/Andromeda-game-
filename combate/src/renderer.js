@@ -214,6 +214,16 @@ export function renderActionIndicators(actorTeam, actorIndex, targetTeam, target
   if (targetSlot && !targetSlot.classList.contains('dead')) targetSlot.classList.add(cls);
 }
 
+export function highlightSkill(index) {
+  document.querySelectorAll('.skill-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i === index);
+  });
+}
+
+export function clearSkillHighlight() {
+  document.querySelectorAll('.skill-btn.selected').forEach(el => el.classList.remove('selected'));
+}
+
 export function renderActions(skills, onChoose) {
   const container = $("actions");
   container.innerHTML = "";

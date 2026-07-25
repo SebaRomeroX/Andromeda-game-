@@ -288,6 +288,12 @@ body {
   cursor: not-allowed;
 }
 
+.skill-btn.selected {
+  border-color: #f0d060;
+  background: linear-gradient(135deg, #3a3a5a, #2a2a4a);
+  box-shadow: 0 0 12px rgba(240, 208, 96, 0.4);
+}
+
 .skill-name {
   font-size: 0.85rem;
   font-weight: 700;
