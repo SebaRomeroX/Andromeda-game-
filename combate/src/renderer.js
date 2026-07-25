@@ -197,6 +197,23 @@ export function clearTargets() {
   document.querySelectorAll('.member-slot.targetable').forEach(el => el.classList.remove('targetable'));
 }
 
+export function renderActionIndicators(actorTeam, actorIndex, targetTeam, targetIndex) {
+  document.querySelectorAll('.member-slot.glow-green, .member-slot.glow-red')
+    .forEach(el => el.classList.remove('glow-green', 'glow-red'));
+
+  const cls = actorTeam === 'A' ? 'glow-green' : 'glow-red';
+
+  const actorSlot = document.querySelector(
+    `.member-slot[data-team="${actorTeam}"][data-index="${actorIndex}"]`
+  );
+  if (actorSlot && !actorSlot.classList.contains('dead')) actorSlot.classList.add(cls);
+
+  const targetSlot = document.querySelector(
+    `.member-slot[data-team="${targetTeam}"][data-index="${targetIndex}"]`
+  );
+  if (targetSlot && !targetSlot.classList.contains('dead')) targetSlot.classList.add(cls);
+}
+
 export function renderActions(skills, onChoose) {
   const container = $("actions");
   container.innerHTML = "";

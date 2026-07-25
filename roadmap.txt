@@ -10,7 +10,7 @@ MECANICA PRINCIPAL:
   dinamicas de grupo y narrativa afectan al reclutamiento
 
 COMBATE:
-  timeout entre acciones
+  mostrar quien esta actuando
   cambiar de skill seleccionada
 
 

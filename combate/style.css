@@ -196,6 +196,17 @@ body {
   box-shadow: 0 0 24px rgba(76, 175, 80, 0.7);
 }
 
+/* resolution indicators for actor and target */
+.member-slot.glow-green {
+  border-color: #4caf50;
+  box-shadow: 0 0 16px rgba(76, 175, 80, 0.5);
+}
+
+.member-slot.glow-red {
+  border-color: #e53935;
+  box-shadow: 0 0 16px rgba(229, 57, 53, 0.5);
+}
+
 /* team B slots base style */
 #team-B-container .member-slot {
   background: rgba(40, 10, 10, 0.4);

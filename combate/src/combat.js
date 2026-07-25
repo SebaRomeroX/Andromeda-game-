@@ -1,6 +1,6 @@
 import state, { isDead, isAlive, aliveMembers, allDead } from './state.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
-import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, showRestart } from './renderer.js';
+import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, showRestart } from './renderer.js';
 import { log } from './log.js';
 
 function pickWeighted(items, count) {
@@ -246,6 +246,45 @@ function endRound() {
   setTimeout(startTurn, 600);
 }
 
+function resolveAction(index, sorted) {
+  if (state.gameOver || index >= sorted.length) {
+    state.turnPhase = 'idle';
+    endRound();
+    return;
+  }
+
+  clearTargets();
+  document.querySelectorAll('.member-slot.active, .member-slot.glow-green, .member-slot.glow-red')
+    .forEach(el => el.classList.remove('active', 'glow-green', 'glow-red'));
+
+  const action = sorted[index];
+  const actor = state.teams[action.team].members[action.actorIndex];
+  if (!actor || actor.currentHp <= 0 || actor.stunned) {
+    if (actor?.stunned) {
+      log(`💫 ${actor.name} está aturdido y no puede ejecutar ${action.skill.name}!`);
+      actor.stunned = false;
+      renderStatus();
+    }
+    setTimeout(() => resolveAction(index + 1, sorted), 400);
+    return;
+  }
+
+  const target = state.teams[action.targetTeam].members[action.targetIdx];
+  if (!target || target.currentHp <= 0) {
+    log(`⚠️ ${actor.name} no puede ejecutar ${action.skill.name}: el objetivo ya no está disponible`);
+    setTimeout(() => resolveAction(index + 1, sorted), 400);
+    return;
+  }
+
+  renderActionIndicators(action.team, action.actorIndex, action.targetTeam, action.targetIdx);
+  applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill);
+  renderHP();
+  renderStatus();
+  renderBuffs();
+  if (checkGameOver()) return;
+  setTimeout(() => resolveAction(index + 1, sorted), 6200);
+}
+
 function resolveTurn() {
   state.turnPhase = 'resolving';
   renderActions([], () => {});
@@ -262,35 +301,7 @@ function resolveTurn() {
 
   state.pendingActions = [];
 
-  for (const action of sorted) {
-    if (state.gameOver) return;
-
-    const actor = state.teams[action.team].members[action.actorIndex];
-    if (!actor || actor.currentHp <= 0 || actor.stunned) {
-      if (actor?.stunned) {
-        log(`💫 ${actor.name} está aturdido y no puede ejecutar ${action.skill.name}!`);
-        actor.stunned = false;
-        renderStatus();
-      }
-      continue;
-    }
-
-    const target = state.teams[action.targetTeam].members[action.targetIdx];
-    if (!target || target.currentHp <= 0) {
-      log(`⚠️ ${actor.name} no puede ejecutar ${action.skill.name}: el objetivo ya no está disponible`);
-      continue;
-    }
-
-    applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill);
-    renderHP();
-    renderStatus();
-    renderBuffs();
-    clearTargets();
-    if (checkGameOver()) return;
-  }
-
-  state.turnPhase = 'idle';
-  endRound();
+  setTimeout(() => resolveAction(0, sorted), 400);
 }
 
 function playerSelectSkills() {
