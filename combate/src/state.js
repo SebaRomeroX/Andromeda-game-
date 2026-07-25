@@ -1,4 +1,5 @@
 function createMember(charData) {
+  if (!charData) return null;
   return {
     ...charData,
     currentHp: charData.hp,

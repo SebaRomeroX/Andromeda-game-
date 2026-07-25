@@ -94,9 +94,8 @@ export function renderTeams() {
     const container = $(`team-${teamKey}-grid`);
     if (!container) return;
     container.innerHTML = "";
-    for (let i = 0; i < 4; i++) {
-      container.appendChild(renderMemberSlot(teamKey, i));
-    }
+    const order = teamKey === 'A' ? [2, 0, 3, 1] : [0, 2, 1, 3];
+    order.forEach(i => container.appendChild(renderMemberSlot(teamKey, i)));
   });
 }
 

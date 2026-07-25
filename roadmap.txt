@@ -10,7 +10,8 @@ MECANICA PRINCIPAL:
   dinamicas de grupo y narrativa afectan al reclutamiento
 
 COMBATE:
-  posiciones ?¡?
+  posiciones
+  alcance de ataque
 
 
 

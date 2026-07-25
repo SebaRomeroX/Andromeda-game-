@@ -12,8 +12,8 @@ document.getElementById('combat-area').addEventListener('click', (e) => {
 });
 
 export function initGame() {
-  const teamA = [characters[0],characters[1],characters[2]];
-  const teamB = [characters[3], characters[4],characters[5],characters[6]];
+  const teamA = [null, characters[0], null, null];
+  const teamB = [characters[4], null, null, characters[6]];
 
   initState(teamA, teamB);
 
@@ -26,8 +26,8 @@ export function initGame() {
   renderActions([], () => {});
   clearLog();
 
-  const aNames = teamA.map(c => c.name).join(', ');
-  const bNames = teamB.map(c => c.name).join(', ');
+  const aNames = teamA.filter(Boolean).map(c => c.name).join(', ');
+  const bNames = teamB.filter(Boolean).map(c => c.name).join(', ');
   log(`⚔️ ¡Combate: EQUIPO A (${aNames}) vs EQUIPO B (${bNames})!`);
 
   startTurn();
