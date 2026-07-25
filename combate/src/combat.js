@@ -1,4 +1,5 @@
 import state, { isDead, isAlive, aliveMembers, allDead } from './state.js';
+import { ATTACK_ROUTES, ROLE_BY_INDEX } from './models.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
 import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, highlightSkill, clearSkillHighlight, showRestart } from './renderer.js';
 import { log } from './log.js';
@@ -176,7 +177,9 @@ function enemySelectSkills() {
     switch (skill.type) {
       case 'attack':
         targetTeam = 'A';
-        targetIdx = pickRandomTarget('B', 'A');
+        const atkTargets = getAttackTargets(i, 'A');
+        if (atkTargets.length === 0) continue;
+        targetIdx = atkTargets[Math.floor(Math.random() * atkTargets.length)].index;
         break;
       case 'cura':
         targetTeam = 'B';
@@ -304,9 +307,35 @@ function resolveTurn() {
   setTimeout(() => resolveAction(0, sorted), 400);
 }
 
+function getAttackTargets(actorIndex, targetTeam) {
+  const role = ROLE_BY_INDEX[actorIndex];
+  const routes = ATTACK_ROUTES[role];
+
+  if (routes === 'free') {
+    return aliveMembers(targetTeam).map(t => ({ team: targetTeam, index: t.index }));
+  }
+
+  const targets = [];
+  const seen = new Set();
+
+  for (const route of routes) {
+    for (const pos of route) {
+      if (isAlive(targetTeam, pos)) {
+        if (!seen.has(pos)) {
+          seen.add(pos);
+          targets.push({ team: targetTeam, index: pos });
+        }
+        break;
+      }
+    }
+  }
+
+  return targets;
+}
+
 function computeTargets(skill, actorIndex) {
   if (skill.type === 'attack') {
-    return aliveMembers('B').map(t => ({ team: 'B', index: t.index }));
+    return getAttackTargets(actorIndex, 'B');
   }
   if (skill.type === 'cura') {
     return aliveMembers('A').map(t => ({ team: 'A', index: t.index }));

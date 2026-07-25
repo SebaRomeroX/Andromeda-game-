@@ -12,8 +12,8 @@ document.getElementById('combat-area').addEventListener('click', (e) => {
 });
 
 export function initGame() {
-  const teamA = [null, characters[0], null, null];
-  const teamB = [characters[4], null, null, characters[6]];
+  const teamA = [characters[2], characters[0], null, characters[1]];
+  const teamB = [characters[4], characters[5], characters[6], characters[3]];
 
   initState(teamA, teamB);
 

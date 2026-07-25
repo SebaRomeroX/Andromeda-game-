@@ -8,6 +8,7 @@ const characters = [
     image: "assets/images/Sima la audaz.jpg",
     hp: 120,
     evasion: 10,
+    role: "asesino",
     skills: [
       createSkill({ name: "Corte grave",           type: "attack",  power: 22, precision: 80, aparicion: 70, herida: true }),
       createSkill({ name: "Golpe de escudo",        type: "attack",  power: 10, precision: 90, aparicion: 20,  stun: true  }),
@@ -23,6 +24,7 @@ const characters = [
     image: "assets/images/Druida.jpg",
     hp: 90,
     evasion: 7,
+    role: "soporte",
     skills: [
       createSkill({ name: "Ataque compasivo",       type: "attack",  power: 12, precision: 80, aparicion: 10 }),
       createSkill({ name: "Medicina druidica",      type: "cura",    power: 35, precision: 95, aparicion: 70   }),
@@ -35,6 +37,7 @@ const characters = [
     image: "assets/images/Urbol.jpg",
     hp: 150,
     evasion: 5,
+    role: "tanque",
     skills: [
       createSkill({ name: "Debastador",           type: "attack",  power: 42, precision: 70, aparicion: 70 }),
       createSkill({ name: "Estocada penetrante",  type: "attack",  power: 25, precision: 80, aparicion: 70, herida: true }),
@@ -48,6 +51,7 @@ const characters = [
     image: "assets/images/Sacerdotiza oscura.jpg",
     hp: 90,
     evasion: 8,
+    role: "soporte",
     skills: [
       createSkill({ name: "Drenar Vida",            type: "attack",  power: 20,  precision: 75, aparicion: 7,}),
       createSkill({ name: "Vision de muerte",       type: "buff",    target: "enemy", stat: "attack",    value: -0.20, precision: 90, aparicion: 5 }),
@@ -59,6 +63,7 @@ const characters = [
     image: 'assets/images/Narada.jpg',
     hp: 140,
     evasion: 2,
+    role: "tanque",
     skills: [
       createSkill({ name: 'Corte demencial', type: 'attack',   power: 35,   precision: 60, aparicion: 30 }),
       createSkill({ name: 'Tajo',         type: 'attack',      power: 15,   precision: 70, aparicion: 90, herida: true }),
@@ -70,6 +75,7 @@ const characters = [
     image: "assets/images/Akay.jpg",
     hp: 100,
     evasion: 10,
+    role: "asesino",
     skills: [
       createSkill({ name: "Corte grave",     type: "attack",  power: 22, precision: 80, aparicion: 70, herida: true }),
       createSkill({ name: "Puñalada",        type: "attack",  power: 20, precision: 90, aparicion: 20 }),
@@ -81,6 +87,7 @@ const characters = [
     image: "assets/images/La bruja del paramo.jpg",
     hp: 90,
     evasion: 8,
+    role: "rango",
     skills: [
       createSkill({ name: "Ataque mental",      type: "attack",  power: 10,  precision: 75, aparicion: 10,}),
       createSkill({ name: "Vision de muerte",   type: "buff",    target: "enemy", stat: "attack",    value: -0.20,  precision: 90, aparicion: 5 }),

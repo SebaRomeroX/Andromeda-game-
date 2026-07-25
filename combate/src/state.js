@@ -1,3 +1,15 @@
+import { ROLE_BY_INDEX } from './models.js';
+
+function validateRoles(teamKey, data) {
+  data.forEach((char, i) => {
+    if (char && char.role !== ROLE_BY_INDEX[i]) {
+      throw new Error(
+        `${char.name} (${char.role}) no puede ir en la posición ${i + 1} (${ROLE_BY_INDEX[i]}) del equipo ${teamKey}`
+      );
+    }
+  });
+}
+
 function createMember(charData) {
   if (!charData) return null;
   return {
@@ -25,6 +37,9 @@ const state = {
 };
 
 export function initState(teamAData, teamBData) {
+  validateRoles('A', teamAData);
+  validateRoles('B', teamBData);
+
   state.teams.A.members = teamAData.map(createMember);
   state.teams.B.members = teamBData.map(createMember);
   while (state.teams.A.members.length < 4) state.teams.A.members.push(null);
