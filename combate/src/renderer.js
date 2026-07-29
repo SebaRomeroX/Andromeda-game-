@@ -271,7 +271,11 @@ export function renderActions(skills, onChoose) {
   });
 }
 
-export function showRestart() {
+export function showRestart(won, onEnd) {
   const div = $("restart-area");
-  div.innerHTML = `<button id="restart-btn" onclick="initGame()">🔄 Reiniciar Combate</button>`;
+  const text = won ? 'Continuar' : 'Reintentar';
+  div.innerHTML = `<button id="restart-btn">${text}</button>`;
+  document.getElementById('restart-btn').onclick = () => {
+    if (onEnd) onEnd();
+  };
 }

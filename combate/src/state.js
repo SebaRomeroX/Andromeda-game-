@@ -72,4 +72,8 @@ export function allDead(teamKey) {
   return state.teams[teamKey].members.every(m => !m || m.currentHp <= 0);
 }
 
+let gameEndCallback = null;
+export function setGameEndCallback(cb) { gameEndCallback = cb; }
+export function getGameEndCallback() { return gameEndCallback; }
+
 export default state;

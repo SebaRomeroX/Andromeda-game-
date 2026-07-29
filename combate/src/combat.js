@@ -1,4 +1,4 @@
-import state, { isDead, isAlive, aliveMembers, allDead } from './state.js';
+import state, { isDead, isAlive, aliveMembers, allDead, getGameEndCallback } from './state.js';
 import { ATTACK_ROUTES, ROLE_BY_INDEX } from './models.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
 import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, highlightSkill, clearSkillHighlight, showRestart } from './renderer.js';
@@ -228,13 +228,13 @@ function checkGameOver() {
   if (allDead('A')) {
     state.gameOver = true;
     log(`☠️ ¡El EQUIPO A ha sido derrotado! El EQUIPO B gana.`);
-    showRestart();
+    showRestart(false, getGameEndCallback());
     return true;
   }
   if (allDead('B')) {
     state.gameOver = true;
     log(`🏆 ¡El EQUIPO B ha sido derrotado! El EQUIPO A gana.`);
-    showRestart();
+    showRestart(true, getGameEndCallback());
     return true;
   }
   return false;

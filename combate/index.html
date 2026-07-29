@@ -3,24 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Combate por Equipos</title>
+  <title>Andromeda</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="app">
-    <div id="combat-area">
-      <div class="team-container" id="team-A-container">
-        <div class="team-grid" id="team-A-grid"></div>
-      </div>
-
-      <div class="team-container" id="team-B-container">
-        <div class="team-grid" id="team-B-grid"></div>
-      </div>
+    <div id="screen-menu" class="screen active">
+      <h1 class="game-title">Andromeda</h1>
+      <h2 class="screen-subtitle">Elige tu historia</h2>
+      <div id="story-list"></div>
     </div>
 
-    <div id="log"></div>
-    <div id="actions"></div>
-    <div id="restart-area"></div>
+    <div id="screen-map" class="screen">
+      <h2 id="map-title" class="screen-subtitle">Mapa</h2>
+      <div id="map-header"></div>
+      <div id="map-events"></div>
+      <div id="map-menu-area"></div>
+    </div>
+
+    <div id="screen-combat" class="screen">
+      <div id="combat-area">
+        <div class="team-container" id="team-A-container">
+          <div class="team-grid" id="team-A-grid"></div>
+        </div>
+
+        <div class="team-container" id="team-B-container">
+          <div class="team-grid" id="team-B-grid"></div>
+        </div>
+      </div>
+
+      <div id="log"></div>
+      <div id="actions"></div>
+      <div id="restart-area"></div>
+    </div>
   </div>
 
   <script type="module" src="src/main.js"></script>
