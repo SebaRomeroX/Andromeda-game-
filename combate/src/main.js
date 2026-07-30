@@ -1,4 +1,4 @@
-import state, { initState, setGameEndCallback } from './state.js';
+import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp } from './state.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
 import { log, clearLog } from './log.js';
@@ -33,6 +33,7 @@ function renderMenu() {
     `;
     card.addEventListener('click', () => {
       selectedStory = story;
+      clearSavedTeamHp();
       renderMap();
     });
     list.appendChild(card);
@@ -76,13 +77,31 @@ function renderMap() {
   menuArea.appendChild(menuBtn);
 }
 
+function showCampEvent(event) {
+  const overlay = document.getElementById('camp-overlay');
+  const message = document.getElementById('camp-message');
+  message.textContent = event.description;
+  overlay.classList.remove('hidden');
+
+  document.getElementById('camp-continue').onclick = () => {
+    restoreTeamHp();
+    overlay.classList.add('hidden');
+  };
+}
+
 function startCombat(event) {
+  if (event.type === 'campamento') {
+    showCampEvent(event);
+    return;
+  }
+
   showScreen('combat');
 
   const teamAData = selectedStory.teamA.map(idx => idx >= 0 ? characters[idx] : null);
   const teamBData = event.enemyTeam.map(idx => characters[idx]);
 
   setGameEndCallback(() => {
+    saveTeamState();
     showScreen('map');
   });
 

@@ -3,13 +3,18 @@ const stories = [
     id: 'travesia-sima',
     title: 'La Travesía de Sima la audaz',
     description: 'Acompaña a Sima y su equipo en una peligrosa travesía a través de tierras desconocidas.',
-    teamA: [2, 0, -1, 1],
+    teamA: [-1, 0, -1, -1],
     events: [
       {
         type: 'enfrentamiento',
-        title: 'Enfrentamiento',
-        description: 'Te enfrentas a enemigos',
-        enemyTeam: [4, 5, 6, 3]
+        title: 'Emboscada en el paso',
+        description: 'Te enfrentas a un grupo de merodeadores.',
+        enemyTeam: [4, -1, -1, -1]
+      },
+      {
+        type: 'campamento',
+        title: 'Campamento',
+        description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.'
       }
     ]
   }

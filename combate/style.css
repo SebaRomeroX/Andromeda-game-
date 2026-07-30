@@ -463,3 +463,57 @@ body {
   color: #f0e0a0;
   transform: translateY(-2px);
 }
+
+/* Camp overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.overlay-content {
+  background: linear-gradient(145deg, #1a1a2e, #16213e);
+  border: 2px solid #3a3a5c;
+  border-radius: 20px;
+  padding: 32px 40px;
+  max-width: 480px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
+}
+
+.overlay-content p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #e0dcd0;
+  margin-bottom: 24px;
+}
+
+#camp-continue {
+  padding: 12px 36px;
+  border: 2px solid #4a7a4a;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1a3a1a, #0a2a0a);
+  color: #a0f0a0;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#camp-continue:hover {
+  background: linear-gradient(135deg, #2a5a2a, #1a4a1a);
+  border-color: #6aaa6a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(80, 200, 80, 0.3);
+}

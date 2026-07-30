@@ -1,5 +1,26 @@
 import { ROLE_BY_INDEX } from './models.js';
 
+let savedTeamHp = null;
+
+export function saveTeamState() {
+  savedTeamHp = state.teams.A.members.map(m => m ? m.currentHp : null);
+}
+
+export function getSavedTeamHp() {
+  return savedTeamHp;
+}
+
+export function restoreTeamHp() {
+  state.teams.A.members.forEach(m => {
+    if (m) m.currentHp = m.hp;
+  });
+  saveTeamState();
+}
+
+export function clearSavedTeamHp() {
+  savedTeamHp = null;
+}
+
 function validateRoles(teamKey, data) {
   data.forEach((char, i) => {
     if (char && char.role !== ROLE_BY_INDEX[i]) {
@@ -10,11 +31,11 @@ function validateRoles(teamKey, data) {
   });
 }
 
-function createMember(charData) {
+function createMember(charData, initialHp) {
   if (!charData) return null;
   return {
     ...charData,
-    currentHp: charData.hp,
+    currentHp: initialHp != null ? Math.min(initialHp, charData.hp) : charData.hp,
     defense: 0,
     stunned: false,
     wounded: false,
@@ -40,8 +61,11 @@ export function initState(teamAData, teamBData) {
   validateRoles('A', teamAData);
   validateRoles('B', teamBData);
 
-  state.teams.A.members = teamAData.map(createMember);
-  state.teams.B.members = teamBData.map(createMember);
+  state.teams.A.members = teamAData.map((charData, i) => {
+    const saved = savedTeamHp ? savedTeamHp[i] : null;
+    return createMember(charData, saved);
+  });
+  state.teams.B.members = teamBData.map(charData => createMember(charData));
   while (state.teams.A.members.length < 4) state.teams.A.members.push(null);
   while (state.teams.B.members.length < 4) state.teams.B.members.push(null);
   state.currentTeam = 'A';
