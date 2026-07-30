@@ -9,13 +9,44 @@ const stories = [
         type: 'enfrentamiento',
         title: 'Emboscada en el paso',
         description: 'Te enfrentas a un grupo de merodeadores.',
-        enemyTeam: [4, -1, -1, -1]
+        enemyTeam: [-1, 5, 3, -1]
       },
       {
         type: 'campamento',
         title: 'Campamento',
         description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.'
-      }
+      },
+      {
+        type: 'enfrentamiento',
+        title: 'Sin salida',
+        description: 'Una amenaza ineludible se cierne sobre ti.',
+        enemyTeam: [4, -1, -1, -1]
+      },
+    ]
+  },
+  {
+    id: 'modo-libre',
+    title: 'Modo libre para desarrollo',
+    description: 'Se puede elegir el evento.',
+    teamA: [-1, 0, -1, -1],
+    events: [
+      {
+        type: 'enfrentamiento',
+        title: 'Emboscada en el paso',
+        description: 'Te enfrentas a un grupo de merodeadores.',
+        enemyTeam: [-1, 5, 3, -1]
+      },
+      {
+        type: 'campamento',
+        title: 'Campamento',
+        description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.'
+      },
+      {
+        type: 'enfrentamiento',
+        title: 'Sin salida',
+        description: 'Una amenaza ineludible se cierne sobre ti.',
+        enemyTeam: [4, -1, -1, -1]
+      },
     ]
   }
 ];
