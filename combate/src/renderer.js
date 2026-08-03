@@ -30,7 +30,7 @@ function renderMemberSlot(teamKey, index) {
 
       const nameEl = document.createElement("div");
       nameEl.className = "member-name";
-      nameEl.textContent = member.name;
+      nameEl.textContent = `${member.name} · Nv${member.level ?? 1}`;
 
       const hpBar = document.createElement("div");
       hpBar.className = "hp-bar";
@@ -53,7 +53,7 @@ function renderMemberSlot(teamKey, index) {
 
   const nameEl = document.createElement("div");
   nameEl.className = "member-name";
-  nameEl.textContent = member.name;
+  nameEl.textContent = `${member.name} · Nv${member.level ?? 1}`;
 
   const hpBar = document.createElement("div");
   hpBar.className = "hp-bar";

@@ -78,6 +78,7 @@ export const ATTACK_ROUTES = {
  * @property {number} evasion - Evasión base (0-100)
  * @property {Skill[]} skills - Habilidades del personaje
  * @property {Role} role - Rol que determina su posición en el equipo
+ * @property {number} [level=1] - Nivel del personaje (sube en los campamentos)
  */
 
 /**
@@ -128,12 +129,24 @@ export function createSkill({ name, type, precision = 80, aparicion = 1, power, 
  * @param {Role} opts.role
  * @returns {Character}
  */
-export function createCharacter({ name, image, hp = 100, evasion = 5, skills = [], role }) {
+export function createCharacter({ name, image, hp = 100, evasion = 5, skills = [], role, level = 1 }) {
   if (!name) throw new Error('createCharacter: name es requerido');
   if (!image) throw new Error('createCharacter: image es requerido');
   if (!role || !ROLES.includes(role)) {
     throw new Error(`createCharacter: role debe ser uno de: ${ROLES.join(', ')}`);
   }
 
-  return { name, image, hp, evasion, skills, role };
+  return { name, image, hp, evasion, skills, role, level };
+}
+
+/**
+ * Calcula los stats efectivos de un personaje según su nivel.
+ * Hook central para definir qué escala por nivel (HP, evasion, etc.).
+ * Por ahora devuelve los stats base; se completará en pasos siguientes.
+ *
+ * @param {Character} char
+ * @returns {{ hp: number, evasion: number }}
+ */
+export function getLevelStats(char) {
+  return { hp: char.hp, evasion: char.evasion };
 }

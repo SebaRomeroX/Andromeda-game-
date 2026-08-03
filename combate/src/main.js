@@ -1,4 +1,4 @@
-import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, allDead } from './state.js';
+import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, saveTeamLevels, allDead } from './state.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
 import { log, clearLog } from './log.js';
@@ -36,6 +36,7 @@ function renderMenu() {
       selectedStory = story;
       currentStage = 0;
       clearSavedTeamHp();
+      clearSavedTeamLevels();
       renderMap();
     });
     list.appendChild(card);
@@ -100,20 +101,43 @@ function renderMap() {
 function showCampEvent(event) {
   const overlay = document.getElementById('camp-overlay');
   const message = document.getElementById('camp-message');
+  const button = document.getElementById('camp-continue');
   message.textContent = event.description;
+  button.textContent = 'Descansar';
   overlay.classList.remove('hidden');
 
-  document.getElementById('camp-continue').onclick = () => {
-    restoreTeamHp();
-    overlay.classList.add('hidden');
-    if (selectedStory.sequential) {
-      currentStage++;
-      if (currentStage >= selectedStory.events.length) {
-        showStoryComplete();
-      } else {
-        renderMap();
+  button.onclick = () => {
+    const leveled = [];
+    state.teams.A.members.forEach(m => {
+      if (m && m.currentHp > 0) {
+        m.level++;
+        leveled.push({ name: m.name, level: m.level });
       }
+    });
+    saveTeamLevels();
+    restoreTeamHp();
+
+    if (leveled.length > 0) {
+      message.innerHTML = leveled
+        .map(c => `✨ ${c.name} sube a nivel ${c.level}!`)
+        .join('<br>')
+        + '<br><br>Los supervivientes descansan y recuperan su vida.';
+    } else {
+      message.textContent = 'El equipo descansa y recupera su vida, pero nadie sube de nivel.';
     }
+
+    button.textContent = 'Continuar';
+    button.onclick = () => {
+      overlay.classList.add('hidden');
+      if (selectedStory.sequential) {
+        currentStage++;
+        if (currentStage >= selectedStory.events.length) {
+          showStoryComplete();
+        } else {
+          renderMap();
+        }
+      }
+    };
   };
 }
 

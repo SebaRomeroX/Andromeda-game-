@@ -1,6 +1,7 @@
 import { ROLE_BY_INDEX } from './models.js';
 
 let savedTeamHp = null;
+let savedLevels = null;
 
 export function saveTeamState() {
   savedTeamHp = state.teams.A.members.map(m => m ? m.currentHp : null);
@@ -8,6 +9,14 @@ export function saveTeamState() {
 
 export function getSavedTeamHp() {
   return savedTeamHp;
+}
+
+export function saveTeamLevels() {
+  savedLevels = state.teams.A.members.map(m => m ? m.level : null);
+}
+
+export function getSavedTeamLevels() {
+  return savedLevels;
 }
 
 export function restoreTeamHp() {
@@ -21,6 +30,10 @@ export function clearSavedTeamHp() {
   savedTeamHp = null;
 }
 
+export function clearSavedTeamLevels() {
+  savedLevels = null;
+}
+
 function validateRoles(teamKey, data) {
   data.forEach((char, i) => {
     if (char && char.role !== ROLE_BY_INDEX[i]) {
@@ -31,10 +44,11 @@ function validateRoles(teamKey, data) {
   });
 }
 
-function createMember(charData, initialHp) {
+function createMember(charData, initialHp, level) {
   if (!charData) return null;
   return {
     ...charData,
+    level: level ?? 1,
     currentHp: initialHp != null ? Math.min(initialHp, charData.hp) : charData.hp,
     defense: 0,
     stunned: false,
@@ -63,7 +77,8 @@ export function initState(teamAData, teamBData) {
 
   state.teams.A.members = teamAData.map((charData, i) => {
     const saved = savedTeamHp ? savedTeamHp[i] : null;
-    return createMember(charData, saved);
+    const savedLevel = savedLevels ? savedLevels[i] : null;
+    return createMember(charData, saved, savedLevel);
   });
   state.teams.B.members = teamBData.map(charData => createMember(charData));
   while (state.teams.A.members.length < 4) state.teams.A.members.push(null);
