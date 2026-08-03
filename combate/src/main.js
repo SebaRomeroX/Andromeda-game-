@@ -1,4 +1,5 @@
 import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, saveTeamLevels, allDead } from './state.js';
+import { getLevelStats } from './models.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
 import { log, clearLog } from './log.js';
@@ -111,6 +112,9 @@ function showCampEvent(event) {
     state.teams.A.members.forEach(m => {
       if (m && m.currentHp > 0) {
         m.level++;
+        const st = getLevelStats(m);
+        m.hp = st.hp;
+        m.evasion = st.evasion;
         leveled.push({ name: m.name, level: m.level });
       }
     });

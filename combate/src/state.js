@@ -1,4 +1,4 @@
-import { ROLE_BY_INDEX } from './models.js';
+import { ROLE_BY_INDEX, getLevelStats } from './models.js';
 
 let savedTeamHp = null;
 let savedLevels = null;
@@ -46,10 +46,13 @@ function validateRoles(teamKey, data) {
 
 function createMember(charData, initialHp, level) {
   if (!charData) return null;
+  const stats = getLevelStats({ ...charData, level: level ?? 1 });
   return {
     ...charData,
     level: level ?? 1,
-    currentHp: initialHp != null ? Math.min(initialHp, charData.hp) : charData.hp,
+    hp: stats.hp,
+    evasion: stats.evasion,
+    currentHp: initialHp != null ? Math.min(initialHp, stats.hp) : stats.hp,
     defense: 0,
     stunned: false,
     wounded: false,

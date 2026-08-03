@@ -141,12 +141,22 @@ export function createCharacter({ name, image, hp = 100, evasion = 5, skills = [
 
 /**
  * Calcula los stats efectivos de un personaje según su nivel.
- * Hook central para definir qué escala por nivel (HP, evasion, etc.).
- * Por ahora devuelve los stats base; se completará en pasos siguientes.
  *
  * @param {Character} char
  * @returns {{ hp: number, evasion: number }}
  */
+const ROLE_LEVEL_SCALING = {
+  tanque: { hp: 15, evasion: 0 },
+  asesino: { hp: 8, evasion: 1 },
+  rango: { hp: 7, evasion: 2 },
+  soporte: { hp: 4, evasion: 1 }
+};
+
 export function getLevelStats(char) {
-  return { hp: char.hp, evasion: char.evasion };
+  const scale = ROLE_LEVEL_SCALING[char.role] ?? { hp: 0, evasion: 0 };
+  const levels = Math.max(0, (char.level ?? 1) - 1);
+  return {
+    hp: char.hp + levels * scale.hp,
+    evasion: char.evasion + levels * scale.evasion
+  };
 }
