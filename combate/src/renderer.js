@@ -1,4 +1,5 @@
 import state from './state.js';
+import { getSkillScaledStats } from './models.js';
 
 export const $ = id => document.getElementById(id);
 
@@ -232,26 +233,27 @@ export function renderActions(skills, onChoose) {
     btn.className = "skill-btn";
 
     let statsLine = "";
+    const scaled = getSkillScaledStats(skill);
     if (skill.type === "attack") {
-      statsLine = `⚔️ ${skill.power} · ${skill.precision}% prec`;
+      statsLine = `⚔️ ${scaled.power} · ${scaled.precision}% prec`;
     } else if (skill.type === "cura") {
-      statsLine = `💚 ${skill.power} · ${skill.precision}% prec`;
+      statsLine = `💚 ${scaled.power} · ${scaled.precision}% prec`;
     } else if (skill.type === "defense") {
-      statsLine = `🛡️ ${skill.power} · ${skill.precision}% prec`;
+      statsLine = `🛡️ ${scaled.power} · ${scaled.precision}% prec`;
     } else if (skill.type === "buff") {
       const emoji = emojis[skill.stat] || '⚔️';
       const sign = skill.value > 0 ? '+' : '';
       if (skill.stat === 'defense') {
-        statsLine = `${emoji} ${sign}${skill.value} · ${skill.precision}% prec`;
+        statsLine = `${emoji} ${sign}${skill.value} · ${scaled.precision}% prec`;
       } else if (skill.stat === 'precision') {
         const displayVal = skill.value >= 1 ? '100%' : '½';
-        statsLine = `${emoji} ${displayVal} · ${skill.precision}% prec`;
+        statsLine = `${emoji} ${displayVal} · ${scaled.precision}% prec`;
       } else if (skill.stat === 'evasion') {
         const displayVal = skill.value === 0 ? '0' : `${sign}${skill.value}`;
-        statsLine = `${emoji} ${displayVal} · ${skill.precision}% prec`;
+        statsLine = `${emoji} ${displayVal} · ${scaled.precision}% prec`;
       } else {
         const pct = (Math.abs(skill.value) * 100).toFixed(0);
-        statsLine = `${emoji} ${sign}${pct}% · ${skill.precision}% prec`;
+        statsLine = `${emoji} ${sign}${pct}% · ${scaled.precision}% prec`;
       }
     }
 

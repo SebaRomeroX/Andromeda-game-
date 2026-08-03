@@ -1,8 +1,9 @@
-import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, saveTeamLevels, allDead } from './state.js';
+import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, saveTeamLevels, allDead, resetTeam } from './state.js';
 import { getLevelStats } from './models.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
 import { log, clearLog } from './log.js';
+import { startSkillUpgrades } from './upgrades.js';
 import characters from '../data/characters.js';
 import stories from '../data/stories.js';
 
@@ -36,8 +37,10 @@ function renderMenu() {
     card.addEventListener('click', () => {
       selectedStory = story;
       currentStage = 0;
+      resetTeam();
       clearSavedTeamHp();
       clearSavedTeamLevels();
+      clearSavedTeamSkills();
       renderMap();
     });
     list.appendChild(card);
@@ -103,26 +106,32 @@ function showCampEvent(event) {
   const overlay = document.getElementById('camp-overlay');
   const message = document.getElementById('camp-message');
   const button = document.getElementById('camp-continue');
+
+  const teamAData = selectedStory.teamA.map(idx => idx >= 0 ? characters[idx] : null);
+  initState(teamAData, []);
+
   message.textContent = event.description;
   button.textContent = 'Descansar';
   overlay.classList.remove('hidden');
 
   button.onclick = () => {
-    const leveled = [];
+    const leveledNames = [];
+    const leveledMembers = [];
     state.teams.A.members.forEach(m => {
       if (m && m.currentHp > 0) {
         m.level++;
         const st = getLevelStats(m);
         m.hp = st.hp;
         m.evasion = st.evasion;
-        leveled.push({ name: m.name, level: m.level });
+        leveledNames.push({ name: m.name, level: m.level });
+        leveledMembers.push(m);
       }
     });
     saveTeamLevels();
     restoreTeamHp();
 
-    if (leveled.length > 0) {
-      message.innerHTML = leveled
+    if (leveledNames.length > 0) {
+      message.innerHTML = leveledNames
         .map(c => `✨ ${c.name} sube a nivel ${c.level}!`)
         .join('<br>')
         + '<br><br>Los supervivientes descansan y recuperan su vida.';
@@ -132,15 +141,18 @@ function showCampEvent(event) {
 
     button.textContent = 'Continuar';
     button.onclick = () => {
-      overlay.classList.add('hidden');
-      if (selectedStory.sequential) {
-        currentStage++;
-        if (currentStage >= selectedStory.events.length) {
-          showStoryComplete();
-        } else {
-          renderMap();
+      const finishCamp = () => {
+        overlay.classList.add('hidden');
+        if (selectedStory.sequential) {
+          currentStage++;
+          if (currentStage >= selectedStory.events.length) {
+            showStoryComplete();
+          } else {
+            renderMap();
+          }
         }
-      }
+      };
+      startSkillUpgrades(leveledMembers, finishCamp);
     };
   };
 }

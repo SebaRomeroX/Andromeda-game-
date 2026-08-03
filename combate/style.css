@@ -517,3 +517,44 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(80, 200, 80, 0.3);
 }
+
+/* Skill upgrade overlay */
+.upgrade-content {
+  max-width: 620px;
+}
+
+#upgrade-title {
+  color: #f0d060;
+  margin-bottom: 16px;
+}
+
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+#upgrade-confirm {
+  padding: 12px 40px;
+  border: 2px solid #8a7a4a;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3a2a1a, #2a1a0a);
+  color: #f0e0a0;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#upgrade-confirm:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a4a2a, #4a3a1a);
+  border-color: #c0a85a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(200, 160, 50, 0.3);
+}
+
+#upgrade-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

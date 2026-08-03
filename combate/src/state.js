@@ -2,6 +2,7 @@ import { ROLE_BY_INDEX, getLevelStats } from './models.js';
 
 let savedTeamHp = null;
 let savedLevels = null;
+let savedTeamSkills = null;
 
 export function saveTeamState() {
   savedTeamHp = state.teams.A.members.map(m => m ? m.currentHp : null);
@@ -19,6 +20,14 @@ export function getSavedTeamLevels() {
   return savedLevels;
 }
 
+export function saveTeamSkills() {
+  savedTeamSkills = state.teams.A.members.map(m => m ? m.skills.map(s => s.level ?? 1) : null);
+}
+
+export function getSavedTeamSkills() {
+  return savedTeamSkills;
+}
+
 export function restoreTeamHp() {
   state.teams.A.members.forEach(m => {
     if (m) m.currentHp = m.hp;
@@ -34,6 +43,10 @@ export function clearSavedTeamLevels() {
   savedLevels = null;
 }
 
+export function clearSavedTeamSkills() {
+  savedTeamSkills = null;
+}
+
 function validateRoles(teamKey, data) {
   data.forEach((char, i) => {
     if (char && char.role !== ROLE_BY_INDEX[i]) {
@@ -44,7 +57,7 @@ function validateRoles(teamKey, data) {
   });
 }
 
-function createMember(charData, initialHp, level) {
+function createMember(charData, initialHp, level, skillLevels) {
   if (!charData) return null;
   const stats = getLevelStats({ ...charData, level: level ?? 1 });
   return {
@@ -53,6 +66,10 @@ function createMember(charData, initialHp, level) {
     hp: stats.hp,
     evasion: stats.evasion,
     currentHp: initialHp != null ? Math.min(initialHp, stats.hp) : stats.hp,
+    skills: charData.skills.map((s, i) => ({
+      ...s,
+      level: skillLevels ? (skillLevels[i] ?? 1) : (s.level ?? 1)
+    })),
     defense: 0,
     stunned: false,
     wounded: false,
@@ -81,12 +98,24 @@ export function initState(teamAData, teamBData) {
   state.teams.A.members = teamAData.map((charData, i) => {
     const saved = savedTeamHp ? savedTeamHp[i] : null;
     const savedLevel = savedLevels ? savedLevels[i] : null;
-    return createMember(charData, saved, savedLevel);
+    const savedSkills = savedTeamSkills ? savedTeamSkills[i] : null;
+    return createMember(charData, saved, savedLevel, savedSkills);
   });
   state.teams.B.members = teamBData.map(charData => createMember(charData));
   while (state.teams.A.members.length < 4) state.teams.A.members.push(null);
   while (state.teams.B.members.length < 4) state.teams.B.members.push(null);
   state.currentTeam = 'A';
+  state.actingMemberIndex = 0;
+  state.turnPhase = 'idle';
+  state.selectedSkill = null;
+  state.pendingActions = [];
+  state.gameOver = false;
+  state.turnActive = false;
+}
+
+export function resetTeam() {
+  state.teams.A.members = [];
+  state.teams.B.members = [];
   state.actingMemberIndex = 0;
   state.turnPhase = 'idle';
   state.selectedSkill = null;

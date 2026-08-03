@@ -1,5 +1,5 @@
 import state, { isDead, isAlive, aliveMembers, allDead, getGameEndCallback } from './state.js';
-import { ATTACK_ROUTES, ROLE_BY_INDEX } from './models.js';
+import { ATTACK_ROUTES, ROLE_BY_INDEX, getSkillScaledStats } from './models.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
 import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, highlightSkill, clearSkillHighlight, showRestart } from './renderer.js';
 import { log } from './log.js';
@@ -38,6 +38,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   const basePrecision = skill.precision ?? 100;
   const precision = getPrecision(actorTeam, actorIndex, basePrecision);
   const hit = Math.random() * 100 < precision;
+  const scaled = getSkillScaledStats(skill);
 
   if (skill.type === "cura") {
     if (!hit) {
@@ -45,7 +46,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
       return;
     }
     const oldHp = target.currentHp;
-    target.currentHp = Math.min(target.currentHp + skill.power, target.hp);
+    target.currentHp = Math.min(target.currentHp + scaled.power, target.hp);
     const healed = target.currentHp - oldHp;
     let msg = `💚 ${actor.name} usa ${skill.name} en ${target.name}: +${healed} HP`;
     if (target.wounded) {
@@ -97,8 +98,8 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
 
   if (skill.type === "defense") {
     if (hit) {
-      actor.defense = skill.power;
-      log(`🛡️ ${actor.name} usa ${skill.name}: defensa ${skill.power} activada`);
+      actor.defense = scaled.power;
+      log(`🛡️ ${actor.name} usa ${skill.name}: defensa ${scaled.power} activada`);
     } else {
       log(`🛡️ ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
     }
@@ -121,7 +122,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   const defBuffs = getFlatBuffSum(targetTeam, targetIndex, 'defense');
   const def = defSkill + defBuffs;
   const atkMult = getMultiplier(actorTeam, actorIndex, "attack");
-  const rawDmg = Math.round(skill.power * atkMult);
+  const rawDmg = Math.round(scaled.power * atkMult);
   const finalDmg = Math.max(0, rawDmg - def);
   target.currentHp = Math.max(0, target.currentHp - finalDmg);
 
@@ -203,7 +204,7 @@ function enemySelectSkills() {
     if (targetIdx === null) continue;
 
     const actionLabel = skill.type === "attack" ? "atq" : skill.type === "cura" ? "cura" : skill.type === "buff" ? "buff" : "def";
-    const powerLabel = skill.type === "buff" ? skill.value : skill.power;
+    const powerLabel = skill.type === "buff" ? skill.value : getSkillScaledStats(skill).power;
     log(`💀 ${member.name} prepara ${skill.name} (${actionLabel} ${powerLabel})`);
 
     state.pendingActions.push({

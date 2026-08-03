@@ -66,6 +66,7 @@ export const ATTACK_ROUTES = {
  * @property {BuffTarget} [target] - Objetivo del buff (solo buff)
  * @property {BuffStat} [stat] - Estadística a modificar (solo buff)
  * @property {number} [value] - Magnitud del buff (solo buff)
+ * @property {number} [level=1] - Nivel de la habilidad (mejorable en el campamento)
  */
 
 /**
@@ -95,13 +96,14 @@ export const ATTACK_ROUTES = {
  * @param {BuffTarget} [opts.target] - Solo buff
  * @param {BuffStat} [opts.stat]    - Solo buff
  * @param {number} [opts.value]     - Solo buff
+ * @param {number} [opts.level=1]   - Nivel de la habilidad
  * @returns {Skill}
  */
-export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, stat, value }) {
+export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, stat, value, level = 1 }) {
   if (!name) throw new Error('createSkill: name es requerido');
   if (!type) throw new Error('createSkill: type es requerido');
 
-  const base = { name, type, precision, aparicion };
+  const base = { name, type, precision, aparicion, level };
 
   switch (type) {
     case 'attack':
@@ -158,5 +160,39 @@ export function getLevelStats(char) {
   return {
     hp: char.hp + levels * scale.hp,
     evasion: char.evasion + levels * scale.evasion
+  };
+}
+
+/**
+ * Sube de nivel una habilidad.
+ *
+ * El escalado de los stats según el nivel se define en `getSkillScaledStats`.
+ *
+ * @param {Skill} skill
+ * @returns {Skill}
+ */
+export function upgradeSkill(skill) {
+  skill.level = (skill.level ?? 1) + 1;
+  return skill;
+}
+
+/**
+ * Retorna los stats efectivos de una habilidad según su nivel.
+ *
+ * Escalado actual: el power de attack/cura/defense aumenta +5 por cada nivel
+ * por encima de 1. precision y value quedan iguales.
+ *
+ * @param {Skill} skill
+ * @returns {{ power?: number, precision: number, value?: number, level: number }}
+ */
+export function getSkillScaledStats(skill) {
+  const level = skill.level ?? 1;
+  const hasPower = skill.type === 'attack' || skill.type === 'cura' || skill.type === 'defense';
+  const power = hasPower ? skill.power + (level - 1) * 5 : skill.power;
+  return {
+    power,
+    precision: skill.precision,
+    value: skill.value,
+    level
   };
 }
