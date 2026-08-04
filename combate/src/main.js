@@ -7,11 +7,29 @@ import { startSkillUpgrades } from './upgrades.js';
 import characters from '../data/characters.js';
 import stories from '../data/stories.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
+import { pickNextEvent } from './eventGenerator.js';
 
 let selectedStory = null;
-let currentStage = 0;
 let playerTeam = null;
 let protagonistSlot = 0;
+let currentEvent = null;
+
+const run = {
+  stage: 0,
+  enfrentamientos: 0,
+  campamentos: 0,
+  fightsSinceCamp: 0,
+  fired: new Set()
+};
+
+function resetRun() {
+  run.stage = 0;
+  run.enfrentamientos = 0;
+  run.campamentos = 0;
+  run.fightsSinceCamp = 0;
+  run.fired.clear();
+  currentEvent = null;
+}
 
 function showOverlay(message, buttonText, onClick) {
   const overlay = document.getElementById('camp-overlay');
@@ -34,7 +52,7 @@ function validateStoryCast(story) {
 
   const warn = (msg) => console.warn(`[historia "${story.title}"] ${msg}`);
 
-  story.events.forEach((event, i) => {
+  (story.narrativeEvents ?? story.events ?? []).forEach((event, i) => {
     if (event.type === 'reclutamiento') {
       if (event.character != null && !allies.has(event.character)) {
         warn(`Evento ${i + 1}: ${characters[event.character]?.name ?? event.character} es reclutable pero no está en allies.`);
@@ -80,7 +98,7 @@ function renderMenu() {
     card.addEventListener('click', () => {
       selectedStory = story;
       validateStoryCast(story);
-      currentStage = 0;
+      resetRun();
       playerTeam = [...story.teamA];
       protagonistSlot = ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);
       resetTeam();
@@ -104,9 +122,10 @@ function renderMap() {
 
   if (selectedStory.sequential) {
     const header = document.getElementById('map-header');
-    header.textContent = `Paso ${currentStage + 1} de ${selectedStory.events.length}`;
+    header.textContent = `Etapa ${run.stage + 1}`;
 
-    const event = selectedStory.events[currentStage];
+    currentEvent = pickNextEvent(selectedStory, run);
+    const event = currentEvent;
     const card = document.createElement('div');
     card.className = 'event-card';
     card.innerHTML = `
@@ -142,7 +161,7 @@ function renderMap() {
   menuBtn.textContent = 'Volver al Menú';
   menuBtn.addEventListener('click', () => {
     selectedStory = null;
-    currentStage = 0;
+    resetRun();
     showScreen('menu');
   });
   menuArea.appendChild(menuBtn);
@@ -189,14 +208,7 @@ function showCampEvent(event) {
     button.onclick = () => {
       const finishCamp = () => {
         overlay.classList.add('hidden');
-        if (selectedStory.sequential) {
-          currentStage++;
-          if (currentStage >= selectedStory.events.length) {
-            showStoryComplete();
-          } else {
-            renderMap();
-          }
-        }
+        advanceStage();
       };
       startSkillUpgrades(leveledMembers, finishCamp);
     };
@@ -227,7 +239,7 @@ function startCombat(event) {
       : 1;
     const generated = generateEnemyTeam({
       story: selectedStory,
-      stage: currentStage,
+      stage: run.stage,
       playerMemberCount,
       playerAvgLevel
     });
@@ -241,10 +253,7 @@ function startCombat(event) {
       handleVictory();
       return;
     }
-    if (selectedStory.sequential) {
-      currentStage = 0;
-      clearSavedTeamHp();
-    }
+    clearSavedTeamHp();
     showScreen('map');
     renderMap();
   });
@@ -287,13 +296,25 @@ function showRecruitEvent(event) {
 }
 
 function advanceStage() {
-  if (selectedStory.sequential) {
-    currentStage++;
-    if (currentStage >= selectedStory.events.length) {
-      showStoryComplete();
-      return;
-    }
+  const event = currentEvent;
+  const type = event?.type;
+
+  if (type === 'campamento') {
+    run.campamentos++;
+    run.fightsSinceCamp = 0;
+  } else if (type === 'enfrentamiento') {
+    run.enfrentamientos++;
+    run.fightsSinceCamp++;
   }
+
+  if (event?.id) run.fired.add(event.id);
+  run.stage++;
+
+  if (event?.final) {
+    showEnding(event);
+    return;
+  }
+
   showScreen('map');
   renderMap();
 }
@@ -308,7 +329,7 @@ function handleVictory() {
     const protagonistName = characters[selectedStory.protagonist ?? 0].name;
     showOverlay(`💀 <strong>${protagonistName}</strong> ha caído en batalla.<br>La historia termina aquí.`, 'Volver al Menú', () => {
       selectedStory = null;
-      currentStage = 0;
+      resetRun();
       playerTeam = null;
       clearSavedTeamHp();
       clearSavedTeamLevels();
@@ -340,17 +361,23 @@ function handleVictory() {
   advanceStage();
 }
 
-function showStoryComplete() {
+function showEnding(event) {
   showScreen('map');
 
   const title = document.getElementById('map-title');
   title.textContent = selectedStory.title;
 
   const header = document.getElementById('map-header');
-  header.textContent = '¡Historia completada!';
+  header.textContent = 'Final';
 
   const events = document.getElementById('map-events');
-  events.innerHTML = '<p style="color:#ccc; text-align:center; padding:2rem;">Has superado todos los desafíos de la travesía.</p>';
+  events.innerHTML = `
+    <div class="event-card">
+      <div class="event-card-title">${event.title}</div>
+      <div class="event-card-desc">${event.description}</div>
+    </div>
+    <p style="color:#ccc; text-align:center; padding:1rem;">La historia ha llegado a su fin.</p>
+  `;
 
   const menuArea = document.getElementById('map-menu-area');
   menuArea.innerHTML = '';
@@ -359,7 +386,7 @@ function showStoryComplete() {
   menuBtn.textContent = 'Volver al Menú';
   menuBtn.addEventListener('click', () => {
     selectedStory = null;
-    currentStage = 0;
+    resetRun();
     showScreen('menu');
   });
   menuArea.appendChild(menuBtn);

@@ -61,8 +61,8 @@ function pickFormation(candidates, targetSize) {
 }
 
 export function generateEnemyTeam({ story, stage, playerMemberCount, playerAvgLevel }) {
-  const totalEvents = story.events.length;
-  const progress = totalEvents > 0 ? stage / totalEvents : 1;
+  const totalEvents = story.expectedStages ?? (story.events?.length ?? 1);
+  const progress = Math.min(1, totalEvents > 0 ? stage / totalEvents : 1);
 
   const rolePools = buildRolePools(story);
   const candidates = FORMATIONS.filter(f => f.roles.every(r => rolePools[r]?.length > 0));

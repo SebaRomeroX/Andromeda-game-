@@ -9,21 +9,36 @@ const stories = [
     genericEnemies: [3, 5, 6, 7],
     narrativeEnemies: [4],
     teamA: [-1, 0, -1, -1],
-    events: [
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
-      { type: 'campamento', title: 'Campamento', description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.' },
-      { type: 'reclutamiento', title: 'Un encuentro oportuno', description: 'Una druida del bosque ofrece acompañarte en la travesía.', character: 1 },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
-      { type: 'campamento', title: 'Campamento', description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.' },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
-      { type: 'campamento', title: 'Campamento', description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.' },
-      { type: 'enfrentamiento', narrativo: true, title: 'Sin salida', description: 'Una amenaza ineludible se cierne sobre ti.', enemyTeam: [4, -1, -1, -1] },
+    campAfterFights: 3,
+    expectedStages: 13,
+    narrativeEvents: [
+      {
+        id: 'reclutamiento-druida',
+        type: 'reclutamiento',
+        title: 'Un encuentro oportuno',
+        description: 'Una druida del bosque ofrece acompañarte en la travesía.',
+        character: 1,
+        conditions: { campamentos: 1 }
+      },
+      {
+        id: 'sin-salida',
+        type: 'enfrentamiento',
+        narrativo: true,
+        title: 'Sin salida',
+        description: 'Una amenaza ineludible se cierne sobre ti.',
+        enemyTeam: [4, -1, -1, -1],
+        conditions: { campamentos: 2 }
+      },
+      {
+        id: 'final-narada',
+        type: 'enfrentamiento',
+        narrativo: true,
+        final: true,
+        title: 'Enfrentamiento final Narada',
+        description: 'Narada bloquea el paso hacia el último santuario. Esta es la batalla definitiva.',
+        enemyTeam: [4, -1, -1, -1],
+        conditions: { campamentos: 3, enfrentamientos: 9, stage: 12 }
+      }
     ]
   },
   {
