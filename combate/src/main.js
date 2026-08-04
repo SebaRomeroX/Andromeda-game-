@@ -26,6 +26,32 @@ function buildTeamAData() {
   return (playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
 }
 
+function validateStoryCast(story) {
+  const generic = new Set(story.genericEnemies ?? []);
+  const narrative = new Set(story.narrativeEnemies ?? []);
+  const allies = new Set(story.allies ?? []);
+
+  const warn = (msg) => console.warn(`[historia "${story.title}"] ${msg}`);
+
+  story.events.forEach((event, i) => {
+    if (event.type === 'reclutamiento') {
+      if (event.character != null && !allies.has(event.character)) {
+        warn(`Evento ${i + 1}: ${characters[event.character]?.name ?? event.character} es reclutable pero no está en allies.`);
+      }
+      return;
+    }
+
+    if (event.type !== 'enfrentamiento' || !event.enemyTeam) return;
+
+    const allowed = event.narrativo ? new Set([...generic, ...narrative]) : generic;
+    event.enemyTeam.forEach(idx => {
+      if (idx >= 0 && !allowed.has(idx)) {
+        warn(`Evento ${i + 1}: ${characters[idx]?.name ?? idx} no debería aparecer en un enfrentamiento ${event.narrativo ? 'narrativo' : 'genérico'}.`);
+      }
+    });
+  });
+}
+
 document.getElementById('combat-area').addEventListener('click', (e) => {
   const slot = e.target.closest('.member-slot.targetable');
   if (slot) {
@@ -52,6 +78,7 @@ function renderMenu() {
     `;
     card.addEventListener('click', () => {
       selectedStory = story;
+      validateStoryCast(story);
       currentStage = 0;
       playerTeam = [...story.teamA];
       protagonistSlot = ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);

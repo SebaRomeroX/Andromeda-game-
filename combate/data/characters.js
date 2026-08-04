@@ -10,6 +10,7 @@ const characters = [
     evasion: 10,
     role: "asesino",
     skills: [
+      // createSkill({ name: "EXCALIBUR",          type: "attack",  power: 100, precision: 100, aparicion: 100 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
       createSkill({ name: "Estocada",           type: "attack",  power: 28, precision: 85, aparicion: 70 }),
       createSkill({ name: "Corte grave",        type: "attack",  power: 18, precision: 85, aparicion: 70, herida: true }),
       createSkill({ name: "Golpe de escudo",    type: "attack",  power: 10, precision: 90, aparicion: 20,  stun: true  }),
@@ -78,7 +79,7 @@ const characters = [
     evasion: 10,
     role: "asesino",
     skills: [
-      createSkill({ name: "Corte",        type: "attack",     power: 5,       precision: 80,      paricion: 70 }),
+      createSkill({ name: "Corte",        type: "attack",     power: 5,       precision: 80,      aparicion: 70 }),
       createSkill({ name: "Puñalada",        type: "attack",  power: 8,       precision: 90,      aparicion: 20 }),
       createSkill({ name: "Concentracion",   type: "buff",    target: "self",  stat: "precision", value: 100,   precision: 90, aparicion: 50 }),
     ]
