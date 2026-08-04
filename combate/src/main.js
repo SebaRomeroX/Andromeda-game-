@@ -6,6 +6,7 @@ import { log, clearLog } from './log.js';
 import { startSkillUpgrades } from './upgrades.js';
 import characters from '../data/characters.js';
 import stories from '../data/stories.js';
+import { generateEnemyTeam } from './enemyGenerator.js';
 
 let selectedStory = null;
 let currentStage = 0;
@@ -216,7 +217,24 @@ function startCombat(event) {
   showScreen('combat');
 
   const teamAData = buildTeamAData();
-  const teamBData = event.enemyTeam.map(idx => characters[idx]);
+
+  let teamBData;
+  if (event.type === 'enfrentamiento' && !event.narrativo) {
+    const memberLevels = state.teams.A.members.filter(Boolean).map(m => m.level ?? 1);
+    const playerMemberCount = teamAData.filter(Boolean).length;
+    const playerAvgLevel = memberLevels.length > 0
+      ? memberLevels.reduce((sum, l) => sum + l, 0) / memberLevels.length
+      : 1;
+    const generated = generateEnemyTeam({
+      story: selectedStory,
+      stage: currentStage,
+      playerMemberCount,
+      playerAvgLevel
+    });
+    teamBData = generated.map(g => g ? { ...characters[g.index], level: g.level } : null);
+  } else {
+    teamBData = (event.enemyTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
+  }
 
   setGameEndCallback(() => {
     if (allDead('B')) {

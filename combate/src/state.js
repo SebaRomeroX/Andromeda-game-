@@ -65,10 +65,11 @@ function validateRoles(teamKey, data) {
 
 function createMember(charData, initialHp, level, skillLevels) {
   if (!charData) return null;
-  const stats = getLevelStats({ ...charData, level: level ?? 1 });
+  const finalLevel = level ?? charData.level ?? 1;
+  const stats = getLevelStats({ ...charData, level: finalLevel });
   return {
     ...charData,
-    level: level ?? 1,
+    level: finalLevel,
     hp: stats.hp,
     evasion: stats.evasion,
     currentHp: initialHp != null ? Math.min(initialHp, stats.hp) : stats.hp,

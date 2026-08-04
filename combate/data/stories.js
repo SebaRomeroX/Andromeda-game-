@@ -10,18 +10,18 @@ const stories = [
     narrativeEnemies: [4],
     teamA: [-1, 0, -1, -1],
     events: [
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, -1, 3, -1] },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, 5, -1, -1] },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [7, -1, -1, -1] },
+      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
+      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
+      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
       { type: 'campamento', title: 'Campamento', description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.' },
       { type: 'reclutamiento', title: 'Un encuentro oportuno', description: 'Una druida del bosque ofrece acompañarte en la travesía.', character: 1 },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, 5, 6, -1] },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [7, -1, 3, -1] },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [7, -1, 6, -1] },
+      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
+      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
+      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
       { type: 'campamento', title: 'Campamento', description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.' },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, 5, 3, -1] },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [7, 5, 6, -1] },
-      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [7, 5, 3, -1] },
+      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
+      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
+      { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.' },
       { type: 'campamento', title: 'Campamento', description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.' },
       { type: 'enfrentamiento', narrativo: true, title: 'Sin salida', description: 'Una amenaza ineludible se cierne sobre ti.', enemyTeam: [4, -1, -1, -1] },
     ]
@@ -39,8 +39,7 @@ const stories = [
       {
         type: 'enfrentamiento',
         title: 'Emboscada en el paso',
-        description: 'Te enfrentas a un grupo de merodeadores.',
-        enemyTeam: [7, 5, 6, -1]
+        description: 'Te enfrentas a un grupo de merodeadores.'
       },
       {
         type: 'campamento',
