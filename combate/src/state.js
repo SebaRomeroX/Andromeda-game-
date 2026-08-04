@@ -47,6 +47,12 @@ export function clearSavedTeamSkills() {
   savedTeamSkills = null;
 }
 
+export function clearSavedSlot(index) {
+  if (savedTeamHp) savedTeamHp[index] = null;
+  if (savedLevels) savedLevels[index] = null;
+  if (savedTeamSkills) savedTeamSkills[index] = null;
+}
+
 function validateRoles(teamKey, data) {
   data.forEach((char, i) => {
     if (char && char.role !== ROLE_BY_INDEX[i]) {

@@ -1,5 +1,5 @@
-import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, saveTeamLevels, allDead, resetTeam } from './state.js';
-import { getLevelStats } from './models.js';
+import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, saveTeamLevels, allDead, resetTeam, clearSavedSlot } from './state.js';
+import { getLevelStats, ROLE_BY_INDEX } from './models.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
 import { log, clearLog } from './log.js';
@@ -9,6 +9,22 @@ import stories from '../data/stories.js';
 
 let selectedStory = null;
 let currentStage = 0;
+let playerTeam = null;
+let protagonistSlot = 0;
+
+function showOverlay(message, buttonText, onClick) {
+  const overlay = document.getElementById('camp-overlay');
+  const msg = document.getElementById('camp-message');
+  const btn = document.getElementById('camp-continue');
+  msg.innerHTML = message;
+  btn.textContent = buttonText;
+  btn.onclick = () => { overlay.classList.add('hidden'); if (onClick) onClick(); };
+  overlay.classList.remove('hidden');
+}
+
+function buildTeamAData() {
+  return (playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
+}
 
 document.getElementById('combat-area').addEventListener('click', (e) => {
   const slot = e.target.closest('.member-slot.targetable');
@@ -37,6 +53,8 @@ function renderMenu() {
     card.addEventListener('click', () => {
       selectedStory = story;
       currentStage = 0;
+      playerTeam = [...story.teamA];
+      protagonistSlot = ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);
       resetTeam();
       clearSavedTeamHp();
       clearSavedTeamLevels();
@@ -107,7 +125,7 @@ function showCampEvent(event) {
   const message = document.getElementById('camp-message');
   const button = document.getElementById('camp-continue');
 
-  const teamAData = selectedStory.teamA.map(idx => idx >= 0 ? characters[idx] : null);
+  const teamAData = buildTeamAData();
   initState(teamAData, []);
 
   message.textContent = event.description;
@@ -163,26 +181,24 @@ function startCombat(event) {
     return;
   }
 
+  if (event.type === 'reclutamiento') {
+    showRecruitEvent(event);
+    return;
+  }
+
   showScreen('combat');
 
-  const teamAData = selectedStory.teamA.map(idx => idx >= 0 ? characters[idx] : null);
+  const teamAData = buildTeamAData();
   const teamBData = event.enemyTeam.map(idx => characters[idx]);
 
   setGameEndCallback(() => {
+    if (allDead('B')) {
+      handleVictory();
+      return;
+    }
     if (selectedStory.sequential) {
-      if (allDead('B')) {
-        currentStage++;
-        saveTeamState();
-        if (currentStage >= selectedStory.events.length) {
-          showStoryComplete();
-          return;
-        }
-      } else {
-        currentStage = 0;
-        clearSavedTeamHp();
-      }
-    } else {
-      saveTeamState();
+      currentStage = 0;
+      clearSavedTeamHp();
     }
     showScreen('map');
     renderMap();
@@ -205,6 +221,78 @@ function startCombat(event) {
   log(`⚔️ ¡Combate: EQUIPO A (${aNames}) vs EQUIPO B (${bNames})!`);
 
   startTurn();
+}
+
+function showRecruitEvent(event) {
+  const char = characters[event.character];
+  const slot = ROLE_BY_INDEX.indexOf(char.role);
+
+  if (playerTeam[slot] !== -1) {
+    showOverlay(`${char.name} quiere unirse, pero su puesto ya está ocupado.`, 'Continuar', () => {
+      advanceStage();
+    });
+    return;
+  }
+
+  playerTeam[slot] = event.character;
+  clearSavedSlot(slot);
+  showOverlay(`✨ <strong>${char.name}</strong> se ha unido al grupo.`, 'Continuar', () => {
+    advanceStage();
+  });
+}
+
+function advanceStage() {
+  if (selectedStory.sequential) {
+    currentStage++;
+    if (currentStage >= selectedStory.events.length) {
+      showStoryComplete();
+      return;
+    }
+  }
+  showScreen('map');
+  renderMap();
+}
+
+function handleVictory() {
+  const fallen = [];
+  state.teams.A.members.forEach((m, i) => {
+    if (m && m.currentHp <= 0) fallen.push(i);
+  });
+
+  if (fallen.includes(protagonistSlot)) {
+    const protagonistName = characters[selectedStory.protagonist ?? 0].name;
+    showOverlay(`💀 <strong>${protagonistName}</strong> ha caído en batalla.<br>La historia termina aquí.`, 'Volver al Menú', () => {
+      selectedStory = null;
+      currentStage = 0;
+      playerTeam = null;
+      clearSavedTeamHp();
+      clearSavedTeamLevels();
+      clearSavedTeamSkills();
+      renderMenu();
+      showScreen('menu');
+    });
+    return;
+  }
+
+  saveTeamState();
+
+  if (fallen.length > 0) {
+    const names = fallen.map(i => characters[playerTeam[i]].name);
+    showOverlay(
+      names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>'),
+      'Continuar',
+      () => {
+        fallen.forEach(i => {
+          playerTeam[i] = -1;
+          clearSavedSlot(i);
+        });
+        advanceStage();
+      }
+    );
+    return;
+  }
+
+  advanceStage();
 }
 
 function showStoryComplete() {

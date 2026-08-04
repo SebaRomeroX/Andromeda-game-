@@ -4,12 +4,14 @@ const stories = [
     title: 'La Travesía de Sima la audaz',
     description: 'Acompaña a Sima y su equipo en una peligrosa travesía a través de tierras desconocidas.',
     sequential: true,
+    protagonist: 0,
     teamA: [-1, 0, -1, -1],
     events: [
       { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, 5, 3, -1] },
       { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, 5, 3, -1] },
       { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, 5, 3, -1] },
       { type: 'campamento', title: 'Campamento', description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.' },
+      { type: 'reclutamiento', title: 'Un encuentro oportuno', description: 'Una druida del bosque ofrece acompañarte en la travesía.', character: 1 },
       { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, 5, 3, -1] },
       { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, 5, 3, -1] },
       { type: 'enfrentamiento', title: 'Emboscada en el paso', description: 'Te enfrentas a un grupo de merodeadores.', enemyTeam: [-1, 5, 3, -1] },
@@ -25,6 +27,7 @@ const stories = [
     id: 'modo-libre',
     title: 'Modo libre para desarrollo',
     description: 'Se puede elegir el evento.',
+    protagonist: 0,
     teamA: [-1, 0, -1, -1],
     events: [
       {
@@ -37,6 +40,12 @@ const stories = [
         type: 'campamento',
         title: 'Campamento',
         description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.'
+      },
+      {
+        type: 'reclutamiento',
+        title: 'Un encuentro oportuno',
+        description: 'Una druida del bosque ofrece acompañarte.',
+        character: 1
       },
       {
         type: 'enfrentamiento',
