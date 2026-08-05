@@ -30,6 +30,14 @@ const stories = [
         conditions: { campamentos: 2 }
       },
       {
+        id: 'reclutamiento-urbol',
+        type: 'reclutamiento',
+        title: 'Un noble guerrero',
+        description: 'Un poderoso caballero admira tu valor y se une a tu mision.',
+        character: 2,
+        conditions: { campamentos: 3 }
+      },
+      {
         id: 'final-narada',
         type: 'enfrentamiento',
         narrativo: true,
@@ -37,7 +45,7 @@ const stories = [
         title: 'Enfrentamiento final Narada',
         description: 'Narada bloquea el paso hacia el último santuario. Esta es la batalla definitiva.',
         enemyTeam: [4, -1, -1, -1],
-        conditions: { campamentos: 3, enfrentamientos: 9, stage: 12 }
+        conditions: { campamentos: 4, enfrentamientos: 9, stage: 12 }
       }
     ]
   },
