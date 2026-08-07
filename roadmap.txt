@@ -1,7 +1,6 @@
 NARRATIVA:
   multiples historias
   mapa de nodos, visual novel, toma de decisiones
-  eventos semialeatorios
 
 MECANICA PRINCIPAL:
   menos personajes levelean mas
@@ -10,5 +9,11 @@ MECANICA PRINCIPAL:
 COMBATE:
   buff y ataques en area
 
+
+NEXT TASKS:
+ - algo jugable
+ - guardar progreso
+ - narrativa
+ - elecciones
 
 
