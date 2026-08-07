@@ -4,7 +4,7 @@ import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
 import { log, clearLog } from './log.js';
 import { startSkillUpgrades } from './upgrades.js';
-import { saveGame, hasSave, loadGame, clearGame } from './save.js';
+import { saveGame, loadGame, clearGame, debugSave } from './save.js';
 import characters from '../data/characters.js';
 import stories from '../data/stories.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
@@ -58,13 +58,24 @@ function showToast(text) {
 
 function persistProgress() {
   if (!selectedStory || !selectedStory.sequential) return;
-  saveGame(selectedStory.id, {
+  const ok = saveGame(selectedStory.id, {
     playerTeam,
     protagonistSlot,
     run,
     team: exportTeamSave()
   });
-  if (run.stage > 0) showToast('💾 Partida Guardada');
+  console.log('[guardado] persistProgress ->', selectedStory.id, 'stage', run.stage, ok ? 'OK' : 'FALLO');
+  if (!ok) {
+    showToast('⚠️ No se pudo guardar (almacenamiento local)');
+  } else if (run.stage > 0) {
+    showToast('💾 Partida Guardada');
+  }
+
+  const badge = document.getElementById('map-save-badge');
+  if (badge) {
+    badge.textContent = `💾 Progreso guardado · Etapa ${run.stage + 1}`;
+    badge.classList.remove('hidden');
+  }
 }
 
 function buildTeamAData() {
@@ -121,20 +132,38 @@ function renderMenu() {
       <div class="story-card-title">${story.title}</div>
       <div class="story-card-desc">${story.description}</div>
     `;
-    card.addEventListener('click', () => {
-      startStory(story, { loadSave: false });
-    });
     list.appendChild(card);
 
-    if (story.sequential && hasSave(story.id)) {
+    const saved = story.sequential ? loadGame(story.id) : null;
+    const actions = document.createElement('div');
+    actions.className = 'story-card-actions';
+    card.appendChild(actions);
+
+    if (saved) {
+      card.addEventListener('click', () => startStory(story, { loadSave: true }));
+
       const resumeBtn = document.createElement('button');
       resumeBtn.className = 'story-card-resume';
-      resumeBtn.textContent = '▶ Continuar';
+      resumeBtn.textContent = `▶ Continuar · Etapa ${saved.run.stage + 1}`;
       resumeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         startStory(story, { loadSave: true });
       });
-      card.appendChild(resumeBtn);
+      actions.appendChild(resumeBtn);
+    } else {
+      card.addEventListener('click', () => startStory(story, { loadSave: false }));
+    }
+
+    if (story.sequential) {
+      const newBtn = document.createElement('button');
+      newBtn.className = 'story-card-new';
+      newBtn.textContent = '⚔ Nueva partida';
+      newBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (saved && !confirm('Empezar de nuevo borrará tu progreso actual. ¿Continuar?')) return;
+        startStory(story, { loadSave: false });
+      });
+      actions.appendChild(newBtn);
     }
   });
 }
@@ -457,5 +486,6 @@ function showEnding(event) {
   menuArea.appendChild(menuBtn);
 }
 
+window.__andromedaSaveDebug = debugSave;
 renderMenu();
 showScreen('menu');

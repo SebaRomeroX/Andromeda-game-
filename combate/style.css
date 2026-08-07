@@ -560,17 +560,26 @@ body {
 }
 
 /* Save toast */
-.story-card-resume {
-  margin-top: 12px;
-  padding: 8px 20px;
-  border: 2px solid #4a7a4a;
+.story-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.story-card-resume,
+.story-card-new {
+  padding: 8px 18px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #1a3a1a, #0a2a0a);
-  color: #a0f0a0;
   font-size: 0.9rem;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.story-card-resume {
+  border: 2px solid #4a7a4a;
+  background: linear-gradient(135deg, #1a3a1a, #0a2a0a);
+  color: #a0f0a0;
 }
 
 .story-card-resume:hover {
@@ -578,6 +587,31 @@ body {
   border-color: #6aaa6a;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(80, 200, 80, 0.3);
+}
+
+.story-card-new {
+  border: 2px solid #5a5a7a;
+  background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+  color: #b0a890;
+}
+
+.story-card-new:hover {
+  border-color: #c0a85a;
+  color: #f0e0a0;
+  transform: translateY(-2px);
+}
+
+.map-save-badge {
+  text-align: center;
+  margin: 4px 0 12px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #a0f0a0;
+  text-shadow: 0 0 8px rgba(80, 200, 80, 0.3);
+}
+
+.map-save-badge.hidden {
+  display: none;
 }
 
 .toast {

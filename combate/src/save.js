@@ -5,7 +5,18 @@ function keyFor(storyId) {
   return SAVE_PREFIX + storyId;
 }
 
+function storage() {
+  try {
+    return { ok: true, ls: window.localStorage };
+  } catch (e) {
+    console.warn('[guardado] almacenamiento local no disponible', e);
+    return { ok: false, ls: null };
+  }
+}
+
 export function saveGame(storyId, payload) {
+  const { ok, ls } = storage();
+  if (!ok) return false;
   const data = {
     version: SAVE_VERSION,
     storyId,
@@ -21,7 +32,7 @@ export function saveGame(storyId, payload) {
     team: payload.team
   };
   try {
-    localStorage.setItem(keyFor(storyId), JSON.stringify(data));
+    ls.setItem(keyFor(storyId), JSON.stringify(data));
     return true;
   } catch (e) {
     console.warn('[guardado] no se pudo escribir la partida', e);
@@ -30,11 +41,24 @@ export function saveGame(storyId, payload) {
 }
 
 export function hasSave(storyId) {
-  return localStorage.getItem(keyFor(storyId)) != null;
+  const { ok, ls } = storage();
+  if (!ok) return false;
+  try {
+    return ls.getItem(keyFor(storyId)) != null;
+  } catch (e) {
+    return false;
+  }
 }
 
 export function loadGame(storyId) {
-  const raw = localStorage.getItem(keyFor(storyId));
+  const { ok, ls } = storage();
+  if (!ok) return null;
+  let raw;
+  try {
+    raw = ls.getItem(keyFor(storyId));
+  } catch (e) {
+    return null;
+  }
   if (raw == null) return null;
   try {
     const data = JSON.parse(raw);
@@ -54,11 +78,40 @@ export function loadGame(storyId) {
     };
   } catch (e) {
     console.warn('[guardado] partida corrupta, se descarta', e);
-    localStorage.removeItem(keyFor(storyId));
+    try { ls.removeItem(keyFor(storyId)); } catch (_) {}
     return null;
   }
 }
 
 export function clearGame(storyId) {
-  localStorage.removeItem(keyFor(storyId));
+  const { ok, ls } = storage();
+  if (!ok) return;
+  try {
+    ls.removeItem(keyFor(storyId));
+  } catch (e) {}
+}
+
+export function debugSave() {
+  const { ok, ls } = storage();
+  const out = { ok, origin: location.origin, keys: [] };
+  if (ok) {
+    try {
+      for (let i = 0; i < ls.length; i++) {
+        const k = ls.key(i);
+        out.keys.push({ key: k, value: ls.getItem(k) });
+      }
+    } catch (e) {
+      out.readError = String(e);
+    }
+    try {
+      ls.setItem('__andromeda_test__', '1');
+      ls.removeItem('__andromeda_test__');
+      out.write = true;
+    } catch (e) {
+      out.write = false;
+      out.writeError = String(e);
+    }
+  }
+  console.log('[guardado] debug:', out);
+  return out;
 }

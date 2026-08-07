@@ -5,7 +5,7 @@ const stories = [
     description: 'Acompaña a Sima y su equipo en una peligrosa travesía a través de tierras desconocidas.',
     sequential: true,
     protagonist: 0,
-    allies: [1],
+    allies: [1,2],
     genericEnemies: [3, 5, 6, 7],
     narrativeEnemies: [4],
     teamA: [-1, 0, -1, -1],
