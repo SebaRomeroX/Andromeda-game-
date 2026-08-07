@@ -71,14 +71,27 @@ const stories = [
       },
       {
         type: 'reclutamiento',
-        title: 'Un encuentro oportuno',
+        title: 'recluta druida',
         description: 'Una druida del bosque ofrece acompañarte.',
         character: 1
       },
       {
+        type: 'reclutamiento',
+        title: 'recluta tanque',
+        description: 'Un caballero ofrece acompañarte.',
+        character: 2
+      },
+      {
         type: 'enfrentamiento',
         narrativo: true,
-        title: 'Sin salida',
+        title: 'Narada sola',
+        description: 'Una amenaza ineludible se cierne sobre ti.',
+        enemyTeam: [4, -1, -1, -1]
+      },
+      {
+        type: 'enfrentamiento',
+        narrativo: true,
+        title: 'Final',
         description: 'Una amenaza ineludible se cierne sobre ti.',
         enemyTeam: [4, 5, 6, -1]
       },

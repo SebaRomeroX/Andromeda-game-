@@ -27,10 +27,9 @@ const characters = [
     evasion: 7,
     role: "soporte",
     skills: [
-      createSkill({ name: "Ataque compasivo",    type: "attack",  power: 10,   precision: 80,     aparicion: 10 }),
-      createSkill({ name: "Medicina druidica",   type: "cura",    power: 5,    precision: 95,     aparicion: 70   }),
-      createSkill({ name: "Magia curativa",      type: "cura",    power: 10,   precision: 95,     aparicion: 90   }),
-      createSkill({ name: "Proteccion Divina",   type: "buff",    target: "self",  stat: "defense",   value: 10,    precision: 95, aparicion: 50  }),
+      createSkill({ name: "Ataque compasivo",    type: "attack",  power: 6,   precision: 80,     aparicion: 10 }),
+      createSkill({ name: "Medicina druidica",   type: "cura",    power: 8,    precision: 95,     aparicion: 70   }),
+      createSkill({ name: "Proteccion Divina",   type: "buff",    target: "self",  stat: "defense",   value: 6,    precision: 95, aparicion: 50  }),
     ]
   }),
   createCharacter({
@@ -40,8 +39,8 @@ const characters = [
     evasion: 5,
     role: "tanque",
     skills: [
-      createSkill({ name: "Abatida",            type: "attack",  power: 15,   precision: 70,    aparicion: 70 }),
-      createSkill({ name: "Postura Defensiva",  type: "defense", power: 35,   precision: 95,    aparicion: 20   }),
+      createSkill({ name: "Abatida",            type: "attack",  power: 10,   precision: 70,    aparicion: 70 }),
+      createSkill({ name: "Postura Defensiva",  type: "defense", power: 18,   precision: 95,    aparicion: 20   }),
       createSkill({ name: "Rugido",             type: "buff",    target: "enemy",  stat: "attack",    value: -0.2,  precision: 95, aparicion: 10 }),
     ]
   }),
