@@ -558,3 +558,50 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Save toast */
+.story-card-resume {
+  margin-top: 12px;
+  padding: 8px 20px;
+  border: 2px solid #4a7a4a;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1a3a1a, #0a2a0a);
+  color: #a0f0a0;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.story-card-resume:hover {
+  background: linear-gradient(135deg, #2a5a2a, #1a4a1a);
+  border-color: #6aaa6a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(80, 200, 80, 0.3);
+}
+
+.toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 40, 20, 0.95);
+  border: 2px solid #4a7a4a;
+  color: #a0f0a0;
+  padding: 10px 22px;
+  border-radius: 24px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+.toast.hidden {
+  display: none;
+}

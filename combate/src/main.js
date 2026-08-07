@@ -1,9 +1,10 @@
-import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, saveTeamLevels, allDead, resetTeam, clearSavedSlot } from './state.js';
+import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, saveTeamLevels, allDead, resetTeam, clearSavedSlot, exportTeamSave, importTeamSave } from './state.js';
 import { getLevelStats, ROLE_BY_INDEX } from './models.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
 import { log, clearLog } from './log.js';
 import { startSkillUpgrades } from './upgrades.js';
+import { saveGame, hasSave, loadGame, clearGame } from './save.js';
 import characters from '../data/characters.js';
 import stories from '../data/stories.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
@@ -39,6 +40,31 @@ function showOverlay(message, buttonText, onClick) {
   btn.textContent = buttonText;
   btn.onclick = () => { overlay.classList.add('hidden'); if (onClick) onClick(); };
   overlay.classList.remove('hidden');
+}
+
+let toastTimer = null;
+function showToast(text) {
+  const toast = document.getElementById('save-toast');
+  if (!toast) return;
+  toast.textContent = text;
+  toast.classList.add('show');
+  toast.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+    toast.classList.add('hidden');
+  }, 1500);
+}
+
+function persistProgress() {
+  if (!selectedStory || !selectedStory.sequential) return;
+  saveGame(selectedStory.id, {
+    playerTeam,
+    protagonistSlot,
+    run,
+    team: exportTeamSave()
+  });
+  if (run.stage > 0) showToast('💾 Partida Guardada');
 }
 
 function buildTeamAData() {
@@ -96,19 +122,54 @@ function renderMenu() {
       <div class="story-card-desc">${story.description}</div>
     `;
     card.addEventListener('click', () => {
-      selectedStory = story;
-      validateStoryCast(story);
-      resetRun();
-      playerTeam = [...story.teamA];
-      protagonistSlot = ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);
-      resetTeam();
-      clearSavedTeamHp();
-      clearSavedTeamLevels();
-      clearSavedTeamSkills();
-      renderMap();
+      startStory(story, { loadSave: false });
     });
     list.appendChild(card);
+
+    if (story.sequential && hasSave(story.id)) {
+      const resumeBtn = document.createElement('button');
+      resumeBtn.className = 'story-card-resume';
+      resumeBtn.textContent = '▶ Continuar';
+      resumeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        startStory(story, { loadSave: true });
+      });
+      card.appendChild(resumeBtn);
+    }
   });
+}
+
+function startStory(story, { loadSave }) {
+  selectedStory = story;
+  validateStoryCast(story);
+
+  if (loadSave) {
+    const data = loadGame(story.id);
+    if (!data) {
+      startStory(story, { loadSave: false });
+      return;
+    }
+    run.stage = data.run.stage;
+    run.enfrentamientos = data.run.enfrentamientos;
+    run.campamentos = data.run.campamentos;
+    run.fightsSinceCamp = data.run.fightsSinceCamp;
+    run.fired = data.fired;
+    playerTeam = data.playerTeam;
+    protagonistSlot = data.protagonistSlot;
+    resetTeam();
+    importTeamSave(data.team);
+  } else {
+    resetRun();
+    playerTeam = [...story.teamA];
+    protagonistSlot = ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);
+    resetTeam();
+    clearSavedTeamHp();
+    clearSavedTeamLevels();
+    clearSavedTeamSkills();
+    clearGame(story.id);
+  }
+
+  renderMap();
 }
 
 function renderMap() {
@@ -165,6 +226,8 @@ function renderMap() {
     showScreen('menu');
   });
   menuArea.appendChild(menuBtn);
+
+  persistProgress();
 }
 
 function showCampEvent(event) {
@@ -328,6 +391,7 @@ function handleVictory() {
   if (fallen.includes(protagonistSlot)) {
     const protagonistName = characters[selectedStory.protagonist ?? 0].name;
     showOverlay(`💀 <strong>${protagonistName}</strong> ha caído en batalla.<br>La historia termina aquí.`, 'Volver al Menú', () => {
+      clearGame(selectedStory.id);
       selectedStory = null;
       resetRun();
       playerTeam = null;
@@ -362,6 +426,7 @@ function handleVictory() {
 }
 
 function showEnding(event) {
+  clearGame(selectedStory.id);
   showScreen('map');
 
   const title = document.getElementById('map-title');

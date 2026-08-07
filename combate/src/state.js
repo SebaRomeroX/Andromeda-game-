@@ -47,6 +47,20 @@ export function clearSavedTeamSkills() {
   savedTeamSkills = null;
 }
 
+export function exportTeamSave() {
+  return {
+    hp: savedTeamHp,
+    levels: savedTeamLevels,
+    skills: savedTeamSkills
+  };
+}
+
+export function importTeamSave(data = {}) {
+  savedTeamHp = Array.isArray(data.hp) ? data.hp : null;
+  savedTeamLevels = Array.isArray(data.levels) ? data.levels : null;
+  savedTeamSkills = Array.isArray(data.skills) ? data.skills : null;
+}
+
 export function clearSavedSlot(index) {
   if (savedTeamHp) savedTeamHp[index] = null;
   if (savedLevels) savedLevels[index] = null;
