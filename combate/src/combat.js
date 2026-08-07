@@ -79,7 +79,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
       if (skill.value >= 1) {
         log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: precision aumentada al 100%`);
       } else {
-        log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: precision reducida a la mitad`);
+        log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: precision reducida`);
       }
     } else if (skill.stat === 'evasion') {
       if (skill.value > 0) {

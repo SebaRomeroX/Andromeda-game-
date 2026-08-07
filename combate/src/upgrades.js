@@ -25,7 +25,7 @@ function skillStatsLine(skill) {
     const emoji = emojis[skill.stat] || '⚔️';
     const sign = skill.value > 0 ? '+' : '';
     if (skill.stat === 'defense') return `${emoji} ${sign}${skill.value} · ${prec}`;
-    if (skill.stat === 'precision') return `${emoji} ${skill.value >= 1 ? '100%' : '½'} · ${prec}`;
+    if (skill.stat === 'precision') return `${emoji} ${skill.value >= 1 ? '100%' : '↓'} · ${prec}`;
     if (skill.stat === 'evasion') return `${emoji} ${skill.value} · ${prec}`;
     return `${emoji} ${sign}${(Math.abs(skill.value) * 100).toFixed(0)}% · ${prec}`;
   }

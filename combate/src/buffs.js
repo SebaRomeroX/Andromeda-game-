@@ -67,7 +67,7 @@ export function getPrecision(teamKey, memberIndex, basePrecision) {
   const precBuff = list.find(b => b.active && b.stat === 'precision');
   if (!precBuff) return basePrecision;
   if (precBuff.value >= 1) return 100;
-  return Math.round(basePrecision * Math.abs(precBuff.value));
+  return Math.round(basePrecision * 0.8);
 }
 
 export function getEvasion(teamKey, memberIndex, baseEvasion) {

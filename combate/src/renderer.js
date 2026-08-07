@@ -153,7 +153,7 @@ export function renderBuffs() {
           return `<span class="${cls}">${emoji}${sign}${b.value} (${b.turnsLeft})</span>`;
         }
         if (b.stat === 'precision') {
-          const displayVal = b.value >= 1 ? '100%' : '½';
+          const displayVal = b.value >= 1 ? '100%' : '↓';
           return `<span class="${cls}">${emoji}${displayVal} (${b.turnsLeft})</span>`;
         }
         if (b.stat === 'evasion') {
@@ -246,7 +246,7 @@ export function renderActions(skills, onChoose) {
       if (skill.stat === 'defense') {
         statsLine = `${emoji} ${sign}${skill.value} · ${scaled.precision}% prec`;
       } else if (skill.stat === 'precision') {
-        const displayVal = skill.value >= 1 ? '100%' : '½';
+        const displayVal = skill.value >= 1 ? '100%' : '↓';
         statsLine = `${emoji} ${displayVal} · ${scaled.precision}% prec`;
       } else if (skill.stat === 'evasion') {
         const displayVal = skill.value === 0 ? '0' : `${sign}${skill.value}`;

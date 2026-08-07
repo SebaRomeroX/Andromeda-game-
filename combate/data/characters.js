@@ -91,7 +91,7 @@ const characters = [
     skills: [
       createSkill({ name: "Ataque mental",     type: "attack",  power: 12,   precision: 75,  aparicion: 10,}),
       createSkill({ name: "Vision de muerte",  type: "buff",    target: "enemy", stat: "attack",      value: -0.20,  precision: 90, aparicion: 5 }),
-      createSkill({ name: "Espejismo",         type: "buff",    target: "enemy",  stat: "precision",  value: 0.5,    precision: 95, aparicion: 7 }),
+      createSkill({ name: "Espejismo",         type: "buff",    target: "enemy",  stat: "precision",  value: 0.8,    precision: 95, aparicion: 7 }),
     ]
   }),
   createCharacter({
