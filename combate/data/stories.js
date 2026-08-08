@@ -13,6 +13,31 @@ const stories = [
     expectedStages: 13,
     narrativeEvents: [
       {
+        id: 'introduccion',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'La llamada del norte',
+        description: 'El viento trae un mensaje desde tierras lejanas.',
+        dialog: [
+          { text: 'El sol se oculta tras las montañas cuando una voz recorre la llanura.' },
+          { speaker: 0, text: '¿Habéis oído eso? Algo nos llama hacia el norte.' },
+          { text: 'Una sombra gigante cruza el horizonte. La travesía comienza.' }
+        ]
+      },
+      {
+        id: 'presagio-final',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'Las puertas del santuario',
+        description: 'Ante el último santuario, una figura te corta el paso.',
+        dialog: [
+          { text: 'El último santuario se alza imponente. Una silueta lo bloquea.' },
+          { speaker: 4, text: 'No deberías haber llegado hasta aquí. El camino se acaba.' },
+          { speaker: 0, text: 'Quizá, pero no volveré atrás.' }
+        ],
+        conditions: { campamentos: 4, enfrentamientos: 9 }
+      },
+      {
         id: 'reclutamiento-druida',
         type: 'reclutamiento',
         title: 'Un encuentro oportuno',
@@ -68,6 +93,16 @@ const stories = [
         type: 'campamento',
         title: 'Campamento',
         description: 'Los personajes de tu equipo descansan y se recuperan de sus heridas de batalla.'
+      },
+      {
+        type: 'dialogo',
+        narrativo: true,
+        title: 'Una voz en la llanura',
+        description: 'El viento murmura entre las rocas.',
+        dialog: [
+          { text: 'El silencio se abre paso entre el polvo del camino.' },
+          { speaker: 4, text: 'El destino os espera, pero no estáis listos.' }
+        ]
       },
       {
         type: 'reclutamiento',

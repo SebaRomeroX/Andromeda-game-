@@ -97,6 +97,19 @@ function validateStoryCast(story) {
       return;
     }
 
+    if (event.type === 'dialogo') {
+      if (!Array.isArray(event.dialog) || event.dialog.length === 0) {
+        warn(`Evento ${i + 1}: es un diálogo pero no tiene líneas en "dialog".`);
+      }
+      (event.dialog ?? []).forEach((line, j) => {
+        const sp = line.speaker;
+        if (sp != null && (sp < 0 || sp >= characters.length)) {
+          warn(`Evento ${i + 1}, línea ${j + 1}: speaker ${sp} no es un índice válido de characters.`);
+        }
+      });
+      return;
+    }
+
     if (event.type !== 'enfrentamiento' || !event.enemyTeam) return;
 
     const allowed = event.narrativo ? new Set([...generic, ...narrative]) : generic;
@@ -308,6 +321,8 @@ function showCampEvent(event) {
 }
 
 function startCombat(event) {
+  currentEvent = event;
+
   if (event.type === 'campamento') {
     showCampEvent(event);
     return;
@@ -315,6 +330,11 @@ function startCombat(event) {
 
   if (event.type === 'reclutamiento') {
     showRecruitEvent(event);
+    return;
+  }
+
+  if (event.type === 'dialogo') {
+    showDialogueEvent(event);
     return;
   }
 
@@ -385,6 +405,63 @@ function showRecruitEvent(event) {
   showOverlay(`✨ <strong>${char.name}</strong> se ha unido al grupo.`, 'Continuar', () => {
     advanceStage();
   });
+}
+
+function showDialogueEvent(event) {
+  const lines = event.dialog ?? [];
+  if (lines.length === 0) {
+    advanceStage();
+    return;
+  }
+
+  const overlay = document.getElementById('dialog-overlay');
+  const portrait = document.getElementById('dialog-portrait');
+  const speaker = document.getElementById('dialog-speaker');
+  const text = document.getElementById('dialog-text');
+
+  let index = 0;
+
+  function renderLine() {
+    const line = lines[index];
+    const isNarrator = line.speaker == null;
+    overlay.classList.toggle('narrator', isNarrator);
+
+    if (isNarrator) {
+      portrait.removeAttribute('src');
+      portrait.alt = '';
+      speaker.textContent = '';
+    } else {
+      const char = characters[line.speaker];
+      portrait.src = char?.image ?? '';
+      portrait.alt = char?.name ?? '';
+      speaker.textContent = char?.name ?? '';
+    }
+    text.textContent = line.text;
+  }
+
+  function advance() {
+    index++;
+    if (index >= lines.length) {
+      overlay.onclick = null;
+      document.removeEventListener('keydown', onKey);
+      overlay.classList.add('hidden');
+      advanceStage();
+      return;
+    }
+    renderLine();
+  }
+
+  function onKey(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      advance();
+    }
+  }
+
+  overlay.onclick = advance;
+  document.addEventListener('keydown', onKey);
+  renderLine();
+  overlay.classList.remove('hidden');
 }
 
 function advanceStage() {
