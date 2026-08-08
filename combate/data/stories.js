@@ -134,7 +134,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final Narada',
         description: 'Narada bloquea el paso hacia el último santuario. Esta es la batalla definitiva.',
-        enemyTeam: [4, 5, 7, -1],
+        enemyTeam: [4, 5, 6, -1],
         conditions: { campamentos: 4, enfrentamientos: 9, stage: 12 }
       },
       {

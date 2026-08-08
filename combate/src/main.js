@@ -9,6 +9,7 @@ import characters from '../data/characters.js';
 import stories from '../data/stories.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
 import { pickNextEvent } from './eventGenerator.js';
+import { setupDevPanel } from './devTools.js';
 
 let selectedStory = null;
 let playerTeam = null;
@@ -564,5 +565,15 @@ function showEnding(event) {
 }
 
 window.__andromedaSaveDebug = debugSave;
+
+setupDevPanel(stories, (story, payload) => {
+  const ok = saveGame(story.id, payload);
+  if (!ok) {
+    showToast('⚠️ No se pudo guardar el salto (almacenamiento local)');
+    return;
+  }
+  startStory(story, { loadSave: true });
+});
+
 renderMenu();
 showScreen('menu');

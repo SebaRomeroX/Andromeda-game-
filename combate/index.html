@@ -12,6 +12,31 @@
       <h1 class="game-title">Andromeda</h1>
       <h2 class="screen-subtitle">Elige tu historia</h2>
       <div id="story-list"></div>
+
+      <div id="dev-panel" class="dev-panel">
+        <div id="dev-header" class="dev-header">
+          <span>🧪 Herramientas de desarrollo · saltar a una etapa</span>
+          <span id="dev-toggle" class="dev-toggle">▼</span>
+        </div>
+        <div id="dev-body" class="dev-body">
+          <p id="dev-hint" class="dev-hint">
+            Elegí una historia y una etapa para empezar a jugar desde ahí, sin recorrerla
+            completa. Se calcula el equipo de esa etapa (reclutas y niveles incluidos) y la
+            partida guardada se sobrescribe.
+          </p>
+          <div class="dev-row">
+            <label for="dev-story">Historia</label>
+            <select id="dev-story"></select>
+          </div>
+          <div class="dev-row">
+            <label for="dev-stage">Etapa</label>
+            <select id="dev-stage" disabled></select>
+          </div>
+          <div class="dev-row">
+            <button id="dev-jump" class="dev-jump" disabled>Ir a la etapa</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="screen-map" class="screen">
