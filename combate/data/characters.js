@@ -11,11 +11,11 @@ const characters = [
     role: "asesino",
     skills: [
       // createSkill({ name: "EXCALIBUR",          type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
-      createSkill({ name: "Estocada",           type: "attack",  power: 20,   precision: 85,    aparicion: 70 }),
-      createSkill({ name: "Corte grave",        type: "attack",  power: 14,   precision: 85,    aparicion: 70,  herida: true }),
-      createSkill({ name: "Golpe de escudo",    type: "attack",  power: 8,   precision: 90,    aparicion: 20,  stun: true  }),
+      createSkill({ name: "Estocada",           type: "attack",  power: 20,   precision: 90,    aparicion: 70 }),
+      createSkill({ name: "Corte grave",        type: "attack",  power: 14,   precision: 90,    aparicion: 70,  herida: true }),
+      createSkill({ name: "Golpe de escudo",    type: "attack",  power: 8,   precision: 95,    aparicion: 20,  stun: true  }),
       createSkill({ name: "Vendaje",            type: "cura",    power: 5,    precision: 99,    aparicion: 20   }),
-      createSkill({ name: "Postura Defensiva",  type: "defense", power: 25,   precision: 95,    aparicion: 40   }),
+      createSkill({ name: "Postura Defensiva",  type: "defense", power: 25,   precision: 99,    aparicion: 40   }),
       createSkill({ name: "Furia de batalla",   type: "buff",    target: "self",  stat: "attack",    value: 0.10,  precision: 99, aparicion: 50 }),
       createSkill({ name: "Proteccion Divina",  type: "buff",    target: "self",  stat: "defense",   value: 10,    precision: 99, aparicion: 50  }),
     ]
@@ -27,9 +27,9 @@ const characters = [
     evasion: 7,
     role: "soporte",
     skills: [
-      createSkill({ name: "Ataque compasivo",    type: "attack",  power: 6,   precision: 80,     aparicion: 10 }),
-      createSkill({ name: "Medicina druidica",   type: "cura",    power: 8,    precision: 95,     aparicion: 70   }),
-      createSkill({ name: "Proteccion Divina",   type: "buff",    target: "self",  stat: "defense",   value: 6,    precision: 95, aparicion: 50  }),
+      createSkill({ name: "Ataque compasivo",    type: "attack",  power: 6,   precision: 90,     aparicion: 10 }),
+      createSkill({ name: "Medicina druidica",   type: "cura",    power: 8,    precision: 99,     aparicion: 70   }),
+      createSkill({ name: "Proteccion Divina",   type: "buff",    target: "self",  stat: "defense",   value: 6,    precision: 99, aparicion: 50  }),
     ]
   }),
   createCharacter({
@@ -39,16 +39,16 @@ const characters = [
     evasion: 5,
     role: "tanque",
     skills: [
-      createSkill({ name: "Abatida",            type: "attack",  power: 10,   precision: 70,    aparicion: 70 }),
-      createSkill({ name: "Postura Defensiva",  type: "defense", power: 18,   precision: 95,    aparicion: 20   }),
-      createSkill({ name: "Rugido",             type: "buff",    target: "enemy",  stat: "attack",    value: -0.2,  precision: 95, aparicion: 10 }),
+      createSkill({ name: "Abatida",            type: "attack",  power: 10,   precision: 90,    aparicion: 70 }),
+      createSkill({ name: "Postura Defensiva",  type: "defense", power: 18,   precision: 99,    aparicion: 20   }),
+      createSkill({ name: "Rugido",             type: "buff",    target: "enemy",  stat: "attack",    value: -0.2,  precision: 99, aparicion: 10 }),
     ]
   }),
   createCharacter({
     name: "Sacerdotiza oscura",
     image: "assets/images/Sacerdotiza.jpg",
     hp: 50,
-    evasion: 8,
+    evasion: 4,
     role: "rango",
     skills: [
       createSkill({ name: "Ataque mental",            type: "attack",  power: 7,    precision: 75, aparicion: 10,}),
@@ -73,7 +73,7 @@ const characters = [
     name: "Akay",
     image: "assets/images/Akay.jpg",
     hp: 70,
-    evasion: 10,
+    evasion: 6,
     role: "asesino",
     skills: [
       createSkill({ name: "Corte",         type: "attack",  power: 10,        precision: 80,      aparicion: 70 }),
@@ -85,7 +85,7 @@ const characters = [
     name: "La bruja del paramo",
     image: "assets/images/Bruja.jpg",
     hp: 60,
-    evasion: 8,
+    evasion: 4,
     role: "rango",
     skills: [
       createSkill({ name: "Ataque mental",     type: "attack",  power: 12,   precision: 75,  aparicion: 10,}),
@@ -97,7 +97,7 @@ const characters = [
     name: "Guerrero",
     image: "assets/images/Guerrero.jpg",
     hp: 100,
-    evasion: 5,
+    evasion: 2,
     role: "tanque",
     skills: [
       createSkill({ name: "Lanza",            type: "attack",  power: 8,  precision: 85, aparicion: 60 }),

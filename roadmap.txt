@@ -11,8 +11,6 @@ COMBATE:
 
 
 NEXT TASKS:
- - algo jugable
- - guardar progreso
  - narrativa
  - elecciones
 
