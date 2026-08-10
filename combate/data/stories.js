@@ -6,7 +6,7 @@ const stories = [
     sequential: true,
     protagonist: 0,
     allies: [1,2],
-    genericEnemies: [3, 5, 6, 7],
+    genericEnemies: [3, 5, 6, 7, 8],
     narrativeEnemies: [4],
     teamA: [-1, 0, -1, -1],
     campAfterFights: 3,
@@ -73,7 +73,7 @@ const stories = [
         narrativo: true,
         title: 'Ruinas',
         description: 'Por fin el objetivo a la vista.',
-        enemyTeam: [4, -1, -1, -1],
+        enemyTeam: [4, 8, -1, -1],
         conditions: { campamentos: 2 }
       },
       {

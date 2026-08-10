@@ -13,11 +13,15 @@ const characters = [
       // createSkill({ name: "EXCALIBUR",          type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
       createSkill({ name: "Estocada",           type: "attack",  power: 20,   precision: 90,    aparicion: 70 }),
       createSkill({ name: "Corte grave",        type: "attack",  power: 14,   precision: 90,    aparicion: 70,  herida: true }),
-      createSkill({ name: "Golpe de escudo",    type: "attack",  power: 8,   precision: 95,    aparicion: 20,  stun: true  }),
-      createSkill({ name: "Vendaje",            type: "cura",    power: 5,    precision: 99,    aparicion: 20   }),
+      createSkill({ name: "Golpe de escudo",    type: "attack",  power: 8,    precision: 95,    aparicion: 20,  stun: true  }),
+      createSkill({ name: "Vendaje",            type: "cura",    power: 4,    precision: 99,    aparicion: 20   }),
       createSkill({ name: "Postura Defensiva",  type: "defense", power: 25,   precision: 99,    aparicion: 40   }),
       createSkill({ name: "Furia de batalla",   type: "buff",    target: "self",  stat: "attack",    value: 0.10,  precision: 99, aparicion: 50 }),
-      createSkill({ name: "Proteccion Divina",  type: "buff",    target: "self",  stat: "defense",   value: 10,    precision: 99, aparicion: 50  }),
+      createSkill({ name: "Proteccion",         type: "buff",    target: "self",  stat: "defense",   value: 10,    precision: 99, aparicion: 50  }),
+      // ESPECIALES
+      createSkill({ name: "Lanze Potenciado",   type: "attack",  power: 100,   precision: 80,    aparicion: 5 }),
+      createSkill({ name: "Salto brutal",       type: "attack",  power: 22,    precision: 99,    aparicion: 5 }),
+      createSkill({ name: "Proteccion Divina",  type: "buff",    target: "self",  stat: "defense",   value: 50,    precision: 99, aparicion: 5  }),
     ]
   }),
   createCharacter({
@@ -103,6 +107,17 @@ const characters = [
       createSkill({ name: "Lanza",            type: "attack",  power: 8,  precision: 85, aparicion: 60 }),
       createSkill({ name: "Golpe de escudo",  type: "attack",  power: 5,  precision: 90, aparicion: 20,  stun: true  }),
       createSkill({ name: "Defensa",          type: "defense", power: 15, precision: 95, aparicion: 80   }),
+    ]
+  }),
+  createCharacter({
+    name: "Sabueso de Guerra",
+    image: "assets/images/warhound.jpg",
+    hp: 60,
+    evasion: 6,
+    role: "asesino",
+    skills: [
+      createSkill({ name: "Mordida",     type: "attack",  power: 16,  precision: 85, aparicion: 60 }),
+      createSkill({ name: "Desgarrar",   type: "attack",  power: 12,  precision: 80, aparicion: 60, herida: true }),
     ]
   }),
 
