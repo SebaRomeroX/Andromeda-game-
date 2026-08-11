@@ -91,11 +91,14 @@ function getStatusString(member) {
 }
 
 export function renderTeams() {
+  const mobile = document.documentElement.classList.contains('mobile');
   ['A', 'B'].forEach(teamKey => {
     const container = $(`team-${teamKey}-grid`);
     if (!container) return;
     container.innerHTML = "";
-    const order = teamKey === 'A' ? [2, 0, 3, 1] : [0, 2, 1, 3];
+    const order = mobile
+      ? (teamKey === 'A' ? [3, 2, 1, 0] : [0, 1, 2, 3])
+      : (teamKey === 'A' ? [2, 0, 3, 1] : [0, 2, 1, 3]);
     order.forEach(i => container.appendChild(renderMemberSlot(teamKey, i)));
   });
 }

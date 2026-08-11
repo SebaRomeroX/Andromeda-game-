@@ -827,3 +827,133 @@ body {
   color: #c0b8a8;
   min-height: 2em;
 }
+
+/* Mobile: force landscape view */
+html.mobile.portrait,
+html.mobile.portrait body {
+  overflow: hidden;
+}
+
+html.mobile.portrait #app {
+  position: fixed;
+  top: 0;
+  left: 100vw;
+  width: 100vh;
+  max-width: 100vh;
+  height: 100vw;
+  border-radius: 0;
+  transform: rotate(90deg);
+  transform-origin: top left;
+}
+
+html.mobile.portrait .dialog-portrait {
+  height: 30vw;
+}
+
+html.mobile.portrait #dialog-overlay {
+  padding-bottom: 2vh;
+}
+
+/* Mobile: single-line team layout */
+html.mobile #app {
+  padding: 10px;
+}
+
+html.mobile #combat-area {
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+html.mobile .team-grid {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+html.mobile .team-container {
+  max-width: none;
+}
+
+html.mobile .member-slot {
+  flex: 1 1 0;
+  max-width: 110px;
+  min-width: 0;
+  padding: 6px 4px;
+  border-radius: 8px;
+}
+
+html.mobile .member-slot img {
+  height: 60px;
+  margin-bottom: 2px;
+}
+
+html.mobile .member-slot .img-fallback {
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  margin-bottom: 2px;
+}
+
+html.mobile .empty-slot {
+  height: 60px;
+  font-size: 1.4rem;
+}
+
+html.mobile .member-name {
+  font-size: 0.62rem;
+  margin-bottom: 2px;
+}
+
+html.mobile .member-slot .hp-bar {
+  height: 9px;
+  margin-bottom: 2px;
+}
+
+html.mobile .member-slot .hp-text {
+  font-size: 0.48rem;
+}
+
+html.mobile .member-status {
+  font-size: 0.62rem;
+  margin-bottom: 1px;
+}
+
+html.mobile .member-buffs {
+  font-size: 0.52rem;
+  line-height: 1.2;
+  min-height: 0;
+}
+
+html.mobile #combat-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 8px;
+  height: min(38vh, 38vw, 220px);
+  margin-bottom: 8px;
+}
+
+html.mobile #actions {
+  flex-direction: column;
+  flex: 0 0 42%;
+  min-width: 0;
+  min-height: 0;
+  margin-bottom: 0;
+}
+
+html.mobile #log {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+  padding: 8px 10px;
+  margin-bottom: 0;
+  font-size: 0.72rem;
+}
+
+html.mobile .skill-btn {
+  flex: 0 0 calc((100% - 20px) / 3);
+  padding: 6px;
+  font-size: 0.75rem;
+}

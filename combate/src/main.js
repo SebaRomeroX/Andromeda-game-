@@ -10,6 +10,7 @@ import stories from '../data/stories.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
 import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
+import './mobile.js';
 
 let selectedStory = null;
 let playerTeam = null;
