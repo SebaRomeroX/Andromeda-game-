@@ -41,7 +41,11 @@ function renderMemberSlot(teamKey, index) {
       statusEl.className = "member-status";
       statusEl.textContent = "💀";
 
-      slot.append(img, nameEl, hpBar, statusEl);
+      const info = document.createElement("div");
+      info.className = "member-info";
+      info.append(nameEl, hpBar, statusEl);
+
+      slot.append(img, info);
       slot.classList.add("dead");
     }
     return slot;
@@ -77,7 +81,15 @@ function renderMemberSlot(teamKey, index) {
   buffsEl.className = "member-buffs";
   buffsEl.id = `buffs-${teamKey}-${index}`;
 
-  slot.append(img, nameEl, hpBar, statusEl, buffsEl);
+  const statusLine = document.createElement("div");
+  statusLine.className = "member-status-line";
+  statusLine.append(statusEl, buffsEl);
+
+  const info = document.createElement("div");
+  info.className = "member-info";
+  info.append(nameEl, hpBar, statusLine);
+
+  slot.append(img, info);
 
   return slot;
 }
@@ -86,7 +98,6 @@ function getStatusString(member) {
   let parts = [];
   if (member.stunned) parts.push("⚡");
   if (member.wounded) parts.push("🩸");
-  if (parts.length === 0) parts.push("✅");
   return parts.join(" ");
 }
 
