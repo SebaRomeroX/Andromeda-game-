@@ -1,17 +1,16 @@
-NARRATIVA:
-  multiples historias
-  mapa de nodos, visual novel, toma de decisiones
+UI:
+  mobile
+  description pop (character, skill)
+  show improve at levelup(health, evation)
+  log(just this turn), register(all combat)
 
-MECANICA PRINCIPAL:
-  menos personajes levelean mas
-  dinamicas de grupo y narrativa afectan al reclutamiento
+MECHANIC:
+  buff target(self, alie, enemy) 
+  ataques en area
+  critics
 
-COMBATE:
-  buff y ataques en area
+NARRATIVE:
+ - elecciones ***
 
-
-NEXT TASKS:
- - narrativa
- - elecciones
 
 
