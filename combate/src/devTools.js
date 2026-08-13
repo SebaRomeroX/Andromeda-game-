@@ -3,7 +3,7 @@ import { pickNextEvent } from './eventGenerator.js';
 import characters from '../data/characters.js';
 
 function initialRun() {
-  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set() };
+  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {} };
 }
 
 function applyEvent(ev, run, roster) {
@@ -17,6 +17,8 @@ function applyEvent(ev, run, roster) {
     const char = characters[ev.character];
     const slot = ROLE_BY_INDEX.indexOf(char?.role);
     if (slot >= 0) roster[slot] = ev.character;
+  } else if (ev.type === 'eleccion') {
+    if (ev.id && ev.options?.length) run.choices[ev.id] = ev.options[0].id;
   }
   if (ev.id) run.fired.add(ev.id);
 }

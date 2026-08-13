@@ -643,6 +643,33 @@ body {
   box-shadow: 0 4px 20px rgba(80, 200, 80, 0.3);
 }
 
+/* Choice overlay */
+.choice-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.choice-btn {
+  padding: 12px 28px;
+  border: 2px solid #5a5a8a;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+  color: #e0dcd0;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.choice-btn:hover {
+  border-color: #f0d060;
+  color: #f0e0a0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(240, 208, 96, 0.3);
+}
+
 /* Skill upgrade overlay */
 .upgrade-content {
   max-width: 620px;

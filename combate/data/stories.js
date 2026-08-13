@@ -10,7 +10,7 @@ const stories = [
     narrativeEnemies: [4],
     teamA: [-1, 0, -1, -1],
     campAfterFights: 3,
-    expectedStages: 19,
+    expectedStages: 21,
     narrativeEvents: [
       {
         id: 'introduccion',
@@ -25,6 +25,45 @@ const stories = [
           { speaker: 0, text: 'Narada... no hay muro, ni montaña, ni ejercito que te esconda de mí.' },
           { text: 'Con el corazón en un puño, Sima se pone en marcha. Desde hoy, su lanza solo apunta en una direccion.' }
         ]
+      },
+      {
+        id: 'eleccion-caminos',
+        type: 'eleccion',
+        narrativo: true,
+        title: 'Elección de caminos',
+        description: 'El sendero se divide en dos.',
+        prompt: '¿Por qué camino quieres ir?',
+        options: [
+          { id: 'izquierda', label: 'Izquierda' },
+          { id: 'derecha', label: 'Derecha' }
+        ],
+        conditions: { enfrentamientos: 1 }
+      },
+      {
+        id: 'dialogo-bosque-izquierda',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'A través del bosque',
+        description: 'Te diriges a la izquierda y atraviesas un bosque.',
+        dialog: [
+          { text: 'Tomas el sendero de la izquierda. El bosque se cierra sobre el camino, umbrío y susurrante.' },
+          { speaker: 0, text: 'No hay atajos en la venganza. Pero este bosque esconde algo... lo siento.' },
+          { text: 'Entre la maleza, el crujir de ramas acompaña cada paso. Sima continúa, vigilante.' }
+        ],
+        conditions: { eleccion: { 'eleccion-caminos': 'izquierda' } }
+      },
+      {
+        id: 'dialogo-cavernas-derecha',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'Las cavernas',
+        description: 'Vas por la derecha y te adentras en unas cavernas.',
+        dialog: [
+          { text: 'Giras a la derecha. La boca de unas cavernas os engulle, oscuras y húmedas.' },
+          { speaker: 0, text: 'La luz se pierde tras nosotros. Mantened las espadas listas.' },
+          { text: 'El eco del agua gotea entre las piedras. Algo se agita en la oscuridad.' }
+        ],
+        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
       },
       {
         id: 'dialogo-bosque',
@@ -185,6 +224,17 @@ const stories = [
         dialog: [
           { text: 'El silencio se abre paso entre el polvo del camino.' },
           { speaker: 4, text: 'El destino os espera, pero no estáis listos.' }
+        ]
+      },
+      {
+        type: 'eleccion',
+        narrativo: true,
+        title: 'Un cruce de caminos',
+        description: 'El sendero se divide en dos.',
+        prompt: '¿Por qué camino quieres continuar?',
+        options: [
+          { id: 'izquierda', label: 'Izquierda' },
+          { id: 'derecha', label: 'Derecha' }
         ]
       },
       {
