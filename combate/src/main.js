@@ -209,7 +209,7 @@ function startStory(story, { loadSave }) {
     run.campamentos = data.run.campamentos;
     run.fightsSinceCamp = data.run.fightsSinceCamp;
     run.fired = data.fired;
-    run.choices = data.choices ?? {};
+    run.choices = data.run.choices ?? {};
     playerTeam = data.playerTeam;
     protagonistSlot = data.protagonistSlot;
     resetTeam();
