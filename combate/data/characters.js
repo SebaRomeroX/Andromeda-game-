@@ -10,7 +10,7 @@ const characters = [
     evasion: 10,
     role: "asesino",
     skills: [
-      // createSkill({ name: "EXCALIBUR",          type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
+      createSkill({ name: "EXCALIBUR",          type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
       createSkill({ name: "Estocada",           type: "attack",  power: 20,   precision: 90,    aparicion: 70 }),
       createSkill({ name: "Corte grave",        type: "attack",  power: 14,   precision: 90,    aparicion: 70,  herida: true }),
       createSkill({ name: "Golpe de escudo",    type: "attack",  power: 8,    precision: 95,    aparicion: 20,  stun: true  }),
@@ -20,7 +20,7 @@ const characters = [
       createSkill({ name: "Proteccion",         type: "buff",    target: "self",  stat: "defense",   value: 10,    precision: 99, aparicion: 50  }),
       // ESPECIALES
       createSkill({ name: "Lanze Potenciado",   type: "attack",  power: 100,   precision: 80,    aparicion: 5 }),
-      createSkill({ name: "Salto brutal",       type: "attack",  power: 22,    precision: 99,    aparicion: 5 }),
+      createSkill({ name: "Salto brutal",       type: "attack",  power: 22,    precision: 99,    aparicion: 5,  stun: true }),
       createSkill({ name: "Proteccion Divina",  type: "buff",    target: "self",  stat: "defense",   value: 50,    precision: 99, aparicion: 5  }),
     ]
   }),
@@ -31,9 +31,9 @@ const characters = [
     evasion: 7,
     role: "soporte",
     skills: [
-      createSkill({ name: "Ataque compasivo",    type: "attack",  power: 6,   precision: 90,     aparicion: 10 }),
-      createSkill({ name: "Medicina druidica",   type: "cura",    power: 8,    precision: 99,     aparicion: 70   }),
-      createSkill({ name: "Proteccion Divina",   type: "buff",    target: "self",  stat: "defense",   value: 6,    precision: 99, aparicion: 50  }),
+      createSkill({ name: "Ataque compasivo",       type: "attack",  power: 6,   precision: 90,     aparicion: 10 }),
+      createSkill({ name: "Medicina druidica",      type: "cura",    power: 8,    precision: 99,    aparicion: 70   }),
+      createSkill({ name: "Hechizo de proteccion",  type: "buff",    target: "self",  stat: "defense",   value: 6,    precision: 99, aparicion: 50  }),
     ]
   }),
   createCharacter({
@@ -90,7 +90,7 @@ const characters = [
     image: "assets/images/Bruja.jpg",
     hp: 60,
     evasion: 4,
-    role: "rango",
+    role: "soporte",
     skills: [
       createSkill({ name: "Ataque mental",     type: "attack",  power: 12,   precision: 75,  aparicion: 10,}),
       createSkill({ name: "Vision de muerte",  type: "buff",    target: "enemy", stat: "attack",      value: -0.20,  precision: 90, aparicion: 5 }),
@@ -118,6 +118,18 @@ const characters = [
     skills: [
       createSkill({ name: "Mordida",     type: "attack",  power: 16,  precision: 85, aparicion: 60 }),
       createSkill({ name: "Desgarrar",   type: "attack",  power: 12,  precision: 80, aparicion: 60, herida: true }),
+    ]
+  }),
+  createCharacter({
+    name: "Aracnida",
+    image: "assets/images/aracnid.jpg",
+    hp: 80,
+    evasion: 7,
+    role: "soporte",
+    skills: [
+      createSkill({ name: "Disparo aguijon",   type: "attack",  power: 2,   precision: 90,    aparicion: 50,  herida: true }),
+      createSkill({ name: "Telaraña",          type: "attack",  power: 1,   precision: 95,    aparicion: 50,  stun: true }),
+      createSkill({ name: "Vendaje aracnido",  type: "cura",    power: 4,   precision: 99,    aparicion: 50   }),
     ]
   }),
 

@@ -5,8 +5,8 @@ const stories = [
     description: 'Sima la audaz se adentra en tierras desconocidas en busca de un unico objetivo.',
     sequential: true,
     protagonist: 0,
-    allies: [1,2],
-    genericEnemies: [3, 5, 6, 7, 8],
+    allies: [1,2,9],
+    genericEnemies: [3, 5, 7, 8],
     narrativeEnemies: [4],
     teamA: [-1, 0, -1, -1],
     campAfterFights: 3,
@@ -37,8 +37,12 @@ const stories = [
           { id: 'izquierda', label: 'Izquierda' },
           { id: 'derecha', label: 'Derecha' }
         ],
-        conditions: { enfrentamientos: 1 }
+        conditions: { campamentos: 1 }
       },
+
+
+
+
       {
         id: 'dialogo-bosque-izquierda',
         type: 'dialogo',
@@ -51,19 +55,6 @@ const stories = [
           { text: 'Entre la maleza, el crujir de ramas acompaña cada paso. Sima continúa, vigilante.' }
         ],
         conditions: { eleccion: { 'eleccion-caminos': 'izquierda' } }
-      },
-      {
-        id: 'dialogo-cavernas-derecha',
-        type: 'dialogo',
-        narrativo: true,
-        title: 'Las cavernas',
-        description: 'Vas por la derecha y te adentras en unas cavernas.',
-        dialog: [
-          { text: 'Giras a la derecha. La boca de unas cavernas os engulle, oscuras y húmedas.' },
-          { speaker: 0, text: 'La luz se pierde tras nosotros. Mantened las espadas listas.' },
-          { text: 'El eco del agua gotea entre las piedras. Algo se agita en la oscuridad.' }
-        ],
-        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
       },
       {
         id: 'dialogo-bosque',
@@ -79,7 +70,7 @@ const stories = [
           { speaker: 1, text: 'Se a donde te dirijes. Por favor, deja que te acompañe.' },
           { speaker: 0, text: 'Sería pedirte demasiado, no puedo prometerte que volveras ... Pero necesito tu ayuda.' },
         ],
-        conditions: { campamentos: 1 }
+        conditions: { eleccion: { 'eleccion-caminos': 'izquierda' } }
       },
       {
         id: 'reclutamiento-druida',
@@ -87,8 +78,88 @@ const stories = [
         title: 'Un encuentro oportuno',
         description: 'Una druida del bosque ofrece acompañarte en la travesía.',
         character: 1,
-        conditions: { campamentos: 1 }
+        conditions: { eleccion: { 'eleccion-caminos': 'izquierda' } }
       },
+
+
+
+
+      {
+        id: 'dialogo-cavernas-derecha',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'Las cavernas',
+        description: 'Vas por la derecha y te adentras en unas cavernas.',
+        dialog: [
+          { text: 'Giras a la derecha. La boca de unas cavernas os engulle, oscuras y húmedas.' },
+          { speaker: 0, text: 'La luz se pierde tras nosotros. Mantened las espadas listas.' },
+          { text: 'El eco del agua gotea entre las piedras. Algo se agita en la oscuridad.' }
+        ],
+        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
+      },
+      {
+        id: 'dialogo-aracnida',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'Atrapados',
+        description: 'Te encuentras a un extraño ser.',
+        dialog: [
+          { text: 'En lo profundo de la caverna te encuentras a un ser aracnido atrapado.' },
+          { speaker: 9, text: 'Por favor ayudame. Los secuases de Narada nos atacaron.' },
+          { speaker: 0, text: 'Coso se que puedo confiar en ti ?' },
+          { speaker: 9, text: 'Tambien eres su enemiga verdad ? Liberame y te ayudare a luchar contra ella.' },
+          { speaker: 0, text: 'Te advierto que no perdono la traicion ...' },
+        ],
+        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
+      },
+      {
+        id: 'reclutamiento-aracnida',
+        type: 'reclutamiento',
+        title: 'Aliado inesperado',
+        description: 'La aracnida promete ayudarte a cambio de su libertad.',
+        character: 9,
+        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
+      },
+      {
+        id: 'primero-la-bruja',
+        type: 'enfrentamiento',
+        narrativo: true,
+        title: 'La bruja del paramo',
+        description: 'La bruja que mantiene cautivo a los aracnidos.',
+        enemyTeam: [-1, 8, -1, 6],
+        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
+      },
+
+
+
+
+
+
+
+      // {
+      //   id: 'dialogo-bosque',
+      //   type: 'dialogo',
+      //   narrativo: true,
+      //   title: 'Entre los árboles',
+      //   description: 'El sendero se adentra en un bosque espeso y húmedo.',
+      //   dialog: [
+      //     { text: 'El camino empieza a desdibujarse entre los arboles.' },
+      //     { text: 'Algo se mueve entre la maleza. Una figura se acerca, con lagrimas en el rostro.' },
+      //     { speaker: 1, text: 'Oh Sima ... ya me he enterado ... Como lo siento mi querida amiga.' },
+      //     { speaker: 0, text: '...' },
+      //     { speaker: 1, text: 'Se a donde te dirijes. Por favor, deja que te acompañe.' },
+      //     { speaker: 0, text: 'Sería pedirte demasiado, no puedo prometerte que volveras ... Pero necesito tu ayuda.' },
+      //   ],
+      //   conditions: { campamentos: 1 }
+      // },
+      // {
+      //   id: 'reclutamiento-druida',
+      //   type: 'reclutamiento',
+      //   title: 'Un encuentro oportuno',
+      //   description: 'Una druida del bosque ofrece acompañarte en la travesía.',
+      //   character: 1,
+      //   conditions: { campamentos: 1 }
+      // },
       {
         id: 'dialogo-narada-previo',
         type: 'dialogo',
@@ -169,15 +240,29 @@ const stories = [
         ],
         conditions: { campamentos: 4, enfrentamientos: 9 }
       },
+
+
       {
         id: 'final-narada',
         type: 'enfrentamiento',
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, 5, 6, -1],
-        conditions: { campamentos: 4, enfrentamientos: 9, stage: 12 }
+        enemyTeam: [4, -1, -1, 6],
+        conditions: { campamentos: 4, enfrentamientos: 9, stage: 12, eleccion: { 'eleccion-caminos': 'izquierda' } }
       },
+      {
+        id: 'final-narada',
+        type: 'enfrentamiento',
+        narrativo: true,
+        title: 'Enfrentamiento final',
+        description: 'Entre los escombros del santuario, Narada te espera.',
+        enemyTeam: [4, -1, -1, -1],
+        conditions: { campamentos: 4, enfrentamientos: 9, stage: 12, eleccion: { 'eleccion-caminos': 'derecha' } }
+      },
+
+
+
       {
         id: 'conclusion',
         type: 'dialogo',
@@ -196,6 +281,12 @@ const stories = [
       }
     ]
   },
+
+
+
+
+
+
   {
     id: 'modo-libre',
     title: 'Modo libre para desarrollo',
