@@ -1,5 +1,9 @@
+cronometrar, si falta agregar capitanes ***
+
 UI:
-  mobile
+  pantalla definitiva ***
+  animaciones(basicas) acciones **
+
   description pop (character, skill)
   show improve at levelup(health, evation)
   log(just this turn), register(all combat)
@@ -10,7 +14,8 @@ MECHANIC:
   critics
 
 NARRATIVE:
- - elecciones ***
+  mas dialogos
+  eleccion dialogos
 
 
 

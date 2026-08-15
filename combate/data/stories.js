@@ -27,15 +27,15 @@ const stories = [
         ]
       },
       {
-        id: 'eleccion-caminos',
+        id: 'camino-bosque',
         type: 'eleccion',
         narrativo: true,
         title: 'Elección de caminos',
         description: 'El sendero se divide en dos.',
-        prompt: '¿Por qué camino quieres ir?',
+        prompt: 'A la izquierda el sendero se desvia hacia el bosque, a la derecha el camino parece mas directo ¿Por qué camino quieres ir?',
         options: [
-          { id: 'izquierda', label: 'Izquierda' },
-          { id: 'derecha', label: 'Derecha' }
+          { id: 'bosque', label: 'Izquierda' },
+          { id: 'directo', label: 'Derecha' }
         ],
         conditions: { campamentos: 1 }
       },
@@ -44,58 +44,72 @@ const stories = [
 
 
       {
-        id: 'dialogo-bosque-izquierda',
+        id: 'dialogo-camino-bosque',
         type: 'dialogo',
         narrativo: true,
         title: 'A través del bosque',
-        description: 'Te diriges a la izquierda y atraviesas un bosque.',
+        description: 'El camino serpentea entre los arboles.',
         dialog: [
-          { text: 'Tomas el sendero de la izquierda. El bosque se cierra sobre el camino, umbrío y susurrante.' },
+          { text: 'El bosque se cierra sobre el camino, umbrío y susurrante.' },
           { speaker: 0, text: 'No hay atajos en la venganza. Pero este bosque esconde algo... lo siento.' },
           { text: 'Entre la maleza, el crujir de ramas acompaña cada paso. Sima continúa, vigilante.' }
         ],
-        conditions: { eleccion: { 'eleccion-caminos': 'izquierda' } }
+        conditions: { eleccion: { 'camino-bosque': 'bosque' } }
       },
       {
-        id: 'dialogo-bosque',
+        id: 'dialogo-druida',
         type: 'dialogo',
         narrativo: true,
         title: 'Entre los árboles',
-        description: 'El sendero se adentra en un bosque espeso y húmedo.',
+        description: 'Algo se mueve entre las hojas.',
         dialog: [
-          { text: 'El camino empieza a desdibujarse entre los arboles.' },
-          { text: 'Algo se mueve entre la maleza. Una figura se acerca, con lagrimas en el rostro.' },
+          { text: 'Una figura sale a tu encuentro, se acerca, con lagrimas en el rostro.' },
           { speaker: 1, text: 'Oh Sima ... ya me he enterado ... Como lo siento mi querida amiga.' },
           { speaker: 0, text: '...' },
           { speaker: 1, text: 'Se a donde te dirijes. Por favor, deja que te acompañe.' },
           { speaker: 0, text: 'Sería pedirte demasiado, no puedo prometerte que volveras ... Pero necesito tu ayuda.' },
         ],
-        conditions: { eleccion: { 'eleccion-caminos': 'izquierda' } }
+        conditions: { eleccion: { 'camino-bosque': 'bosque' } }
       },
       {
         id: 'reclutamiento-druida',
         type: 'reclutamiento',
-        title: 'Un encuentro oportuno',
-        description: 'Una druida del bosque ofrece acompañarte en la travesía.',
+        title: 'Una amable compañia',
+        description: 'La druida del bosque cuidara tu espalda en esta travesía.',
         character: 1,
-        conditions: { eleccion: { 'eleccion-caminos': 'izquierda' } }
+        conditions: { eleccion: { 'camino-bosque': 'bosque' } }
       },
 
 
 
+      {
+        id: 'camino-cueva',
+        type: 'eleccion',
+        narrativo: true,
+        title: 'Elección de caminos',
+        description: 'El sendero se divide en dos.',
+        prompt: 'El camino de la derecha se adentra en unas cuevas, por el camino de la izquierda se ve directo el destino ¿Por qué camino quieres ir?',
+        options: [
+          { id: 'directo', label: 'Izquierda' },
+          { id: 'cueva', label: 'Derecha' }
+        ],
+        conditions: { campamentos: 2, eleccion: { 'camino-bosque': 'directo' } }
+      },
+
+
 
       {
-        id: 'dialogo-cavernas-derecha',
+        id: 'dialogo-cueva',
         type: 'dialogo',
         narrativo: true,
         title: 'Las cavernas',
         description: 'Vas por la derecha y te adentras en unas cavernas.',
         dialog: [
-          { text: 'Giras a la derecha. La boca de unas cavernas os engulle, oscuras y húmedas.' },
-          { speaker: 0, text: 'La luz se pierde tras nosotros. Mantened las espadas listas.' },
+          { text: 'La boca de unas cavernas se cierra sobre ti, oscuras y húmedas.' },
+          { speaker: 0, text: 'La luz se pierde aqui. Este camino no me gusta.' },
           { text: 'El eco del agua gotea entre las piedras. Algo se agita en la oscuridad.' }
         ],
-        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
+        conditions: { eleccion: { 'camino-cueva': 'cueva' } }
       },
       {
         id: 'dialogo-aracnida',
@@ -110,7 +124,7 @@ const stories = [
           { speaker: 9, text: 'Tambien eres su enemiga verdad ? Liberame y te ayudare a luchar contra ella.' },
           { speaker: 0, text: 'Te advierto que no perdono la traicion ...' },
         ],
-        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
+        conditions: { eleccion: { 'camino-cueva': 'cueva' } }
       },
       {
         id: 'reclutamiento-aracnida',
@@ -118,7 +132,7 @@ const stories = [
         title: 'Aliado inesperado',
         description: 'La aracnida promete ayudarte a cambio de su libertad.',
         character: 9,
-        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
+        conditions: { eleccion: { 'camino-cueva': 'cueva' } }
       },
       {
         id: 'primero-la-bruja',
@@ -127,7 +141,7 @@ const stories = [
         title: 'La bruja del paramo',
         description: 'La bruja que mantiene cautivo a los aracnidos.',
         enemyTeam: [-1, 8, -1, 6],
-        conditions: { eleccion: { 'eleccion-caminos': 'derecha' } }
+        conditions: { eleccion: { 'camino-cueva': 'cueva' } }
       },
 
 
@@ -135,31 +149,6 @@ const stories = [
 
 
 
-
-      // {
-      //   id: 'dialogo-bosque',
-      //   type: 'dialogo',
-      //   narrativo: true,
-      //   title: 'Entre los árboles',
-      //   description: 'El sendero se adentra en un bosque espeso y húmedo.',
-      //   dialog: [
-      //     { text: 'El camino empieza a desdibujarse entre los arboles.' },
-      //     { text: 'Algo se mueve entre la maleza. Una figura se acerca, con lagrimas en el rostro.' },
-      //     { speaker: 1, text: 'Oh Sima ... ya me he enterado ... Como lo siento mi querida amiga.' },
-      //     { speaker: 0, text: '...' },
-      //     { speaker: 1, text: 'Se a donde te dirijes. Por favor, deja que te acompañe.' },
-      //     { speaker: 0, text: 'Sería pedirte demasiado, no puedo prometerte que volveras ... Pero necesito tu ayuda.' },
-      //   ],
-      //   conditions: { campamentos: 1 }
-      // },
-      // {
-      //   id: 'reclutamiento-druida',
-      //   type: 'reclutamiento',
-      //   title: 'Un encuentro oportuno',
-      //   description: 'Una druida del bosque ofrece acompañarte en la travesía.',
-      //   character: 1,
-      //   conditions: { campamentos: 1 }
-      // },
       {
         id: 'dialogo-narada-previo',
         type: 'dialogo',
@@ -175,7 +164,7 @@ const stories = [
           { speaker: 4, text: 'No tienes la fuerza para lograrlo, audaz. Ya no tienes nada.' },
           { text: 'Sima avanza, su lanza en la mano, el viento en su cabello, el recuerdo de su gente en el corazon y el enemigo en sus ojos.' }
         ],
-        conditions: { campamentos: 2 }
+        conditions: { campamentos: 3 }
       },
       {
         id: 'sin-salida',
@@ -184,7 +173,7 @@ const stories = [
         title: 'Ruinas',
         description: 'Por fin el objetivo a la vista.',
         enemyTeam: [4, 8, -1, -1],
-        conditions: { campamentos: 2 }
+        conditions: { campamentos: 3 }
       },
       {
         id: 'dialogo-narada-escape',
@@ -196,11 +185,15 @@ const stories = [
           { text: 'Herida y tambaleante, Narada retrocede mientras sus tropas le cubren las espaldas.' },
           { speaker: 4, text: 'Esto no termina aquí, hoja suelta. El fuego siempre vuelve.' },
           { speaker: 0, text: 'Huye, entonces. La próxima vez no tendrás a nadie que te salve de mi.' },
-          { speaker: 1, text: 'Su ejército mengua, Sima. La próxima vez la encontraremos sin escapatoria.' },
+          // { speaker: 1, text: 'Su ejército mengua, Sima. La próxima vez la encontraremos sin escapatoria.' },
           { text: 'Observan la cobarde figura perderse.' }
         ],
-        conditions: { campamentos: 2 }
+        conditions: { campamentos: 3 }
       },
+
+
+
+
       {
         id: 'dialogo-urbol',
         type: 'dialogo',
@@ -215,7 +208,7 @@ const stories = [
           { speaker: 2, text: 'Tu causa es justa y yo me debo a la justicia. Cuenta conmigo, capitana.' },
           { text: 'Sima asiente. Con compañeros a su lado el camino parece menos duro.' }
         ],
-        conditions: { campamentos: 3 }
+        conditions: { campamentos: 4 }
       },
       {
         id: 'reclutamiento-urbol',
@@ -223,8 +216,12 @@ const stories = [
         title: 'El gran Urbol',
         description: 'Un poderoso caballero se une a tu misión.',
         character: 2,
-        conditions: { campamentos: 3 }
+        conditions: { campamentos: 4 }
       },
+
+
+
+
       {
         id: 'dialogo-final',
         type: 'dialogo',
@@ -234,14 +231,12 @@ const stories = [
         dialog: [
           { text: 'El último santuario se alza entre columnas partidas.' },
           { speaker: 0, text: 'Tras esas puertas está quien me lo arrebató todo.. Todo.' },
-          { speaker: 1, text: 'No todo, tus compañeros estan a tu lado. No te fallaremos.' },
+          // { speaker: 1, text: 'No todo, tus compañeros estan a tu lado. No te fallaremos.' },
           { speaker: 2, text: 'La justicia no se proclama, se ejecuta.' },
           { speaker: 0, text: 'Entonces vamos. Tenemos que acabar con una bestia.' }
         ],
-        conditions: { campamentos: 4, enfrentamientos: 9 }
+        conditions: { campamentos: 5 }
       },
-
-
       {
         id: 'final-narada',
         type: 'enfrentamiento',
@@ -249,7 +244,16 @@ const stories = [
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
         enemyTeam: [4, -1, -1, 6],
-        conditions: { campamentos: 4, enfrentamientos: 9, stage: 12, eleccion: { 'eleccion-caminos': 'izquierda' } }
+        conditions: { campamentos: 5, eleccion: { 'camino-bosque': 'bosque' } }
+      },
+      {
+        id: 'final-narada',
+        type: 'enfrentamiento',
+        narrativo: true,
+        title: 'Enfrentamiento final',
+        description: 'Entre los escombros del santuario, Narada te espera.',
+        enemyTeam: [4, -1, -1, 6],
+        conditions: { campamentos: 5, eleccion: { 'camino-cueva': 'directo' } }
       },
       {
         id: 'final-narada',
@@ -258,7 +262,7 @@ const stories = [
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
         enemyTeam: [4, -1, -1, -1],
-        conditions: { campamentos: 4, enfrentamientos: 9, stage: 12, eleccion: { 'eleccion-caminos': 'derecha' } }
+        conditions: { campamentos: 5, eleccion: { 'camino-cueva': 'cueva' } }
       },
 
 
@@ -277,7 +281,7 @@ const stories = [
           { text: 'Sima clava su hoja en el suelo y alza la vista.' },
           { text: 'Su pueblo se perdió. Pero se ha cumplido su venganza, se ha hecho justicia.' }
         ],
-        conditions: { campamentos: 4, enfrentamientos: 9, stage: 13 }
+        conditions: { campamentos: 5 }
       }
     ]
   },
