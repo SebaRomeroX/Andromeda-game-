@@ -21,13 +21,15 @@
         <div id="dev-body" class="dev-body">
           <p id="dev-hint" class="dev-hint">
             Elegí una historia y una etapa para empezar a jugar desde ahí, sin recorrerla
-            completa. Se calcula el equipo de esa etapa (reclutas y niveles incluidos) y la
+            completa. Si la historia tiene una elección de camino, elegí la rama antes de
+            saltar. Se calcula el equipo de esa etapa (reclutas y niveles incluidos) y la
             partida guardada se sobrescribe.
           </p>
           <div class="dev-row">
             <label for="dev-story">Historia</label>
             <select id="dev-story"></select>
           </div>
+          <div id="dev-choices"></div>
           <div class="dev-row">
             <label for="dev-stage">Etapa</label>
             <select id="dev-stage" disabled></select>
@@ -88,6 +90,14 @@
         <div id="dialog-speaker" class="dialog-speaker"></div>
         <div id="dialog-text" class="dialog-text"></div>
         <div class="dialog-hint">▼ Clic para continuar</div>
+      </div>
+    </div>
+
+    <div id="choice-overlay" class="overlay hidden">
+      <div class="overlay-content">
+        <h3 id="choice-title" class="screen-subtitle"></h3>
+        <p id="choice-prompt"></p>
+        <div id="choice-options" class="choice-options"></div>
       </div>
     </div>
   </div>

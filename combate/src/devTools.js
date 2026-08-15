@@ -3,10 +3,10 @@ import { pickNextEvent } from './eventGenerator.js';
 import characters from '../data/characters.js';
 
 function initialRun() {
-  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set() };
+  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {} };
 }
 
-function applyEvent(ev, run, roster) {
+function applyEvent(ev, run, roster, choices = {}) {
   if (ev.type === 'campamento') {
     run.campamentos++;
     run.fightsSinceCamp = 0;
@@ -17,6 +17,8 @@ function applyEvent(ev, run, roster) {
     const char = characters[ev.character];
     const slot = ROLE_BY_INDEX.indexOf(char?.role);
     if (slot >= 0) roster[slot] = ev.character;
+  } else if (ev.type === 'eleccion') {
+    if (ev.id && ev.options?.length) run.choices[ev.id] = choices[ev.id] ?? ev.options[0].id;
   }
   if (ev.id) run.fired.add(ev.id);
 }
@@ -25,7 +27,7 @@ function applyEvent(ev, run, roster) {
  * Simula la secuencia determinística de una historia secuencial y devuelve
  * la lista de etapas jugables (cada una con el evento que se juega).
  */
-export function listStages(story) {
+export function listStages(story, choices = {}) {
   const entries = [];
   const run = initialRun();
   const roster = [...story.teamA];
@@ -43,7 +45,7 @@ export function listStages(story) {
       final: !!ev.final
     });
     if (ev.final) break;
-    applyEvent(ev, run, roster);
+    applyEvent(ev, run, roster, choices);
     run.stage++;
   }
 
@@ -55,7 +57,7 @@ export function listStages(story) {
  * (base + reclutas anteriores) y la cantidad de campamentos pasados, como si
  * se hubieran completado los stageNumber - 1 eventos previos de la historia.
  */
-export function simulateToStage(story, stageNumber) {
+export function simulateToStage(story, stageNumber, choices = {}) {
   const completed = Math.max(0, stageNumber - 1);
   const run = initialRun();
   const roster = [...story.teamA];
@@ -64,7 +66,7 @@ export function simulateToStage(story, stageNumber) {
   while (run.stage < completed) {
     const ev = pickNextEvent(story, run);
     if (ev.type === 'campamento') campCount++;
-    applyEvent(ev, run, roster);
+    applyEvent(ev, run, roster, choices);
     run.stage++;
   }
 
@@ -75,8 +77,8 @@ export function simulateToStage(story, stageNumber) {
  * Construye el payload de partida para saltar a una etapa: equipo con HP
  * completo, niveles = nivel base + campamentos acumulados, y run reconstruido.
  */
-export function buildJumpPayload(story, stageNumber) {
-  const { run, roster, campCount } = simulateToStage(story, stageNumber);
+export function buildJumpPayload(story, stageNumber, choices = {}) {
+  const { run, roster, campCount } = simulateToStage(story, stageNumber, choices);
 
   const hp = [];
   const levels = [];
@@ -122,6 +124,7 @@ export function setupDevPanel(stories, onJump) {
   const header = document.getElementById('dev-header');
   const body = document.getElementById('dev-body');
   const toggle = document.getElementById('dev-toggle');
+  const choicesBox = document.getElementById('dev-choices');
 
   if (!panel || !storySel) return;
 
@@ -141,18 +144,71 @@ export function setupDevPanel(stories, onJump) {
   });
 
   let stageEntries = [];
+  let choiceControls = [];
+
+  /**
+   * Arma un selector por cada evento de elección de la historia. La opción
+   * elegida define la rama que se simula al listar etapas y al saltar.
+   */
+  function buildChoiceControls(story) {
+    const prevValues = {};
+    choiceControls.forEach(({ eventId, select }) => {
+      prevValues[eventId] = select.value;
+    });
+
+    choiceControls = [];
+    if (!choicesBox) return;
+    choicesBox.innerHTML = '';
+    if (!story) return;
+
+    const elecciones = (story.narrativeEvents ?? [])
+      .filter(ev => ev.type === 'eleccion' && ev.id && Array.isArray(ev.options) && ev.options.length > 0);
+
+    elecciones.forEach(ev => {
+      const row = document.createElement('div');
+      row.className = 'dev-row';
+
+      const label = document.createElement('label');
+      label.textContent = ev.title ?? ev.id;
+
+      const select = document.createElement('select');
+      ev.options.forEach((opt, i) => {
+        const o = document.createElement('option');
+        o.value = opt.id;
+        o.textContent = opt.label;
+        if (i === 0) o.selected = true;
+        select.appendChild(o);
+      });
+      if (prevValues[ev.id] != null) select.value = prevValues[ev.id];
+      select.addEventListener('change', refresh);
+
+      row.appendChild(label);
+      row.appendChild(select);
+      choicesBox.appendChild(row);
+      choiceControls.push({ eventId: ev.id, select });
+    });
+  }
+
+  function readChoiceOverrides() {
+    const overrides = {};
+    choiceControls.forEach(({ eventId, select }) => {
+      if (select.value != null && select.value !== '') overrides[eventId] = select.value;
+    });
+    return overrides;
+  }
 
   function refresh() {
     const story = sequential[parseInt(storySel.value, 10)];
     const prev = stageSel.value;
     stageSel.innerHTML = '';
+    buildChoiceControls(story);
     if (!story) {
       stageEntries = [];
       stageSel.disabled = true;
       jumpBtn.disabled = true;
       return;
     }
-    stageEntries = listStages(story);
+    stageEntries = listStages(story, readChoiceOverrides());
     stageEntries.forEach(e => {
       const opt = document.createElement('option');
       opt.value = e.stage;
@@ -176,10 +232,10 @@ export function setupDevPanel(stories, onJump) {
       alert('Elegí una historia y una etapa válidas.');
       return;
     }
-    if (!confirm(`Saltar a la etapa ${stageNumber} de "${story.title}".\n\nSe recalcula el equipo para esa etapa y se sobrescribirá la partida guardada. ¿Continuar?`)) {
+    if (!confirm(`Saltar a la etapa ${stageNumber} de "${story.title}".\n\nSe recalcula el equipo para esa etapa (con el camino elegido) y se sobrescribirá la partida guardada. ¿Continuar?`)) {
       return;
     }
-    const { payload } = buildJumpPayload(story, stageNumber);
+    const { payload } = buildJumpPayload(story, stageNumber, readChoiceOverrides());
     onJump(story, payload);
   });
 

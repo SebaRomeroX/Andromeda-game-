@@ -6,14 +6,18 @@ function numericMinimum(key, value, ctx) {
 
 /**
  * Manejadores de condiciones. Cada clave del objeto `conditions` se resuelve
- * contra un handler. Por ahora todos son umbrales mínimos (>=) sobre contadores.
+ * contra un handler. Por ahora todos son umbrales mínimos (>=) sobre contadores,
+ * salvo `eleccion`, que exige que la opción elegida en un evento de elección
+ * coincida exactamente con la indicada (ej: { eleccion: { 'eleccion-caminos': 'izquierda' } }).
  * Extensiones futuras planeadas: `personajeInTeam`, `personajeHasDied`,
  * `specificNarrativeEventHasOcurred` (usaría ctx.fired.has(id)).
  */
 const CONDITION_HANDLERS = {
   campamentos: numericMinimum,
   enfrentamientos: numericMinimum,
-  stage: numericMinimum
+  stage: numericMinimum,
+  eleccion: (key, map, ctx) =>
+    Object.entries(map ?? {}).every(([eventId, optionId]) => (ctx.choices?.[eventId] ?? null) === optionId)
 };
 
 /**

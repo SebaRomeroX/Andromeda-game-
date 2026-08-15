@@ -22,7 +22,8 @@ const run = {
   enfrentamientos: 0,
   campamentos: 0,
   fightsSinceCamp: 0,
-  fired: new Set()
+  fired: new Set(),
+  choices: {}
 };
 
 function resetRun() {
@@ -31,6 +32,7 @@ function resetRun() {
   run.campamentos = 0;
   run.fightsSinceCamp = 0;
   run.fired.clear();
+  run.choices = {};
   currentEvent = null;
 }
 
@@ -95,6 +97,15 @@ function validateStoryCast(story) {
     if (event.type === 'reclutamiento') {
       if (event.character != null && !allies.has(event.character)) {
         warn(`Evento ${i + 1}: ${characters[event.character]?.name ?? event.character} es reclutable pero no está en allies.`);
+      }
+      return;
+    }
+
+    if (event.type === 'eleccion') {
+      if (!Array.isArray(event.options) || event.options.length === 0) {
+        warn(`Evento ${i + 1}: es una elección pero no tiene opciones en "options".`);
+      } else if (event.options.some(o => o.id == null)) {
+        warn(`Evento ${i + 1}: todas las opciones deben tener un "id".`);
       }
       return;
     }
@@ -198,6 +209,7 @@ function startStory(story, { loadSave }) {
     run.campamentos = data.run.campamentos;
     run.fightsSinceCamp = data.run.fightsSinceCamp;
     run.fired = data.fired;
+    run.choices = data.run.choices ?? {};
     playerTeam = data.playerTeam;
     protagonistSlot = data.protagonistSlot;
     resetTeam();
@@ -340,6 +352,11 @@ function startCombat(event) {
     return;
   }
 
+  if (event.type === 'eleccion') {
+    showChoiceEvent(event);
+    return;
+  }
+
   showScreen('combat');
 
   const teamAData = buildTeamAData();
@@ -463,6 +480,37 @@ function showDialogueEvent(event) {
   overlay.onclick = advance;
   document.addEventListener('keydown', onKey);
   renderLine();
+  overlay.classList.remove('hidden');
+}
+
+function showChoiceEvent(event) {
+  const options = event.options ?? [];
+  if (options.length === 0) {
+    advanceStage();
+    return;
+  }
+
+  const overlay = document.getElementById('choice-overlay');
+  const title = document.getElementById('choice-title');
+  const prompt = document.getElementById('choice-prompt');
+  const optionsEl = document.getElementById('choice-options');
+
+  title.textContent = event.title ?? '';
+  prompt.textContent = event.prompt ?? event.description ?? '¿Qué quieres hacer?';
+  optionsEl.innerHTML = '';
+
+  options.forEach(option => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = option.label;
+    btn.onclick = () => {
+      run.choices[event.id ?? event.title] = option.id;
+      overlay.classList.add('hidden');
+      advanceStage();
+    };
+    optionsEl.appendChild(btn);
+  });
+
   overlay.classList.remove('hidden');
 }
 
