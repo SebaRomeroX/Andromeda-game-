@@ -9,26 +9,84 @@ function updateOrientationClass() {
   root.classList.toggle('portrait', matchMedia('(orientation: portrait)').matches);
 }
 
-async function requestLandscapeLock() {
-  const doc = document;
-  const hasFullscreen = doc.fullscreenEnabled || doc.webkitFullscreenEnabled;
-  const reqFullscreen = doc.documentElement.requestFullscreen || doc.documentElement.webkitRequestFullscreen;
-  const orientation = screen.orientation || screen.webkitOrientation;
-  if (!hasFullscreen || !reqFullscreen || !orientation || !orientation.lock) return;
+const fsDoc = {
+  get enabled() {
+    return !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+  },
+  get element() {
+    return document.fullscreenElement || document.webkitFullscreenElement;
+  },
+  request() {
+    const el = document.documentElement;
+    if (el.requestFullscreen) return el.requestFullscreen();
+    if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+    return Promise.reject(new Error('Fullscreen API no soportado'));
+  },
+  exit() {
+    if (document.exitFullscreen) return document.exitFullscreen();
+    if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+    return Promise.reject(new Error('Fullscreen API no soportado'));
+  }
+};
 
+async function lockLandscape() {
+  const orientation = screen.orientation || screen.webkitOrientation;
+  if (!orientation || !orientation.lock) return;
   try {
-    if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
-      await reqFullscreen.call(doc.documentElement);
-    }
     await orientation.lock('landscape');
   } catch (e) {
-    // El fallback CSS (rotación) se encarga cuando el lock no es posible.
+    // Best-effort: el fallback CSS (rotación) cubre cuando el lock no es posible.
   }
+}
+
+function isFullscreen() {
+  return !!fsDoc.element;
+}
+
+function setFullscreenButtonState() {
+  const btn = document.getElementById('fullscreen-btn');
+  if (!btn) return;
+  const active = isFullscreen();
+  btn.classList.toggle('active', active);
+  btn.textContent = active ? '✕' : '⛶';
+  btn.title = active ? 'Salir de pantalla completa' : 'Pantalla completa';
+}
+
+async function enterFullscreen() {
+  if (isFullscreen()) return;
+  try {
+    await fsDoc.request();
+    await lockLandscape();
+  } catch (e) {
+    // Sin soporte o rechazado por el navegador: el layout se ajusta solo (dvh/dvw).
+  }
+}
+
+async function exitFullscreen() {
+  if (!isFullscreen()) return;
+  try {
+    await fsDoc.exit();
+  } catch (e) {
+    // Ignorar
+  }
+}
+
+async function toggleFullscreen() {
+  if (isFullscreen()) {
+    await exitFullscreen();
+  } else {
+    await enterFullscreen();
+  }
+}
+
+function onFullscreenChange() {
+  setFullscreenButtonState();
 }
 
 function onFirstGesture(e) {
   if (e.type === 'keydown' && e.repeat) return;
-  requestLandscapeLock();
+  if (e.target && e.target.closest && e.target.closest('#fullscreen-btn')) return;
+  enterFullscreen();
   document.removeEventListener('pointerdown', onFirstGesture);
   document.removeEventListener('keydown', onFirstGesture);
 }
@@ -38,6 +96,15 @@ if (isMobile()) {
   updateOrientationClass();
   window.addEventListener('orientationchange', updateOrientationClass);
   window.addEventListener('resize', updateOrientationClass);
+
+  const btn = document.getElementById('fullscreen-btn');
+  if (btn && fsDoc.enabled) {
+    btn.hidden = false;
+    btn.addEventListener('click', toggleFullscreen);
+  }
+  document.addEventListener('fullscreenchange', onFullscreenChange);
+  document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
   document.addEventListener('pointerdown', onFirstGesture);
   document.addEventListener('keydown', onFirstGesture);
 }

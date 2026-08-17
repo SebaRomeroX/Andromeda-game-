@@ -9,6 +9,7 @@ body {
   background: #0d0d1a;
   color: #e0dcd0;
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,6 +17,7 @@ body {
 
 #app {
   width: 100vw;
+  width: 100dvw;
   max-width: 1224px;
   background: linear-gradient(145deg, #1a1a2e, #16213e);
   border: 2px solid #3a3a5c;
@@ -889,9 +891,13 @@ html.mobile.portrait #app {
   position: fixed;
   top: 0;
   left: 100vw;
+  left: 100dvw;
   width: 100vh;
+  width: 100dvh;
   max-width: 100vh;
+  max-width: 100dvh;
   height: 100vw;
+  height: 100dvw;
   border-radius: 0;
   transform: rotate(90deg);
   transform-origin: top left;
@@ -908,6 +914,43 @@ html.mobile.portrait #dialog-overlay {
 /* Mobile: single-line team layout */
 html.mobile #app {
   padding: 10px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
+/* Fullscreen toggle button (mobile only) */
+.fullscreen-btn {
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  right: 16px;
+  z-index: 3000;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #5a5a8a;
+  background: rgba(20, 20, 40, 0.85);
+  color: #e0dcd0;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.fullscreen-btn:hover {
+  border-color: #f0d060;
+  color: #f0d060;
+}
+
+.fullscreen-btn.active {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.fullscreen-btn[hidden] {
+  display: none;
 }
 
 html.mobile #combat-area {
@@ -993,6 +1036,7 @@ html.mobile #combat-panel {
   align-items: stretch;
   gap: 8px;
   height: min(38vh, 38vw, 220px);
+  height: min(38dvh, 38dvw, 220px);
   margin-bottom: 8px;
 }
 
