@@ -3,6 +3,36 @@ import { getSkillScaledStats } from './models.js';
 
 export const $ = id => document.getElementById(id);
 
+const BUFF_EMOJIS = { attack: '⚔️', defense: '🛡️', evasion: '🏃', precision: '🎯' };
+
+function formatAction(skill) {
+  const scaled = getSkillScaledStats(skill);
+  if (skill.type === "attack") {
+    const icon = skill.stun ? "⚡" : "🗡️";
+    return `${icon} (${scaled.power})`;
+  }
+  if (skill.type === "cura") return `💚 (${scaled.power})`;
+  if (skill.type === "defense") return `🛡️ (${scaled.power})`;
+  if (skill.type === "buff") {
+    const sign = skill.value > 0 ? '+' : '-';
+    return `✨ (${BUFF_EMOJIS[skill.stat] ?? '⚔️'}${sign})`;
+  }
+  return "";
+}
+
+export function renderPendingActions() {
+  document.querySelectorAll('.member-action').forEach(el => { el.textContent = ""; });
+  state.pendingActions.forEach(a => {
+    const el = $(`action-${a.team}-${a.actorIndex}`);
+    if (el) el.textContent = formatAction(a.skill);
+  });
+}
+
+export function clearMemberAction(team, index) {
+  const el = $(`action-${team}-${index}`);
+  if (el) el.textContent = "";
+}
+
 export function handleImgError(img, name) {
   img.style.display = "none";
   const fallback = document.createElement("div");
@@ -101,6 +131,18 @@ function getStatusString(member) {
   return parts.join(" ");
 }
 
+function renderMemberCell(teamKey, index) {
+  const cell = document.createElement("div");
+  cell.className = "member-cell";
+
+  const actionEl = document.createElement("div");
+  actionEl.className = "member-action";
+  actionEl.id = `action-${teamKey}-${index}`;
+
+  cell.append(actionEl, renderMemberSlot(teamKey, index));
+  return cell;
+}
+
 export function renderTeams() {
   const mobile = document.documentElement.classList.contains('mobile');
   ['A', 'B'].forEach(teamKey => {
@@ -110,7 +152,7 @@ export function renderTeams() {
     const order = mobile
       ? (teamKey === 'A' ? [3, 2, 1, 0] : [0, 1, 2, 3])
       : (teamKey === 'A' ? [2, 0, 3, 1] : [0, 2, 1, 3]);
-    order.forEach(i => container.appendChild(renderMemberSlot(teamKey, i)));
+    order.forEach(i => container.appendChild(renderMemberCell(teamKey, i)));
   });
 }
 

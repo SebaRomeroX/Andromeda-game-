@@ -57,6 +57,7 @@ body {
 
 .member-slot {
   position: relative;
+  width: 100%;
   aspect-ratio: 3 / 4;
   background: rgba(0, 0, 0, 0.4);
   border: 2px solid #4a4a6a;
@@ -208,6 +209,26 @@ body {
 .member-slot.active {
   border-color: #f0d060;
   box-shadow: 0 0 16px rgba(240, 208, 96, 0.4);
+}
+
+/* planned action indicator */
+.member-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.member-cell .member-action {
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: #f0e8d0;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 /* targetable (click to target) */
@@ -1040,10 +1061,15 @@ html.mobile .team-container {
   max-width: none;
 }
 
-html.mobile .member-slot {
+html.mobile .member-cell {
   flex: 1 1 0;
   max-width: 110px;
   min-width: 0;
+}
+
+html.mobile .member-slot {
+  width: 100%;
+  max-width: none;
   aspect-ratio: 3 / 5;
   border-radius: 8px;
 }
@@ -1072,6 +1098,11 @@ html.mobile .member-name {
   font-size: 0.62rem;
   margin-bottom: 2px;
   padding: 1px 6px;
+}
+
+html.mobile .member-action {
+  height: 1.1rem;
+  font-size: 0.55rem;
 }
 
 html.mobile .member-slot .member-info {

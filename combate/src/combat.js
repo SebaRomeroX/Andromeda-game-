@@ -1,7 +1,7 @@
 import state, { isDead, isAlive, aliveMembers, allDead, getGameEndCallback } from './state.js';
 import { ATTACK_ROUTES, ROLE_BY_INDEX, getSkillScaledStats } from './models.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
-import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, highlightSkill, clearSkillHighlight, showRestart } from './renderer.js';
+import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction } from './renderer.js';
 import { log } from './log.js';
 
 function pickWeighted(items, count) {
@@ -216,6 +216,8 @@ function enemySelectSkills() {
     });
   }
 
+  renderPendingActions();
+
   setTimeout(() => {
     log(`=== Equipo A elige sus skills ===`);
     state.actingMemberIndex = 0;
@@ -262,6 +264,7 @@ function resolveAction(index, sorted) {
     .forEach(el => el.classList.remove('active', 'glow-green', 'glow-red'));
 
   const action = sorted[index];
+  clearMemberAction(action.team, action.actorIndex);
   const actor = state.teams[action.team].members[action.actorIndex];
   if (!actor || actor.currentHp <= 0 || actor.stunned) {
     if (actor?.stunned) {
@@ -465,6 +468,7 @@ export function onTargetClick(team, index) {
     targetTeam: team,
     targetIdx: index
   });
+  renderPendingActions();
 
   state.actingMemberIndex = state.actingMemberIndex + 1;
   state.selectedSkill = null;
