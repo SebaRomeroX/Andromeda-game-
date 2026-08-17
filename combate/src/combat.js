@@ -266,7 +266,6 @@ function resolveAction(index, sorted) {
   if (!actor || actor.currentHp <= 0 || actor.stunned) {
     if (actor?.stunned) {
       log(`💫 ${actor.name} está aturdido y no puede ejecutar ${action.skill.name}!`);
-      actor.stunned = false;
       renderStatus();
     }
     setTimeout(() => resolveAction(index + 1, sorted), 400);
