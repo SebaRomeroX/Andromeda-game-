@@ -6,8 +6,8 @@ const stories = [
     sequential: true,
     protagonist: 0,
     allies: [1,2,9],
-    genericEnemies: [3, 5, 7, 8],
-    narrativeEnemies: [4],
+    genericEnemies: [3, 7, 8, 10, 11, 12, 13, 14, 15],
+    narrativeEnemies: [4, 5, 6],
     teamA: [-1, 0, -1, -1],
     campAfterFights: 3,
     expectedStages: 21,
@@ -243,7 +243,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, -1, -1, 6],
+        enemyTeam: [4, 5, -1, 6],
         conditions: { campamentos: 5, eleccion: { 'camino-bosque': 'bosque' } }
       },
       {
@@ -252,7 +252,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, -1, -1, 6],
+        enemyTeam: [4, 5, -1, 6],
         conditions: { campamentos: 5, eleccion: { 'camino-cueva': 'directo' } }
       },
       {
@@ -261,7 +261,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, -1, -1, -1],
+        enemyTeam: [4, 5, -1, 3],
         conditions: { campamentos: 5, eleccion: { 'camino-cueva': 'cueva' } }
       },
 
@@ -297,7 +297,7 @@ const stories = [
     description: 'Se puede elegir el evento.',
     protagonist: 0,
     allies: [1],
-    genericEnemies: [3, 5, 6, 7],
+    genericEnemies: [3, 7, 8, 10, 11, 12, 13, 14, 15],
     narrativeEnemies: [4],
     teamA: [-1, 0, -1, -1],
     events: [
@@ -347,9 +347,9 @@ const stories = [
       {
         type: 'enfrentamiento',
         narrativo: true,
-        title: 'Narada sola',
-        description: 'Una amenaza ineludible se cierne sobre ti.',
-        enemyTeam: [4, -1, -1, -1]
+        title: 'Equipo full',
+        description: '4 integrantes.',
+        enemyTeam: [11, 13, 15, 3]
       },
       {
         type: 'enfrentamiento',

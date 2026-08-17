@@ -1,4 +1,5 @@
-cronometrar, si falta agregar capitanes ***
+arround 1hs play run
+captains
 
 UI:
   pantalla definitiva ***
