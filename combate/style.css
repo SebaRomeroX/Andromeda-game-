@@ -211,6 +211,13 @@ body {
   box-shadow: 0 0 16px rgba(240, 208, 96, 0.4);
 }
 
+/* acting (performing action during resolution) */
+.member-slot.acting {
+  transform: scale(1.07) translateY(-10px);
+  z-index: 5;
+  transition: transform 0.3s ease;
+}
+
 /* planned action indicator */
 .member-cell {
   display: flex;
@@ -220,6 +227,8 @@ body {
 }
 
 .member-cell .member-action {
+  position: relative;
+  z-index: 10;
   height: 1.5rem;
   display: flex;
   align-items: center;

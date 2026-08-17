@@ -262,7 +262,10 @@ export function renderActionIndicators(actorTeam, actorIndex, targetTeam, target
   const actorSlot = document.querySelector(
     `.member-slot[data-team="${actorTeam}"][data-index="${actorIndex}"]`
   );
-  if (actorSlot && !actorSlot.classList.contains('dead')) actorSlot.classList.add(cls);
+  if (actorSlot && !actorSlot.classList.contains('dead')) {
+    actorSlot.classList.add(cls);
+    actorSlot.classList.add('acting');
+  }
 
   const targetSlot = document.querySelector(
     `.member-slot[data-team="${targetTeam}"][data-index="${targetIndex}"]`

@@ -254,19 +254,22 @@ function endRound() {
 
 function resolveAction(index, sorted) {
   if (state.gameOver || index >= sorted.length) {
+    if (index > 0) clearMemberAction(sorted[index - 1].team, sorted[index - 1].actorIndex);
     state.turnPhase = 'idle';
     endRound();
     return;
   }
 
+  if (index > 0) clearMemberAction(sorted[index - 1].team, sorted[index - 1].actorIndex);
+
   clearTargets();
-  document.querySelectorAll('.member-slot.active, .member-slot.glow-green, .member-slot.glow-red')
-    .forEach(el => el.classList.remove('active', 'glow-green', 'glow-red'));
+  document.querySelectorAll('.member-slot.active, .member-slot.glow-green, .member-slot.glow-red, .member-slot.acting')
+    .forEach(el => el.classList.remove('active', 'glow-green', 'glow-red', 'acting'));
 
   const action = sorted[index];
-  clearMemberAction(action.team, action.actorIndex);
   const actor = state.teams[action.team].members[action.actorIndex];
   if (!actor || actor.currentHp <= 0 || actor.stunned) {
+    clearMemberAction(action.team, action.actorIndex);
     if (actor?.stunned) {
       log(`💫 ${actor.name} está aturdido y no puede ejecutar ${action.skill.name}!`);
       renderStatus();
@@ -277,6 +280,7 @@ function resolveAction(index, sorted) {
 
   const target = state.teams[action.targetTeam].members[action.targetIdx];
   if (!target || target.currentHp <= 0) {
+    clearMemberAction(action.team, action.actorIndex);
     log(`⚠️ ${actor.name} no puede ejecutar ${action.skill.name}: el objetivo ya no está disponible`);
     setTimeout(() => resolveAction(index + 1, sorted), 400);
     return;
@@ -287,7 +291,10 @@ function resolveAction(index, sorted) {
   renderHP();
   renderStatus();
   renderBuffs();
-  if (checkGameOver()) return;
+  if (checkGameOver()) {
+    clearMemberAction(action.team, action.actorIndex);
+    return;
+  }
   setTimeout(() => resolveAction(index + 1, sorted), 2200);
 }
 
