@@ -249,14 +249,85 @@ body {
   padding: 0 8px;
 }
 
+.log-open-btn {
+  display: block;
+  margin: 0 auto 8px;
+  padding: 10px 28px;
+  border: 2px solid #5a5a8a;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+  color: #b0a890;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.log-open-btn:hover {
+  border-color: #f0d060;
+  color: #f0e0a0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(240, 208, 96, 0.3);
+}
+
+#log-overlay .overlay-content.log-content {
+  max-width: 640px;
+  width: calc(100vw - 48px);
+  width: calc(100dvw - 48px);
+  text-align: left;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 96px);
+  max-height: calc(100dvh - 96px);
+}
+
+.log-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.log-title {
+  margin: 0;
+  color: #f0d060;
+  font-size: 1.1rem;
+  text-align: left;
+}
+
+.log-close-btn {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border: 2px solid #5a5a8a;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2a2a4a, #1a1a3a);
+  color: #e0dcd0;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.log-close-btn:hover {
+  border-color: #e53935;
+  color: #ff8a80;
+  transform: rotate(90deg);
+}
+
 #log {
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid #3a3a5c;
   border-radius: 10px;
   padding: 12px 16px;
-  height: 200px;
+  min-height: 30vh;
+  max-height: 60vh;
   overflow-y: auto;
-  margin-bottom: 16px;
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -1048,13 +1119,37 @@ html.mobile #actions {
   margin-bottom: 0;
 }
 
-html.mobile #log {
+html.mobile .log-open-btn {
+  margin: auto;
+  align-self: flex-start;
+  padding: 8px 16px;
+  font-size: 0.75rem;
+}
+
+html.mobile #log-overlay .overlay-content.log-content {
+  width: 100vw;
+  width: 100dvw;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  border: none;
+  border-radius: 0;
+  padding: 12px;
+}
+
+html.mobile #log-overlay .log-header {
+  margin-bottom: 8px;
+}
+
+html.mobile #log-overlay .log-title {
+  font-size: 0.95rem;
+}
+
+html.mobile #log-overlay #log {
   flex: 1;
-  min-width: 0;
   min-height: 0;
-  height: auto;
+  max-height: none;
   padding: 8px 10px;
-  margin-bottom: 0;
   font-size: 0.72rem;
 }
 

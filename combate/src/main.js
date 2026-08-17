@@ -2,7 +2,7 @@ import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, cle
 import { getLevelStats, ROLE_BY_INDEX } from './models.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
-import { log, clearLog } from './log.js';
+import { log, clearLog, openLog, closeLog } from './log.js';
 import { startSkillUpgrades } from './upgrades.js';
 import { saveGame, loadGame, clearGame, debugSave } from './save.js';
 import characters from '../data/characters.js';
@@ -139,6 +139,15 @@ document.getElementById('combat-area').addEventListener('click', (e) => {
   if (slot) {
     onTargetClick(slot.dataset.team, parseInt(slot.dataset.index));
   }
+});
+
+document.getElementById('log-open-btn').addEventListener('click', openLog);
+document.getElementById('log-close-btn').addEventListener('click', closeLog);
+document.getElementById('log-overlay').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeLog();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeLog();
 });
 
 function showScreen(name) {
