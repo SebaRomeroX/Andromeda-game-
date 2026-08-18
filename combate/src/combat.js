@@ -1,7 +1,7 @@
 import state, { isDead, isAlive, aliveMembers, allDead, getGameEndCallback } from './state.js';
 import { ATTACK_ROUTES, ROLE_BY_INDEX, getSkillScaledStats } from './models.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
-import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction } from './renderer.js';
+import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction } from './renderer.js';
 import { log } from './log.js';
 
 function pickWeighted(items, count) {
@@ -33,7 +33,7 @@ function skillNameToId(name) {
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   const actor = state.teams[actorTeam].members[actorIndex];
   const target = state.teams[targetTeam].members[targetIndex];
-  if (!actor || !target) return;
+  if (!actor || !target) return false;
 
   const basePrecision = skill.precision ?? 100;
   const precision = getPrecision(actorTeam, actorIndex, basePrecision);
@@ -43,7 +43,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   if (skill.type === "cura") {
     if (!hit) {
       log(`💚 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-      return;
+      return false;
     }
     const oldHp = target.currentHp;
     target.currentHp = Math.min(target.currentHp + scaled.power, target.hp);
@@ -56,13 +56,13 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
     log(msg);
     renderHP();
     renderStatus();
-    return;
+    return true;
   }
 
   if (skill.type === "buff") {
     if (!hit) {
       log(`💥 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-      return;
+      return false;
     }
     applyBuff(targetTeam, targetIndex, {
       id: skillNameToId(skill.name),
@@ -93,7 +93,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
     }
     renderBuffs();
     renderStatus();
-    return;
+    return true;
   }
 
   if (skill.type === "defense") {
@@ -103,19 +103,19 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
     } else {
       log(`🛡️ ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
     }
-    return;
+    return hit;
   }
 
   if (!hit) {
     log(`💥 ${actor.name} usa ${skill.name}... ¡PERO FALLA!`);
-    return;
+    return false;
   }
 
   const baseEvasion = target.evasion ?? 0;
   const evasion = getEvasion(targetTeam, targetIndex, baseEvasion);
   if (!target.stunned && Math.random() * 100 < evasion) {
     log(`💥 ${actor.name} usa ${skill.name}... ¡${target.name} esquiva el ataque!`);
-    return;
+    return false;
   }
 
   const defSkill = target.defense;
@@ -144,6 +144,8 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
     target.wounded = true;
     log(`🩸 ${actor.name} HIERE a ${target.name}!`);
   }
+
+  return true;
 }
 
 function pickRandomTarget(sourceTeam, targetTeam) {
@@ -263,8 +265,8 @@ function resolveAction(index, sorted) {
   if (index > 0) clearMemberAction(sorted[index - 1].team, sorted[index - 1].actorIndex);
 
   clearTargets();
-  document.querySelectorAll('.member-slot.active, .member-slot.glow-green, .member-slot.glow-red, .member-slot.acting')
-    .forEach(el => el.classList.remove('active', 'glow-green', 'glow-red', 'acting'));
+  document.querySelectorAll('.member-slot.active, .member-slot.glow-green, .member-slot.glow-red, .member-slot.acting, .member-slot.objective, .member-slot.objective-flash-green, .member-slot.objective-flash-red')
+    .forEach(el => el.classList.remove('active', 'glow-green', 'glow-red', 'acting', 'objective', 'objective-flash-green', 'objective-flash-red'));
 
   const action = sorted[index];
   const actor = state.teams[action.team].members[action.actorIndex];
@@ -287,10 +289,13 @@ function resolveAction(index, sorted) {
   }
 
   renderActionIndicators(action.team, action.actorIndex, action.targetTeam, action.targetIdx);
-  applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill);
+  const applied = applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill);
   renderHP();
   renderStatus();
   renderBuffs();
+  if (applied) {
+    setTimeout(() => flashObjective(action.targetTeam, action.targetIdx, action.skill), 1500);
+  }
   if (checkGameOver()) {
     clearMemberAction(action.team, action.actorIndex);
     return;

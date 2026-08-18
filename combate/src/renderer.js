@@ -254,8 +254,8 @@ export function clearTargets() {
 }
 
 export function renderActionIndicators(actorTeam, actorIndex, targetTeam, targetIndex) {
-  document.querySelectorAll('.member-slot.glow-green, .member-slot.glow-red')
-    .forEach(el => el.classList.remove('glow-green', 'glow-red'));
+  document.querySelectorAll('.member-slot.glow-green, .member-slot.glow-red, .member-slot.objective')
+    .forEach(el => el.classList.remove('glow-green', 'glow-red', 'objective'));
 
   const cls = actorTeam === 'A' ? 'glow-green' : 'glow-red';
 
@@ -270,7 +270,34 @@ export function renderActionIndicators(actorTeam, actorIndex, targetTeam, target
   const targetSlot = document.querySelector(
     `.member-slot[data-team="${targetTeam}"][data-index="${targetIndex}"]`
   );
-  if (targetSlot && !targetSlot.classList.contains('dead')) targetSlot.classList.add(cls);
+  if (targetSlot && !targetSlot.classList.contains('dead')) {
+    targetSlot.classList.add(cls);
+    targetSlot.classList.add('objective');
+  }
+}
+
+function isDebuff(skill) {
+  if (skill.type !== 'buff') return false;
+  if (skill.value < 0) return true;
+  if (skill.stat === 'precision' && skill.value < 1) return true;
+  if (skill.stat === 'evasion' && skill.value === 0) return true;
+  return false;
+}
+
+export function flashObjective(targetTeam, targetIndex, skill) {
+  const beneficial = skill.type === 'defense' || skill.type === 'cura' || (skill.type === 'buff' && !isDebuff(skill));
+  const cls = beneficial ? 'objective-flash-green' : 'objective-flash-red';
+
+  document.querySelectorAll('.member-slot.objective-flash-green, .member-slot.objective-flash-red')
+    .forEach(el => el.classList.remove('objective-flash-green', 'objective-flash-red'));
+
+  const slot = document.querySelector(
+    `.member-slot[data-team="${targetTeam}"][data-index="${targetIndex}"]`
+  );
+  if (!slot) return;
+
+  slot.classList.add(cls);
+  setTimeout(() => slot.classList.remove(cls), 900);
 }
 
 export function highlightSkill(index) {
