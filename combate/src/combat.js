@@ -30,10 +30,10 @@ function skillNameToId(name) {
     .replace(/^_|_$/g, '');
 }
 
-function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
+function computeEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   const actor = state.teams[actorTeam].members[actorIndex];
   const target = state.teams[targetTeam].members[targetIndex];
-  if (!actor || !target) return false;
+  if (!actor || !target) return null;
 
   const basePrecision = skill.precision ?? 100;
   const precision = getPrecision(actorTeam, actorIndex, basePrecision);
@@ -43,10 +43,69 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   if (skill.type === "cura") {
     if (!hit) {
       log(`💚 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-      return false;
+      return null;
     }
+    return {
+      type: "cura",
+      heal: Math.min(target.currentHp + scaled.power, target.hp) - target.currentHp
+    };
+  }
+
+  if (skill.type === "buff") {
+    if (!hit) {
+      log(`💥 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
+      return null;
+    }
+    return { type: "buff" };
+  }
+
+  if (skill.type === "defense") {
+    if (!hit) {
+      log(`🛡️ ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
+      return null;
+    }
+    return { type: "defense", power: scaled.power };
+  }
+
+  if (!hit) {
+    log(`💥 ${actor.name} usa ${skill.name}... ¡PERO FALLA!`);
+    return null;
+  }
+
+  const baseEvasion = target.evasion ?? 0;
+  const evasion = getEvasion(targetTeam, targetIndex, baseEvasion);
+  if (!target.stunned && Math.random() * 100 < evasion) {
+    log(`💥 ${actor.name} usa ${skill.name}... ¡${target.name} esquiva el ataque!`);
+    return null;
+  }
+
+  const defSkill = target.defense;
+  const defBuffs = getFlatBuffSum(targetTeam, targetIndex, 'defense');
+  const def = defSkill + defBuffs;
+  const atkMult = getMultiplier(actorTeam, actorIndex, "attack");
+  const rawDmg = Math.round(scaled.power * atkMult);
+  const finalDmg = Math.max(0, rawDmg - def);
+
+  return {
+    type: "attack",
+    rawDmg,
+    finalDmg,
+    def,
+    defBuffs,
+    atkMult,
+    stun: skill.stun && finalDmg > 0,
+    wound: skill.herida && finalDmg > 0
+  };
+}
+
+function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
+  const actor = state.teams[actorTeam].members[actorIndex];
+  const target = state.teams[targetTeam].members[targetIndex];
+  if (!actor || !target) return;
+
+  if (outcome.type === "cura") {
     const oldHp = target.currentHp;
-    target.currentHp = Math.min(target.currentHp + scaled.power, target.hp);
+    target.currentHp = Math.min(target.currentHp + outcome.heal, target.hp);
     const healed = target.currentHp - oldHp;
     let msg = `💚 ${actor.name} usa ${skill.name} en ${target.name}: +${healed} HP`;
     if (target.wounded) {
@@ -54,16 +113,10 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
       msg += ` y sana su herida`;
     }
     log(msg);
-    renderHP();
-    renderStatus();
-    return true;
+    return;
   }
 
-  if (skill.type === "buff") {
-    if (!hit) {
-      log(`💥 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-      return false;
-    }
+  if (outcome.type === "buff") {
     applyBuff(targetTeam, targetIndex, {
       id: skillNameToId(skill.name),
       name: skill.name,
@@ -91,61 +144,35 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
       const pct = (Math.abs(skill.value) * 100).toFixed(0);
       log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: ${verb} ${skill.stat} en ${sign}${pct}%`);
     }
-    renderBuffs();
-    renderStatus();
-    return true;
+    return;
   }
 
-  if (skill.type === "defense") {
-    if (hit) {
-      actor.defense = scaled.power;
-      log(`🛡️ ${actor.name} usa ${skill.name}: defensa ${scaled.power} activada`);
-    } else {
-      log(`🛡️ ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-    }
-    return hit;
+  if (outcome.type === "defense") {
+    actor.defense = outcome.power;
+    log(`🛡️ ${actor.name} usa ${skill.name}: defensa ${outcome.power} activada`);
+    return;
   }
 
-  if (!hit) {
-    log(`💥 ${actor.name} usa ${skill.name}... ¡PERO FALLA!`);
-    return false;
-  }
-
-  const baseEvasion = target.evasion ?? 0;
-  const evasion = getEvasion(targetTeam, targetIndex, baseEvasion);
-  if (!target.stunned && Math.random() * 100 < evasion) {
-    log(`💥 ${actor.name} usa ${skill.name}... ¡${target.name} esquiva el ataque!`);
-    return false;
-  }
-
-  const defSkill = target.defense;
-  const defBuffs = getFlatBuffSum(targetTeam, targetIndex, 'defense');
-  const def = defSkill + defBuffs;
-  const atkMult = getMultiplier(actorTeam, actorIndex, "attack");
-  const rawDmg = Math.round(scaled.power * atkMult);
-  const finalDmg = Math.max(0, rawDmg - def);
-  target.currentHp = Math.max(0, target.currentHp - finalDmg);
+  target.currentHp = Math.max(0, target.currentHp - outcome.finalDmg);
 
   let defInfo = "";
-  if (def > 0) {
-    defInfo = ` (defensa rival: ${def}`;
-    if (defBuffs > 0) defInfo += ` [buff: +${defBuffs}]`;
+  if (outcome.def > 0) {
+    defInfo = ` (defensa rival: ${outcome.def}`;
+    if (outcome.defBuffs > 0) defInfo += ` [buff: +${outcome.defBuffs}]`;
     defInfo += `)`;
   }
-  const multInfo = atkMult !== 1 ? ` (x${atkMult.toFixed(2)} atq)` : "";
-  log(`💥 ${actor.name} usa ${skill.name} en ${target.name}: ${rawDmg} de ataque${multInfo}${defInfo} → ${finalDmg} de daño`);
+  const multInfo = outcome.atkMult !== 1 ? ` (x${outcome.atkMult.toFixed(2)} atq)` : "";
+  log(`💥 ${actor.name} usa ${skill.name} en ${target.name}: ${outcome.rawDmg} de ataque${multInfo}${defInfo} → ${outcome.finalDmg} de daño`);
 
-  if (skill.stun && finalDmg > 0) {
+  if (outcome.stun) {
     target.stunned = true;
     log(`⚡ ${actor.name} STUNEA a ${target.name}!`);
   }
 
-  if (skill.herida && finalDmg > 0) {
+  if (outcome.wound) {
     target.wounded = true;
     log(`🩸 ${actor.name} HIERE a ${target.name}!`);
   }
-
-  return true;
 }
 
 function pickRandomTarget(sourceTeam, targetTeam) {
@@ -289,18 +316,25 @@ function resolveAction(index, sorted) {
   }
 
   renderActionIndicators(action.team, action.actorIndex, action.targetTeam, action.targetIdx);
-  const applied = applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill);
-  renderHP();
-  renderStatus();
-  renderBuffs();
-  if (applied) {
-    setTimeout(() => flashObjective(action.targetTeam, action.targetIdx, action.skill), 1500);
-  }
-  if (checkGameOver()) {
-    clearMemberAction(action.team, action.actorIndex);
+  const outcome = computeEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill);
+
+  if (!outcome) {
+    setTimeout(() => resolveAction(index + 1, sorted), 2200);
     return;
   }
-  setTimeout(() => resolveAction(index + 1, sorted), 2200);
+
+  setTimeout(() => flashObjective(action.targetTeam, action.targetIdx, action.skill), 1500);
+  setTimeout(() => {
+    applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill, outcome);
+    renderHP();
+    renderStatus();
+    renderBuffs();
+    if (checkGameOver()) {
+      clearMemberAction(action.team, action.actorIndex);
+      return;
+    }
+    setTimeout(() => resolveAction(index + 1, sorted), 500);
+  }, 1700);
 }
 
 function resolveTurn() {

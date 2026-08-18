@@ -199,10 +199,12 @@ body {
 .member-slot.dead {
   opacity: 0.35;
   pointer-events: none;
+  transition: opacity 0.6s ease;
 }
 
 .member-slot.dead img {
   filter: grayscale(1);
+  transition: filter 0.6s ease;
 }
 
 /* active (current actor) */
