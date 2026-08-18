@@ -166,6 +166,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outc
 
   if (outcome.stun) {
     target.stunned = true;
+    target.stunTurns = 2;
     log(`⚡ ${actor.name} STUNEA a ${target.name}!`);
   }
 
@@ -195,8 +196,6 @@ function enemySelectSkills() {
 
     if (member.stunned) {
       log(`💫 ${member.name} está aturdido y pierde su turno!`);
-      member.stunned = false;
-      renderStatus();
       continue;
     }
 
@@ -412,8 +411,6 @@ function playerSelectSkills() {
 
     if (member.stunned) {
       log(`💫 ${member.name} está aturdido y pierde su turno!`);
-      member.stunned = false;
-      renderStatus();
       continue;
     }
 
@@ -461,6 +458,14 @@ export function startTurn() {
     state.teams[teamKey].members.forEach(m => { if (m) m.defense = 0; });
   });
   state.turnActive = true;
+
+  ['A', 'B'].forEach(teamKey => {
+    state.teams[teamKey].members.forEach(m => {
+      if (!m || !m.stunned) return;
+      m.stunTurns = (m.stunTurns ?? 2) - 1;
+      if (m.stunTurns <= 0) m.stunned = false;
+    });
+  });
 
   const expired = processBuffs();
   expired.forEach(e => {

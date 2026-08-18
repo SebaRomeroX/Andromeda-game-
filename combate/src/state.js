@@ -93,6 +93,7 @@ function createMember(charData, initialHp, level, skillLevels) {
     })),
     defense: 0,
     stunned: false,
+    stunTurns: 0,
     wounded: false,
     buffs: []
   };
