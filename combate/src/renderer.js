@@ -75,7 +75,10 @@ function renderMemberSlot(teamKey, index) {
       info.className = "member-info";
       info.append(nameEl, hpBar, statusEl);
 
-      slot.append(img, info);
+      const overlay = document.createElement("div");
+      overlay.className = "member-flash-overlay";
+
+      slot.append(img, overlay, info);
       slot.classList.add("dead");
     }
     return slot;
@@ -119,7 +122,10 @@ function renderMemberSlot(teamKey, index) {
   info.className = "member-info";
   info.append(nameEl, hpBar, statusLine);
 
-  slot.append(img, info);
+  const overlay = document.createElement("div");
+  overlay.className = "member-flash-overlay";
+
+  slot.append(img, overlay, info);
 
   return slot;
 }

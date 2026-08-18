@@ -298,12 +298,36 @@ body {
 }
 
 /* final flash (resplandecencia) on the objective card */
+.member-flash-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0;
+}
+
 .member-slot.objective-flash-green {
   animation: objective-flash 0.8s ease-out;
 }
 
 .member-slot.objective-flash-red {
   animation: objective-flash-red 0.8s ease-out;
+}
+
+.member-slot.objective-flash-green .member-flash-overlay {
+  background: radial-gradient(circle, rgba(76, 175, 80, 0.25), rgba(76, 175, 80, 0.6));
+  animation: objective-wash 0.8s ease-out;
+}
+
+.member-slot.objective-flash-red .member-flash-overlay {
+  background: radial-gradient(circle, rgba(229, 57, 53, 0.25), rgba(229, 57, 53, 0.6));
+  animation: objective-wash 0.8s ease-out;
+}
+
+@keyframes objective-wash {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 @keyframes objective-flash {
