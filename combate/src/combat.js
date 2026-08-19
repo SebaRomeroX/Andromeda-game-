@@ -1,7 +1,7 @@
 import state, { isDead, isAlive, aliveMembers, allDead, getGameEndCallback } from './state.js';
 import { ATTACK_ROUTES, ROLE_BY_INDEX, getSkillScaledStats } from './models.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
-import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction } from './renderer.js';
+import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction, showCombatMessage } from './renderer.js';
 import { log } from './log.js';
 
 function pickWeighted(items, count) {
@@ -43,7 +43,7 @@ function computeEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   if (skill.type === "cura") {
     if (!hit) {
       log(`💚 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-      return null;
+      return { type: "miss" };
     }
     return {
       type: "cura",
@@ -54,7 +54,7 @@ function computeEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   if (skill.type === "buff") {
     if (!hit) {
       log(`💥 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-      return null;
+      return { type: "miss" };
     }
     return { type: "buff" };
   }
@@ -62,21 +62,21 @@ function computeEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   if (skill.type === "defense") {
     if (!hit) {
       log(`🛡️ ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-      return null;
+      return { type: "miss" };
     }
     return { type: "defense", power: scaled.power };
   }
 
   if (!hit) {
     log(`💥 ${actor.name} usa ${skill.name}... ¡PERO FALLA!`);
-    return null;
+    return { type: "miss" };
   }
 
   const baseEvasion = target.evasion ?? 0;
   const evasion = getEvasion(targetTeam, targetIndex, baseEvasion);
   if (!target.stunned && Math.random() * 100 < evasion) {
     log(`💥 ${actor.name} usa ${skill.name}... ¡${target.name} esquiva el ataque!`);
-    return null;
+    return { type: "evade" };
   }
 
   const defSkill = target.defense;
@@ -317,12 +317,20 @@ function resolveAction(index, sorted) {
   renderActionIndicators(action.team, action.actorIndex, action.targetTeam, action.targetIdx);
   const outcome = computeEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill);
 
-  if (!outcome) {
+  if (outcome.type === "miss" || outcome.type === "evade") {
+    const msg = outcome.type === "miss" ? "¡Falla!" : "¡Esquiva!";
+    const variant = outcome.type === "miss" ? "combat-msg-miss" : "combat-msg-evade";
+    setTimeout(() => showCombatMessage(action.targetTeam, action.targetIdx, msg, variant), 1500);
     setTimeout(() => resolveAction(index + 1, sorted), 2200);
     return;
   }
 
-  setTimeout(() => flashObjective(action.targetTeam, action.targetIdx, action.skill), 1500);
+  const blocked = outcome.type === "attack" && outcome.finalDmg === 0;
+  if (!blocked) {
+    setTimeout(() => flashObjective(action.targetTeam, action.targetIdx, action.skill), 1500);
+  } else {
+    setTimeout(() => showCombatMessage(action.targetTeam, action.targetIdx, "¡Defiende!", "combat-msg-defend"), 1500);
+  }
   setTimeout(() => {
     applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill, outcome);
     renderHP();

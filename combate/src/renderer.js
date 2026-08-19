@@ -134,6 +134,7 @@ function getStatusString(member) {
   let parts = [];
   if (member.stunned) parts.push("⚡");
   if (member.wounded) parts.push("🩸");
+  if (member.defense > 0) parts.push(`🛡️${member.defense}`);
   return parts.join(" ");
 }
 
@@ -304,6 +305,18 @@ export function flashObjective(targetTeam, targetIndex, skill) {
 
   slot.classList.add(cls);
   setTimeout(() => slot.classList.remove(cls), 900);
+}
+
+export function showCombatMessage(team, index, text, variant) {
+  const slot = document.querySelector(
+    `.member-slot[data-team="${team}"][data-index="${index}"]`
+  );
+  if (!slot) return;
+  const el = document.createElement("div");
+  el.className = `combat-message ${variant || ""}`.trim();
+  el.textContent = text;
+  slot.appendChild(el);
+  setTimeout(() => el.remove(), 700);
 }
 
 export function highlightSkill(index) {

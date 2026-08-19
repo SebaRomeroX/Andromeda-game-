@@ -346,6 +346,44 @@ body {
   100% { filter: none; }
 }
 
+/* floating combat message (miss / evade / defend) */
+.combat-message {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 8;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ff6b6b;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.95), 0 2px 3px #000;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: combat-msg-in 0.25s ease-out, combat-msg-fade 0.4s ease-in 0.35s forwards;
+}
+
+.combat-message.combat-msg-miss {
+  color: #ff6b6b;
+}
+
+.combat-message.combat-msg-evade {
+  color: #4fc3f7;
+}
+
+.combat-message.combat-msg-defend {
+  color: #f0d060;
+}
+
+@keyframes combat-msg-in {
+  from { opacity: 0; transform: translate(-50%, -30%) scale(0.5); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes combat-msg-fade {
+  to { opacity: 0; transform: translate(-50%, -75%) scale(1.05); }
+}
+
 /* team B slots base style */
 #team-B-container .member-slot {
   background: rgba(40, 10, 10, 0.4);
