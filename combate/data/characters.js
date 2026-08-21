@@ -202,6 +202,18 @@ const characters = [
       createSkill({ name: "Fuego fatuo",      type: "attack",  power: 8,    precision: 85, aparicion: 30, herida: true}),
     ]
   }),
+  createCharacter({
+    name: "Capitan Oscuro",
+    image: "assets/images/Guerrero.jpg",
+    hp: 140,
+    evasion: 2,
+    role: "tanque",
+    skills: [
+      createSkill({ name: "Corte",            type: "attack",  power: 14,  precision: 85, aparicion: 60 }),
+      createSkill({ name: "Golpe de escudo",  type: "attack",  power: 8,  precision: 90, aparicion: 20,  stun: true  }),
+      createSkill({ name: "Proteccion",       type: "buff",    target: "self",  stat: "defense",   value: 4,    precision: 99, aparicion: 50  }),
+    ]
+  }),
 ];
 
 export default characters;

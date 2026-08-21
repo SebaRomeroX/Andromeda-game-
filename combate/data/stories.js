@@ -7,7 +7,7 @@ const stories = [
     protagonist: 0,
     allies: [1,2,9],
     genericEnemies: [3, 7, 8, 10, 11, 12, 13, 14, 15],
-    narrativeEnemies: [4, 5, 6],
+    narrativeEnemies: [4, 5, 6, 16],
     teamA: [-1, 0, -1, -1],
     campAfterFights: 3,
     expectedStages: 21,
@@ -161,7 +161,7 @@ const stories = [
 
 
       {
-        id: 'dialogo-narada-previo',
+        id: 'dialogo-capitan-oscuro',
         type: 'dialogo',
         narrativo: true,
         title: 'Ese humo solo indica una cosa ...',
@@ -173,7 +173,9 @@ const stories = [
           { speaker: 4, text: 'El fuego que borró tu aldea debería haberte servido de lección.' },
           { speaker: 0, text: 'Asi fue, ahora la compartire contigo.' },
           { speaker: 4, text: 'No tienes la fuerza para lograrlo, audaz. Ya no tienes nada.' },
-          { text: 'Sima avanza, su lanza en la mano, el viento en su cabello, el recuerdo de su gente en el corazon y el enemigo en sus ojos.' }
+          { text: 'Sima avanza... pero' },
+          { text: 'Una figura se atravieza en su camino' },
+          { speaker: 16, text: 'No daras ni un paso mas hacia la comandante, aqui se acaba tu vano intento de venganza.' },
         ],
         conditions: { campamentos: 3 }
       },
@@ -244,7 +246,8 @@ const stories = [
           { speaker: 0, text: 'Tras esas puertas está quien me lo arrebató todo.. Todo.' },
           // { speaker: 1, text: 'No todo, tus compañeros estan a tu lado. No te fallaremos.' },
           { speaker: 2, text: 'La justicia no se proclama, se ejecuta.' },
-          { speaker: 0, text: 'Entonces vamos. Tenemos que acabar con una bestia.' }
+          { speaker: 0, text: 'Entonces vamos. Tenemos que acabar con una bestia.' },
+          { text: 'Sima avanza, su lanza en la mano, el viento en su cabello, el recuerdo de su gente en el corazon y el enemigo frente a sus ojos.' },
         ],
         conditions: { campamentos: 5 }
       },
