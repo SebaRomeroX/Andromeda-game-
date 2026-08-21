@@ -42,7 +42,6 @@ const stories = [
 
 
 
-
       {
         id: 'dialogo-camino-bosque',
         type: 'dialogo',
@@ -78,6 +77,18 @@ const stories = [
         description: 'La druida del bosque cuidara tu espalda en esta travesía.',
         character: 1,
         conditions: { eleccion: { 'camino-bosque': 'bosque' } }
+      },
+
+
+
+      {
+        id: 'primero-akay',
+        type: 'enfrentamiento',
+        narrativo: true,
+        title: 'La espada mas veloz',
+        description: 'Una emboscada por parte de la hoja mas certera del ejercito oscuro.',
+        enemyTeam: [-1, 5, -1, -1],
+        conditions: { eleccion: { 'camino-bosque': 'directo' } }
       },
 
 
@@ -252,7 +263,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, 5, -1, 6],
+        enemyTeam: [4, 8, -1, 6],
         conditions: { campamentos: 5, eleccion: { 'camino-cueva': 'directo' } }
       },
       {
@@ -261,7 +272,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, 5, -1, 3],
+        enemyTeam: [4, 8, -1, 3],
         conditions: { campamentos: 5, eleccion: { 'camino-cueva': 'cueva' } }
       },
 
