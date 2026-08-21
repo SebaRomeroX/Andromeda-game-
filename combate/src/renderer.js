@@ -150,16 +150,18 @@ function renderMemberCell(teamKey, index) {
   return cell;
 }
 
+const DIAMOND_POS = ['cell-front', 'cell-bottom', 'cell-top', 'cell-back'];
+
 export function renderTeams() {
-  const mobile = document.documentElement.classList.contains('mobile');
   ['A', 'B'].forEach(teamKey => {
     const container = $(`team-${teamKey}-grid`);
     if (!container) return;
     container.innerHTML = "";
-    const order = mobile
-      ? (teamKey === 'A' ? [3, 2, 1, 0] : [0, 1, 2, 3])
-      : (teamKey === 'A' ? [2, 0, 3, 1] : [0, 2, 1, 3]);
-    order.forEach(i => container.appendChild(renderMemberCell(teamKey, i)));
+    [0, 1, 2, 3].forEach(i => {
+      const cell = renderMemberCell(teamKey, i);
+      cell.classList.add(DIAMOND_POS[i]);
+      container.appendChild(cell);
+    });
   });
 }
 
