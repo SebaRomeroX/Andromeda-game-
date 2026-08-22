@@ -7,7 +7,7 @@ const stories = [
     protagonist: 0,
     allies: [1,2,9],
     genericEnemies: [3, 7, 8, 10, 11, 12, 13, 14, 15],
-    narrativeEnemies: [4, 5, 6, 16],
+    narrativeEnemies: [4, 5, 6, 16, 17],
     teamA: [-1, 0, -1, -1],
     campAfterFights: 3,
     expectedStages: 21,
@@ -87,7 +87,7 @@ const stories = [
         narrativo: true,
         title: 'La espada mas veloz',
         description: 'Una emboscada por parte de la hoja mas certera del ejercito oscuro.',
-        enemyTeam: [-1, 5, -1, -1],
+        enemyTeam: [-1, 5, 14, -1],
         conditions: { eleccion: { 'camino-bosque': 'directo' } }
       },
 
@@ -157,6 +157,15 @@ const stories = [
 
 
 
+      {
+        id: 'primero-demonica',
+        type: 'enfrentamiento',
+        narrativo: true,
+        title: 'Demonica',
+        description: 'La segunda bajo el mando de la legion oscura.',
+        enemyTeam: [-1, 8, 17, -1],
+        conditions: { eleccion: { 'camino-cueva': 'directo' } }
+      },
 
 
 
@@ -185,7 +194,7 @@ const stories = [
         narrativo: true,
         title: 'Ruinas',
         description: 'Por fin el objetivo a la vista.',
-        enemyTeam: [4, 8, -1, -1],
+        enemyTeam: [16, 8, -1, -1],
         conditions: { campamentos: 3 }
       },
       {
@@ -257,7 +266,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, 5, -1, 6],
+        enemyTeam: [4, 5, 17, 6],
         conditions: { campamentos: 5, eleccion: { 'camino-bosque': 'bosque' } }
       },
       {
@@ -266,7 +275,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, 8, -1, 6],
+        enemyTeam: [4, 12, 15, 6],
         conditions: { campamentos: 5, eleccion: { 'camino-cueva': 'directo' } }
       },
       {
@@ -275,7 +284,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, 8, -1, 3],
+        enemyTeam: [4, 12, 17, 3],
         conditions: { campamentos: 5, eleccion: { 'camino-cueva': 'cueva' } }
       },
 

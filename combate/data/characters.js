@@ -214,6 +214,18 @@ const characters = [
       createSkill({ name: "Proteccion",       type: "buff",    target: "self",  stat: "defense",   value: 4,    precision: 99, aparicion: 50  }),
     ]
   }),
+  createCharacter({
+    name: "Demonic",
+    image: "assets/images/demonic.jpg",
+    hp: 80,
+    evasion: 6,
+    role: "rango",
+    skills: [
+      createSkill({ name: "Lamarada",       type: "attack",  power: 12,    precision: 85, aparicion: 30, herida: true}),
+      createSkill({ name: "Fuego abisal",   type: "attack",  power: 18,    precision: 85, aparicion: 30 }),
+      createSkill({ name: "Devilitar",      type: "buff",    target: "enemy", stat: "attack",  value: -0.10,  precision: 90, aparicion: 50 })
+    ]
+  }),
 ];
 
 export default characters;
