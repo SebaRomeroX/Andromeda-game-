@@ -82,6 +82,26 @@ const stories = [
 
 
       {
+        id: 'dialogo-akay',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'Un camino mas directo',
+        description: 'Por el linde del bosque el camino avanza recto.',
+        dialog: [
+          { text: 'El camino parece ir mas directo a tu destino.' },
+          { text: 'Sin embargo, los obstaculos nunca faltan.' },
+          { text: 'Emboscada !!!' },
+          { text: 'Sima reacciona justo a tiempo para detener el ataque ...' },
+          { speaker: 5, text: 'Jajaja parece que un cachorro se a perdido.' },
+          { speaker: 0, text: 'Te conozco, alimaña rastrera. Eres una de las espadas de Narada' },
+          { speaker: 5, text: 'Ahhh asi que vas tras la comandante oscura.' },
+          { speaker: 5, text: 'Que bella forma de buscar tu propia destruccion jajaja.' },
+          { speaker: 5, text: 'Sin embargo no puedo permitirlo ...' },
+          { text: 'Akay, la hoja certera de los oscuros, se avalanza hacia ti.' }
+        ],
+        conditions: { eleccion: { 'camino-bosque': 'directo' } }
+      },
+      {
         id: 'primero-akay',
         type: 'enfrentamiento',
         narrativo: true,
@@ -146,6 +166,21 @@ const stories = [
         conditions: { eleccion: { 'camino-cueva': 'cueva' } }
       },
       {
+        id: 'dialogo-bruja',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'Aracnidos cautivos',
+        description: 'Ayuda a los aracnidos.',
+        dialog: [
+          { text: 'En una amplia caberna, La bruja del paramo, quien mantiene cautivos a los aracnidos.' },
+          { speaker: 9, text: 'Libera a mi gente, maldita !' },
+          { speaker: 6, text: 'Y porque haria tal cosa ?' },
+          { text: 'La bruja los mira con una sonrisa burlona.' },
+          { text: 'Tu compañera aracnida pierde los nervios. Sima sujeta firme su escudo y da un paso al frente.' },
+        ],
+        conditions: { eleccion: { 'camino-cueva': 'cueva' } }
+      },
+      {
         id: 'primero-la-bruja',
         type: 'enfrentamiento',
         narrativo: true,
@@ -154,9 +189,42 @@ const stories = [
         enemyTeam: [-1, 8, -1, 6],
         conditions: { eleccion: { 'camino-cueva': 'cueva' } }
       },
+      {
+        id: 'dialogo-bruja-derrotada',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'Liberacion',
+        description: 'La bruja ha sido vencida.',
+        dialog: [
+          { text: 'Con la Bruja del paramo vencida, los aracnidos son libres.' },
+          { speaker: 9, text: 'Gracias por ayudarnos, buena suerte en tu viaje ...' },
+          { text: 'Sima la mira seriamente.' },
+          { speaker: 0, text: 'Hicimos un trato ...' },
+          { text: 'La aracnida agacha la cabeza.' },
+          { speaker: 9, text: 'Esta bien ... te seguire' },
+        ],
+        conditions: { eleccion: { 'camino-cueva': 'cueva' } }
+      },
 
 
 
+      {
+        id: 'dialogo-demonica',
+        type: 'dialogo',
+        narrativo: true,
+        title: 'Camino pedregozo',
+        description: 'Mas directo, por bordes y peñascos.',
+        dialog: [
+          { text: 'Avanzas varios kilometros casi sin contratiempos.' },
+          { text: 'El camino se ensancha, al final del terraplen, una inquietante figura.' },
+          { text: 'Se gira y se acerca flotando hacia ti.' },
+          { speaker: 17, text: 'Dahal ba selak gotur malak !' },
+          { speaker: 0, text: 'No entiendo tus palabras, pero tampoco me interesan.' },
+          { speaker: 0, text: 'Eres otra de los subordinados de esa escoria y caeras como el resto de ellos.' },
+          { text: 'Sima apunta su lanza hacia el enemigo, decision en su mirada.' },
+        ],
+        conditions: { eleccion: { 'camino-cueva': 'cueva' } }
+      },
       {
         id: 'primero-demonica',
         type: 'enfrentamiento',
@@ -204,7 +272,7 @@ const stories = [
         title: 'La sombra que huye',
         description: 'Narada se retira entre el humo.',
         dialog: [
-          { text: 'Herida y tambaleante, Narada retrocede mientras sus tropas le cubren las espaldas.' },
+          { text: 'Narada se aleja mientras sus tropas le cubren las espaldas.' },
           { speaker: 4, text: 'Esto no termina aquí, hoja suelta. El fuego siempre vuelve.' },
           { speaker: 0, text: 'Huye, entonces. La próxima vez no tendrás a nadie que te salve de mi.' },
           // { speaker: 1, text: 'Su ejército mengua, Sima. La próxima vez la encontraremos sin escapatoria.' },
