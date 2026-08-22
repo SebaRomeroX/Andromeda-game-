@@ -8,7 +8,8 @@ export function applyBuff(teamKey, memberIndex, buffDef) {
   const list = memberBuffs(teamKey, memberIndex);
   const existing = list.find(b => b.id === buffDef.id);
   if (existing) {
-    existing.turnsLeft = 4;
+    existing.turnsLeft = 3;
+    existing.active = true;
     return;
   }
   if (buffDef.stat === 'precision' || buffDef.stat === 'evasion') {
@@ -23,8 +24,8 @@ export function applyBuff(teamKey, memberIndex, buffDef) {
     name: buffDef.name,
     stat: buffDef.stat,
     value: buffDef.value,
-    turnsLeft: 4,
-    active: false
+    turnsLeft: 3,
+    active: true
   });
 }
 

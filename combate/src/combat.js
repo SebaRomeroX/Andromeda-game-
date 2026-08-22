@@ -1,7 +1,7 @@
 import state, { isDead, isAlive, aliveMembers, allDead, getGameEndCallback } from './state.js';
 import { ATTACK_ROUTES, ROLE_BY_INDEX, getSkillScaledStats } from './models.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
-import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, highlightSkill, clearSkillHighlight, showRestart } from './renderer.js';
+import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction, showCombatMessage } from './renderer.js';
 import { log } from './log.js';
 
 function pickWeighted(items, count) {
@@ -30,10 +30,10 @@ function skillNameToId(name) {
     .replace(/^_|_$/g, '');
 }
 
-function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
+function computeEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   const actor = state.teams[actorTeam].members[actorIndex];
   const target = state.teams[targetTeam].members[targetIndex];
-  if (!actor || !target) return;
+  if (!actor || !target) return null;
 
   const basePrecision = skill.precision ?? 100;
   const precision = getPrecision(actorTeam, actorIndex, basePrecision);
@@ -43,10 +43,69 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   if (skill.type === "cura") {
     if (!hit) {
       log(`💚 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-      return;
+      return { type: "miss" };
     }
+    return {
+      type: "cura",
+      heal: Math.min(target.currentHp + scaled.power, target.hp) - target.currentHp
+    };
+  }
+
+  if (skill.type === "buff") {
+    if (!hit) {
+      log(`💥 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
+      return { type: "miss" };
+    }
+    return { type: "buff" };
+  }
+
+  if (skill.type === "defense") {
+    if (!hit) {
+      log(`🛡️ ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
+      return { type: "miss" };
+    }
+    return { type: "defense", power: scaled.power };
+  }
+
+  if (!hit) {
+    log(`💥 ${actor.name} usa ${skill.name}... ¡PERO FALLA!`);
+    return { type: "miss" };
+  }
+
+  const baseEvasion = target.evasion ?? 0;
+  const evasion = getEvasion(targetTeam, targetIndex, baseEvasion);
+  if (!target.stunned && Math.random() * 100 < evasion) {
+    log(`💥 ${actor.name} usa ${skill.name}... ¡${target.name} esquiva el ataque!`);
+    return { type: "evade" };
+  }
+
+  const defSkill = target.defense;
+  const defBuffs = getFlatBuffSum(targetTeam, targetIndex, 'defense');
+  const def = defSkill + defBuffs;
+  const atkMult = getMultiplier(actorTeam, actorIndex, "attack");
+  const rawDmg = Math.round(scaled.power * atkMult);
+  const finalDmg = Math.max(0, rawDmg - def);
+
+  return {
+    type: "attack",
+    rawDmg,
+    finalDmg,
+    def,
+    defBuffs,
+    atkMult,
+    stun: skill.stun && finalDmg > 0,
+    wound: skill.herida && finalDmg > 0
+  };
+}
+
+function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
+  const actor = state.teams[actorTeam].members[actorIndex];
+  const target = state.teams[targetTeam].members[targetIndex];
+  if (!actor || !target) return;
+
+  if (outcome.type === "cura") {
     const oldHp = target.currentHp;
-    target.currentHp = Math.min(target.currentHp + scaled.power, target.hp);
+    target.currentHp = Math.min(target.currentHp + outcome.heal, target.hp);
     const healed = target.currentHp - oldHp;
     let msg = `💚 ${actor.name} usa ${skill.name} en ${target.name}: +${healed} HP`;
     if (target.wounded) {
@@ -54,16 +113,10 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
       msg += ` y sana su herida`;
     }
     log(msg);
-    renderHP();
-    renderStatus();
     return;
   }
 
-  if (skill.type === "buff") {
-    if (!hit) {
-      log(`💥 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-      return;
-    }
+  if (outcome.type === "buff") {
     applyBuff(targetTeam, targetIndex, {
       id: skillNameToId(skill.name),
       name: skill.name,
@@ -91,56 +144,33 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
       const pct = (Math.abs(skill.value) * 100).toFixed(0);
       log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: ${verb} ${skill.stat} en ${sign}${pct}%`);
     }
-    renderBuffs();
-    renderStatus();
     return;
   }
 
-  if (skill.type === "defense") {
-    if (hit) {
-      actor.defense = scaled.power;
-      log(`🛡️ ${actor.name} usa ${skill.name}: defensa ${scaled.power} activada`);
-    } else {
-      log(`🛡️ ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
-    }
+  if (outcome.type === "defense") {
+    actor.defense = outcome.power;
+    log(`🛡️ ${actor.name} usa ${skill.name}: defensa ${outcome.power} activada`);
     return;
   }
 
-  if (!hit) {
-    log(`💥 ${actor.name} usa ${skill.name}... ¡PERO FALLA!`);
-    return;
-  }
-
-  const baseEvasion = target.evasion ?? 0;
-  const evasion = getEvasion(targetTeam, targetIndex, baseEvasion);
-  if (!target.stunned && Math.random() * 100 < evasion) {
-    log(`💥 ${actor.name} usa ${skill.name}... ¡${target.name} esquiva el ataque!`);
-    return;
-  }
-
-  const defSkill = target.defense;
-  const defBuffs = getFlatBuffSum(targetTeam, targetIndex, 'defense');
-  const def = defSkill + defBuffs;
-  const atkMult = getMultiplier(actorTeam, actorIndex, "attack");
-  const rawDmg = Math.round(scaled.power * atkMult);
-  const finalDmg = Math.max(0, rawDmg - def);
-  target.currentHp = Math.max(0, target.currentHp - finalDmg);
+  target.currentHp = Math.max(0, target.currentHp - outcome.finalDmg);
 
   let defInfo = "";
-  if (def > 0) {
-    defInfo = ` (defensa rival: ${def}`;
-    if (defBuffs > 0) defInfo += ` [buff: +${defBuffs}]`;
+  if (outcome.def > 0) {
+    defInfo = ` (defensa rival: ${outcome.def}`;
+    if (outcome.defBuffs > 0) defInfo += ` [buff: +${outcome.defBuffs}]`;
     defInfo += `)`;
   }
-  const multInfo = atkMult !== 1 ? ` (x${atkMult.toFixed(2)} atq)` : "";
-  log(`💥 ${actor.name} usa ${skill.name} en ${target.name}: ${rawDmg} de ataque${multInfo}${defInfo} → ${finalDmg} de daño`);
+  const multInfo = outcome.atkMult !== 1 ? ` (x${outcome.atkMult.toFixed(2)} atq)` : "";
+  log(`💥 ${actor.name} usa ${skill.name} en ${target.name}: ${outcome.rawDmg} de ataque${multInfo}${defInfo} → ${outcome.finalDmg} de daño`);
 
-  if (skill.stun && finalDmg > 0) {
+  if (outcome.stun) {
     target.stunned = true;
+    target.stunTurns = 2;
     log(`⚡ ${actor.name} STUNEA a ${target.name}!`);
   }
 
-  if (skill.herida && finalDmg > 0) {
+  if (outcome.wound) {
     target.wounded = true;
     log(`🩸 ${actor.name} HIERE a ${target.name}!`);
   }
@@ -166,8 +196,6 @@ function enemySelectSkills() {
 
     if (member.stunned) {
       log(`💫 ${member.name} está aturdido y pierde su turno!`);
-      member.stunned = false;
-      renderStatus();
       continue;
     }
 
@@ -216,6 +244,8 @@ function enemySelectSkills() {
     });
   }
 
+  renderPendingActions();
+
   setTimeout(() => {
     log(`=== Equipo A elige sus skills ===`);
     state.actingMemberIndex = 0;
@@ -252,18 +282,22 @@ function endRound() {
 
 function resolveAction(index, sorted) {
   if (state.gameOver || index >= sorted.length) {
+    if (index > 0) clearMemberAction(sorted[index - 1].team, sorted[index - 1].actorIndex);
     state.turnPhase = 'idle';
     endRound();
     return;
   }
 
+  if (index > 0) clearMemberAction(sorted[index - 1].team, sorted[index - 1].actorIndex);
+
   clearTargets();
-  document.querySelectorAll('.member-slot.active, .member-slot.glow-green, .member-slot.glow-red')
-    .forEach(el => el.classList.remove('active', 'glow-green', 'glow-red'));
+  document.querySelectorAll('.member-slot.active, .member-slot.glow-green, .member-slot.glow-red, .member-slot.acting, .member-slot.objective, .member-slot.objective-flash-green, .member-slot.objective-flash-red')
+    .forEach(el => el.classList.remove('active', 'glow-green', 'glow-red', 'acting', 'objective', 'objective-flash-green', 'objective-flash-red'));
 
   const action = sorted[index];
   const actor = state.teams[action.team].members[action.actorIndex];
   if (!actor || actor.currentHp <= 0 || actor.stunned) {
+    clearMemberAction(action.team, action.actorIndex);
     if (actor?.stunned) {
       log(`💫 ${actor.name} está aturdido y no puede ejecutar ${action.skill.name}!`);
       renderStatus();
@@ -274,18 +308,40 @@ function resolveAction(index, sorted) {
 
   const target = state.teams[action.targetTeam].members[action.targetIdx];
   if (!target || target.currentHp <= 0) {
+    clearMemberAction(action.team, action.actorIndex);
     log(`⚠️ ${actor.name} no puede ejecutar ${action.skill.name}: el objetivo ya no está disponible`);
     setTimeout(() => resolveAction(index + 1, sorted), 400);
     return;
   }
 
   renderActionIndicators(action.team, action.actorIndex, action.targetTeam, action.targetIdx);
-  applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill);
-  renderHP();
-  renderStatus();
-  renderBuffs();
-  if (checkGameOver()) return;
-  setTimeout(() => resolveAction(index + 1, sorted), 2200);
+  const outcome = computeEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill);
+
+  if (outcome.type === "miss" || outcome.type === "evade") {
+    const msg = outcome.type === "miss" ? "¡Falla!" : "¡Esquiva!";
+    const variant = outcome.type === "miss" ? "combat-msg-miss" : "combat-msg-evade";
+    setTimeout(() => showCombatMessage(action.targetTeam, action.targetIdx, msg, variant), 1500);
+    setTimeout(() => resolveAction(index + 1, sorted), 2200);
+    return;
+  }
+
+  const blocked = outcome.type === "attack" && outcome.finalDmg === 0;
+  if (!blocked) {
+    setTimeout(() => flashObjective(action.targetTeam, action.targetIdx, action.skill), 1500);
+  } else {
+    setTimeout(() => showCombatMessage(action.targetTeam, action.targetIdx, "¡Defiende!", "combat-msg-defend"), 1500);
+  }
+  setTimeout(() => {
+    applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill, outcome);
+    renderHP();
+    renderStatus();
+    renderBuffs();
+    if (checkGameOver()) {
+      clearMemberAction(action.team, action.actorIndex);
+      return;
+    }
+    setTimeout(() => resolveAction(index + 1, sorted), 500);
+  }, 1700);
 }
 
 function resolveTurn() {
@@ -363,8 +419,6 @@ function playerSelectSkills() {
 
     if (member.stunned) {
       log(`💫 ${member.name} está aturdido y pierde su turno!`);
-      member.stunned = false;
-      renderStatus();
       continue;
     }
 
@@ -412,6 +466,14 @@ export function startTurn() {
     state.teams[teamKey].members.forEach(m => { if (m) m.defense = 0; });
   });
   state.turnActive = true;
+
+  ['A', 'B'].forEach(teamKey => {
+    state.teams[teamKey].members.forEach(m => {
+      if (!m || !m.stunned) return;
+      m.stunTurns = (m.stunTurns ?? 2) - 1;
+      if (m.stunTurns <= 0) m.stunned = false;
+    });
+  });
 
   const expired = processBuffs();
   expired.forEach(e => {
@@ -465,6 +527,7 @@ export function onTargetClick(team, index) {
     targetTeam: team,
     targetIdx: index
   });
+  renderPendingActions();
 
   state.actingMemberIndex = state.actingMemberIndex + 1;
   state.selectedSkill = null;

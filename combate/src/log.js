@@ -11,3 +11,16 @@ export function log(msg) {
 export function clearLog() {
   $("log").innerHTML = "";
 }
+
+export function openLog() {
+  const overlay = $("log-overlay");
+  if (!overlay) return;
+  overlay.classList.remove("hidden");
+  const el = $("log");
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+export function closeLog() {
+  const overlay = $("log-overlay");
+  if (overlay) overlay.classList.add("hidden");
+}

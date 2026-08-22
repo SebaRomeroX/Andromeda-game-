@@ -3,6 +3,36 @@ import { getSkillScaledStats } from './models.js';
 
 export const $ = id => document.getElementById(id);
 
+const BUFF_EMOJIS = { attack: '⚔️', defense: '🛡️', evasion: '🏃', precision: '🎯' };
+
+function formatAction(skill) {
+  const scaled = getSkillScaledStats(skill);
+  if (skill.type === "attack") {
+    const icon = skill.stun ? "⚡" : "🗡️";
+    return `${icon} (${scaled.power})`;
+  }
+  if (skill.type === "cura") return `💚 (${scaled.power})`;
+  if (skill.type === "defense") return `🛡️ (${scaled.power})`;
+  if (skill.type === "buff") {
+    const sign = skill.value > 0 ? '+' : '-';
+    return `✨ (${BUFF_EMOJIS[skill.stat] ?? '⚔️'}${sign})`;
+  }
+  return "";
+}
+
+export function renderPendingActions() {
+  document.querySelectorAll('.member-action').forEach(el => { el.textContent = ""; });
+  state.pendingActions.forEach(a => {
+    const el = $(`action-${a.team}-${a.actorIndex}`);
+    if (el) el.textContent = formatAction(a.skill);
+  });
+}
+
+export function clearMemberAction(team, index) {
+  const el = $(`action-${team}-${index}`);
+  if (el) el.textContent = "";
+}
+
 export function handleImgError(img, name) {
   img.style.display = "none";
   const fallback = document.createElement("div");
@@ -45,7 +75,10 @@ function renderMemberSlot(teamKey, index) {
       info.className = "member-info";
       info.append(nameEl, hpBar, statusEl);
 
-      slot.append(img, info);
+      const overlay = document.createElement("div");
+      overlay.className = "member-flash-overlay";
+
+      slot.append(img, overlay, info);
       slot.classList.add("dead");
     }
     return slot;
@@ -89,7 +122,10 @@ function renderMemberSlot(teamKey, index) {
   info.className = "member-info";
   info.append(nameEl, hpBar, statusLine);
 
-  slot.append(img, info);
+  const overlay = document.createElement("div");
+  overlay.className = "member-flash-overlay";
+
+  slot.append(img, overlay, info);
 
   return slot;
 }
@@ -98,19 +134,34 @@ function getStatusString(member) {
   let parts = [];
   if (member.stunned) parts.push("⚡");
   if (member.wounded) parts.push("🩸");
+  if (member.defense > 0) parts.push(`🛡️${member.defense}`);
   return parts.join(" ");
 }
 
+function renderMemberCell(teamKey, index) {
+  const cell = document.createElement("div");
+  cell.className = "member-cell";
+
+  const actionEl = document.createElement("div");
+  actionEl.className = "member-action";
+  actionEl.id = `action-${teamKey}-${index}`;
+
+  cell.append(actionEl, renderMemberSlot(teamKey, index));
+  return cell;
+}
+
+const DIAMOND_POS = ['cell-front', 'cell-bottom', 'cell-top', 'cell-back'];
+
 export function renderTeams() {
-  const mobile = document.documentElement.classList.contains('mobile');
   ['A', 'B'].forEach(teamKey => {
     const container = $(`team-${teamKey}-grid`);
     if (!container) return;
     container.innerHTML = "";
-    const order = mobile
-      ? (teamKey === 'A' ? [3, 2, 1, 0] : [0, 1, 2, 3])
-      : (teamKey === 'A' ? [2, 0, 3, 1] : [0, 2, 1, 3]);
-    order.forEach(i => container.appendChild(renderMemberSlot(teamKey, i)));
+    [0, 1, 2, 3].forEach(i => {
+      const cell = renderMemberCell(teamKey, i);
+      cell.classList.add(DIAMOND_POS[i]);
+      container.appendChild(cell);
+    });
   });
 }
 
@@ -212,20 +263,62 @@ export function clearTargets() {
 }
 
 export function renderActionIndicators(actorTeam, actorIndex, targetTeam, targetIndex) {
-  document.querySelectorAll('.member-slot.glow-green, .member-slot.glow-red')
-    .forEach(el => el.classList.remove('glow-green', 'glow-red'));
+  document.querySelectorAll('.member-slot.glow-green, .member-slot.glow-red, .member-slot.objective')
+    .forEach(el => el.classList.remove('glow-green', 'glow-red', 'objective'));
 
   const cls = actorTeam === 'A' ? 'glow-green' : 'glow-red';
 
   const actorSlot = document.querySelector(
     `.member-slot[data-team="${actorTeam}"][data-index="${actorIndex}"]`
   );
-  if (actorSlot && !actorSlot.classList.contains('dead')) actorSlot.classList.add(cls);
+  if (actorSlot && !actorSlot.classList.contains('dead')) {
+    actorSlot.classList.add(cls);
+    actorSlot.classList.add('acting');
+  }
 
   const targetSlot = document.querySelector(
     `.member-slot[data-team="${targetTeam}"][data-index="${targetIndex}"]`
   );
-  if (targetSlot && !targetSlot.classList.contains('dead')) targetSlot.classList.add(cls);
+  if (targetSlot && !targetSlot.classList.contains('dead')) {
+    targetSlot.classList.add(cls);
+    targetSlot.classList.add('objective');
+  }
+}
+
+function isDebuff(skill) {
+  if (skill.type !== 'buff') return false;
+  if (skill.value < 0) return true;
+  if (skill.stat === 'precision' && skill.value < 1) return true;
+  if (skill.stat === 'evasion' && skill.value === 0) return true;
+  return false;
+}
+
+export function flashObjective(targetTeam, targetIndex, skill) {
+  const beneficial = skill.type === 'defense' || skill.type === 'cura' || (skill.type === 'buff' && !isDebuff(skill));
+  const cls = beneficial ? 'objective-flash-green' : 'objective-flash-red';
+
+  document.querySelectorAll('.member-slot.objective-flash-green, .member-slot.objective-flash-red')
+    .forEach(el => el.classList.remove('objective-flash-green', 'objective-flash-red'));
+
+  const slot = document.querySelector(
+    `.member-slot[data-team="${targetTeam}"][data-index="${targetIndex}"]`
+  );
+  if (!slot) return;
+
+  slot.classList.add(cls);
+  setTimeout(() => slot.classList.remove(cls), 900);
+}
+
+export function showCombatMessage(team, index, text, variant) {
+  const slot = document.querySelector(
+    `.member-slot[data-team="${team}"][data-index="${index}"]`
+  );
+  if (!slot) return;
+  const el = document.createElement("div");
+  el.className = `combat-message ${variant || ""}`.trim();
+  el.textContent = text;
+  slot.appendChild(el);
+  setTimeout(() => el.remove(), 700);
 }
 
 export function highlightSkill(index) {

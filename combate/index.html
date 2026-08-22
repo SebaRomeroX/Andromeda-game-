@@ -63,9 +63,19 @@
 
       <div id="combat-panel">
         <div id="actions"></div>
-        <div id="log"></div>
+        <button id="log-open-btn" class="log-open-btn">📜 Registro</button>
       </div>
       <div id="restart-area"></div>
+    </div>
+
+    <div id="log-overlay" class="overlay hidden">
+      <div class="overlay-content log-content">
+        <div class="log-header">
+          <h3 class="screen-subtitle log-title">📜 Registro del Combate</h3>
+          <button id="log-close-btn" class="log-close-btn" title="Cerrar">✕</button>
+        </div>
+        <div id="log"></div>
+      </div>
     </div>
 
     <div id="camp-overlay" class="overlay hidden">
