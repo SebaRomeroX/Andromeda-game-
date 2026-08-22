@@ -31,9 +31,10 @@ const characters = [
     evasion: 7,
     role: "soporte",
     skills: [
-      createSkill({ name: "Ataque compasivo",       type: "attack",  power: 6,   precision: 90,     aparicion: 10 }),
-      createSkill({ name: "Medicina druidica",      type: "cura",    power: 8,    precision: 99,    aparicion: 70   }),
-      createSkill({ name: "Hechizo de proteccion",  type: "buff",    target: "self",  stat: "defense",   value: 6,    precision: 99, aparicion: 50  }),
+      createSkill({ name: "Bolpe de baculo",        type: "attack",  power: 6,   precision: 90,    aparicion: 50 }),
+      createSkill({ name: "Medicina druidica",      type: "cura",    power: 8,   precision: 99,    aparicion: 70   }),
+      createSkill({ name: "Disminucion",            type: "buff",    target: "enemy", stat: "attack",    value: -0.2,  precision: 99, aparicion: 30 }),
+      createSkill({ name: "Hechizo de proteccion",  type: "buff",    target: "self",  stat: "defense",   value: 6,     precision: 99, aparicion: 30  }),
     ]
   }),
   createCharacter({
@@ -76,25 +77,27 @@ const characters = [
   createCharacter({
     name: "Akay",
     image: "assets/images/Akay.jpg",
-    hp: 70,
-    evasion: 6,
+    hp: 100,
+    evasion: 8,
     role: "asesino",
     skills: [
-      createSkill({ name: "Corte",         type: "attack",  power: 10,        precision: 80,      aparicion: 70 }),
-      createSkill({ name: "Puñalada",      type: "attack",  power: 14,        precision: 90,      aparicion: 20 }),
+      createSkill({ name: "Sangrante",     type: "attack",  power: 12,       precision: 85,      aparicion: 40, herida: true }),
+      createSkill({ name: "Corte",         type: "attack",  power: 15,       precision: 85,      aparicion: 70 }),
+      createSkill({ name: "Puñalada",      type: "attack",  power: 24,       precision: 90,      aparicion: 20 }),
       createSkill({ name: "Concentracion", type: "buff",    target: "self",  stat: "precision",  value: 100,   precision: 90, aparicion: 50 }),
     ]
   }),
   createCharacter({
     name: "La bruja del paramo",
     image: "assets/images/Bruja.jpg",
-    hp: 60,
+    hp: 100,
     evasion: 4,
     role: "soporte",
     skills: [
-      createSkill({ name: "Ataque mental",     type: "attack",  power: 12,   precision: 75,  aparicion: 10,}),
-      createSkill({ name: "Vision de muerte",  type: "buff",    target: "enemy", stat: "attack",      value: -0.20,  precision: 90, aparicion: 5 }),
-      createSkill({ name: "Espejismo",         type: "buff",    target: "enemy",  stat: "precision",  value: 0.8,    precision: 95, aparicion: 7 }),
+      createSkill({ name: "Ataque mental",      type: "attack",  power: 15,       precision: 75,     aparicion: 50 }),
+      createSkill({ name: "Vision de muerte",   type: "buff",    target: "enemy", stat: "attack",    value: -0.20,  precision: 90, aparicion: 30 }),
+      createSkill({ name: "Defenza Calaverica", type: "buff",    target: "self",  stat: "defense",   value: 5,      precision: 95, aparicion: 30 }),
+      createSkill({ name: "Espejismo",          type: "buff",    target: "enemy", stat: "precision", value: 0.5,    precision: 95, aparicion: 30 }),
     ]
   }),
   createCharacter({
@@ -127,9 +130,10 @@ const characters = [
     evasion: 7,
     role: "soporte",
     skills: [
-      createSkill({ name: "Disparo aguijon",   type: "attack",  power: 2,   precision: 90,    aparicion: 50,  herida: true }),
-      createSkill({ name: "Telaraña",          type: "attack",  power: 1,   precision: 95,    aparicion: 50,  stun: true }),
-      createSkill({ name: "Vendaje aracnido",  type: "cura",    power: 4,   precision: 99,    aparicion: 50   }),
+      createSkill({ name: "Disparo aguijon",    type: "attack",  power: 6,   precision: 90,    aparicion: 80 }),
+      createSkill({ name: "Picadura venonosa",  type: "attack",  power: 2,   precision: 90,    aparicion: 50,  herida: true }),
+      createSkill({ name: "Telaraña",           type: "attack",  power: 1,   precision: 95,    aparicion: 40,  stun: true }),
+      createSkill({ name: "Vendaje aracnido",   type: "cura",    power: 4,   precision: 99,    aparicion: 50   }),
     ]
   }),
   createCharacter({
@@ -205,19 +209,19 @@ const characters = [
   createCharacter({
     name: "Capitan Oscuro",
     image: "assets/images/Guerrero.jpg",
-    hp: 140,
+    hp: 180,
     evasion: 2,
     role: "tanque",
     skills: [
-      createSkill({ name: "Corte",            type: "attack",  power: 14,  precision: 85, aparicion: 60 }),
-      createSkill({ name: "Golpe de escudo",  type: "attack",  power: 8,  precision: 90, aparicion: 20,  stun: true  }),
+      createSkill({ name: "Corte",            type: "attack",  power: 16,  precision: 85, aparicion: 60 }),
+      createSkill({ name: "Golpe de escudo",  type: "attack",  power: 10,  precision: 90, aparicion: 20,  stun: true  }),
       createSkill({ name: "Proteccion",       type: "buff",    target: "self",  stat: "defense",   value: 4,    precision: 99, aparicion: 50  }),
     ]
   }),
   createCharacter({
     name: "Demonic",
     image: "assets/images/demonic.jpg",
-    hp: 80,
+    hp: 100,
     evasion: 6,
     role: "rango",
     skills: [

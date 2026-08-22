@@ -186,7 +186,7 @@ const stories = [
         narrativo: true,
         title: 'La bruja del paramo',
         description: 'La bruja que mantiene cautivo a los aracnidos.',
-        enemyTeam: [-1, 8, -1, 6],
+        enemyTeam: [-1, 12, 14, 6],
         conditions: { eleccion: { 'camino-cueva': 'cueva' } }
       },
       {
@@ -231,7 +231,7 @@ const stories = [
         narrativo: true,
         title: 'Demonica',
         description: 'La segunda bajo el mando de la legion oscura.',
-        enemyTeam: [-1, 8, 17, -1],
+        enemyTeam: [-1, 13, 17, -1],
         conditions: { eleccion: { 'camino-cueva': 'directo' } }
       },
 
@@ -343,7 +343,7 @@ const stories = [
         narrativo: true,
         title: 'Enfrentamiento final',
         description: 'Entre los escombros del santuario, Narada te espera.',
-        enemyTeam: [4, 12, 15, 6],
+        enemyTeam: [4, 12, 14, 6],
         conditions: { campamentos: 5, eleccion: { 'camino-cueva': 'directo' } }
       },
       {
