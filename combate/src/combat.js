@@ -33,8 +33,8 @@ function skillNameToId(name) {
 }
 
 function computeEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
-  const actor = state.teams[actorTeam].members[actorIndex];
-  const target = state.teams[targetTeam].members[targetIndex];
+  const actor = state.combat.teams[actorTeam].members[actorIndex];
+  const target = state.combat.teams[targetTeam].members[targetIndex];
   if (!actor || !target) return null;
 
   const basePrecision = skill.precision ?? 100;
@@ -101,8 +101,8 @@ function computeEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
 }
 
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
-  const actor = state.teams[actorTeam].members[actorIndex];
-  const target = state.teams[targetTeam].members[targetIndex];
+  const actor = state.combat.teams[actorTeam].members[actorIndex];
+  const target = state.combat.teams[targetTeam].members[targetIndex];
   if (!actor || !target) return;
 
   if (outcome.type === SKILL_TYPES.CURA) {
@@ -185,16 +185,16 @@ function pickRandomTarget(sourceTeam, targetTeam) {
 }
 
 function enemySelectSkills() {
-  if (state.gameOver) return;
+  if (state.combat.gameOver) return;
 
-  state.pendingActions = [];
-  state.turnPhase = TURN_PHASES.ENEMY_SELECT;
+  state.combat.pendingActions = [];
+  state.combat.turnPhase = TURN_PHASES.ENEMY_SELECT;
   log(`=== Equipo B elige sus skills ===`);
 
-  for (let i = 0; i < state.teams.B.members.length; i++) {
-    const member = state.teams.B.members[i];
+  for (let i = 0; i < state.combat.teams.B.members.length; i++) {
+    const member = state.combat.teams.B.members[i];
     if (!member || member.currentHp <= 0) continue;
-    if (state.gameOver) return;
+    if (state.combat.gameOver) return;
 
     if (member.stunned) {
       log(`💫 ${member.name} está aturdido y pierde su turno!`);
@@ -235,7 +235,7 @@ function enemySelectSkills() {
 
     log(`💀 ${member.name} prepara ${skill.name} (${actionLabel(skill.type)} ${powerLabel(skill)})`);
 
-    state.pendingActions.push({
+    state.combat.pendingActions.push({
       team: TEAMS.B,
       actorIndex: i,
       skill,
@@ -248,22 +248,22 @@ function enemySelectSkills() {
 
   setTimeout(() => {
     log(`=== Equipo A elige sus skills ===`);
-    state.actingMemberIndex = 0;
-    state.selectedSkill = null;
-    state.turnPhase = TURN_PHASES.IDLE;
+    state.combat.actingMemberIndex = 0;
+    state.combat.selectedSkill = null;
+    state.combat.turnPhase = TURN_PHASES.IDLE;
     playerSelectSkills();
   }, 600);
 }
 
 function checkGameOver() {
   if (allDead(TEAMS.A)) {
-    state.gameOver = true;
+    state.combat.gameOver = true;
     log(`☠️ ¡El EQUIPO A ha sido derrotado! El EQUIPO B gana.`);
     showRestart(false, getGameEndCallback());
     return true;
   }
   if (allDead(TEAMS.B)) {
-    state.gameOver = true;
+    state.combat.gameOver = true;
     log(`🏆 ¡El EQUIPO B ha sido derrotado! El EQUIPO A gana.`);
     showRestart(true, getGameEndCallback());
     return true;
@@ -281,9 +281,9 @@ function endRound() {
 }
 
 function resolveAction(index, sorted) {
-  if (state.gameOver || index >= sorted.length) {
+  if (state.combat.gameOver || index >= sorted.length) {
     if (index > 0) clearMemberAction(sorted[index - 1].team, sorted[index - 1].actorIndex);
-    state.turnPhase = TURN_PHASES.IDLE;
+    state.combat.turnPhase = TURN_PHASES.IDLE;
     endRound();
     return;
   }
@@ -295,7 +295,7 @@ function resolveAction(index, sorted) {
     .forEach(el => el.classList.remove('active', 'glow-green', 'glow-red', 'acting', 'objective', 'objective-flash-green', 'objective-flash-red'));
 
   const action = sorted[index];
-  const actor = state.teams[action.team].members[action.actorIndex];
+  const actor = state.combat.teams[action.team].members[action.actorIndex];
   if (!actor || actor.currentHp <= 0 || actor.stunned) {
     clearMemberAction(action.team, action.actorIndex);
     if (actor?.stunned) {
@@ -306,7 +306,7 @@ function resolveAction(index, sorted) {
     return;
   }
 
-  const target = state.teams[action.targetTeam].members[action.targetIdx];
+  const target = state.combat.teams[action.targetTeam].members[action.targetIdx];
   if (!target || target.currentHp <= 0) {
     clearMemberAction(action.team, action.actorIndex);
     log(`⚠️ ${actor.name} no puede ejecutar ${action.skill.name}: el objetivo ya no está disponible`);
@@ -345,20 +345,20 @@ function resolveAction(index, sorted) {
 }
 
 function resolveTurn() {
-  state.turnPhase = TURN_PHASES.RESOLVING;
+  state.combat.turnPhase = TURN_PHASES.RESOLVING;
   renderActions([], () => {});
   log(`=== Resolución ===`);
 
   const priority = [SKILL_TYPES.BUFF, SKILL_TYPES.CURA, SKILL_TYPES.DEFENSE, SKILL_TYPES.ATTACK];
   const teamOrder = { [TEAMS.A]: 0, [TEAMS.B]: 1 };
 
-  const sorted = [...state.pendingActions].sort((a, b) => {
+  const sorted = [...state.combat.pendingActions].sort((a, b) => {
     const typeDiff = priority.indexOf(a.skill.type) - priority.indexOf(b.skill.type);
     if (typeDiff !== 0) return typeDiff;
     return teamOrder[a.team] - teamOrder[b.team];
   });
 
-  state.pendingActions = [];
+  state.combat.pendingActions = [];
 
   setTimeout(() => resolveAction(0, sorted), 400);
 }
@@ -409,13 +409,13 @@ function computeTargets(skill, actorIndex) {
 }
 
 function playerSelectSkills() {
-  if (state.gameOver) return;
+  if (state.combat.gameOver) return;
 
-  for (let i = state.actingMemberIndex; i < state.teams.A.members.length; i++) {
-    const member = state.teams.A.members[i];
+  for (let i = state.combat.actingMemberIndex; i < state.combat.teams.A.members.length; i++) {
+    const member = state.combat.teams.A.members[i];
     if (!member || member.currentHp <= 0) continue;
 
-    state.actingMemberIndex = i;
+    state.combat.actingMemberIndex = i;
 
     if (member.stunned) {
       log(`💫 ${member.name} está aturdido y pierde su turno!`);
@@ -424,30 +424,30 @@ function playerSelectSkills() {
 
     renderCurrentActor();
     const skills = pickWeighted(member.skills, 3);
-    state.selectedSkill = null;
-    state.turnPhase = TURN_PHASES.SELECT_SKILL;
+    state.combat.selectedSkill = null;
+    state.combat.turnPhase = TURN_PHASES.SELECT_SKILL;
     clearSkillHighlight();
     renderActions(skills, (skillIdx) => {
       const skill = skills[skillIdx];
 
-      if (state.turnPhase === TURN_PHASES.SELECT_SKILL) {
-        state.selectedSkill = skill;
+      if (state.combat.turnPhase === TURN_PHASES.SELECT_SKILL) {
+        state.combat.selectedSkill = skill;
         highlightSkill(skillIdx);
-        state.turnPhase = TURN_PHASES.SELECT_TARGET;
+        state.combat.turnPhase = TURN_PHASES.SELECT_TARGET;
         renderTargets(computeTargets(skill, i));
         return;
       }
 
-      if (state.turnPhase === TURN_PHASES.SELECT_TARGET) {
-        if (state.selectedSkill === skill) {
-          state.selectedSkill = null;
-          state.turnPhase = TURN_PHASES.SELECT_SKILL;
+      if (state.combat.turnPhase === TURN_PHASES.SELECT_TARGET) {
+        if (state.combat.selectedSkill === skill) {
+          state.combat.selectedSkill = null;
+          state.combat.turnPhase = TURN_PHASES.SELECT_SKILL;
           clearSkillHighlight();
           clearTargets();
           return;
         }
 
-        state.selectedSkill = skill;
+        state.combat.selectedSkill = skill;
         highlightSkill(skillIdx);
         renderTargets(computeTargets(skill, i));
         return;
@@ -460,15 +460,15 @@ function playerSelectSkills() {
 }
 
 export function startTurn() {
-  if (state.gameOver) return;
+  if (state.combat.gameOver) return;
 
   [TEAMS.A, TEAMS.B].forEach(teamKey => {
-    state.teams[teamKey].members.forEach(m => { if (m) m.defense = 0; });
+    state.combat.teams[teamKey].members.forEach(m => { if (m) m.defense = 0; });
   });
-  state.turnActive = true;
+  state.combat.turnActive = true;
 
   [TEAMS.A, TEAMS.B].forEach(teamKey => {
-    state.teams[teamKey].members.forEach(m => {
+    state.combat.teams[teamKey].members.forEach(m => {
       if (!m || !m.stunned) return;
       m.stunTurns = (m.stunTurns ?? 2) - 1;
       if (m.stunTurns <= 0) m.stunned = false;
@@ -477,13 +477,13 @@ export function startTurn() {
 
   const expired = processBuffs();
   expired.forEach(e => {
-    const name = state.teams[e.teamKey].members[e.memberIndex]?.name ?? '?';
+    const name = state.combat.teams[e.teamKey].members[e.memberIndex]?.name ?? '?';
     log(`⌛ ${name}: ${e.buffName} terminó`);
   });
   renderBuffs();
 
   [TEAMS.A, TEAMS.B].forEach(teamKey => {
-    state.teams[teamKey].members.forEach(m => {
+    state.combat.teams[teamKey].members.forEach(m => {
       if (!m || m.currentHp <= 0) return;
       if (m.wounded) {
         m.currentHp = Math.max(0, m.currentHp - 2);
@@ -502,34 +502,34 @@ export function startTurn() {
 }
 
 export function onTargetClick(team, index) {
-  if (state.turnPhase !== TURN_PHASES.SELECT_TARGET || !state.selectedSkill) return;
+  if (state.combat.turnPhase !== TURN_PHASES.SELECT_TARGET || !state.combat.selectedSkill) return;
 
-  const skill = state.selectedSkill;
+  const skill = state.combat.selectedSkill;
 
   if (skill.type === SKILL_TYPES.ATTACK && team !== TEAMS.B) return;
   if (skill.type === SKILL_TYPES.CURA && team !== TEAMS.A) return;
-  if (skill.type === SKILL_TYPES.DEFENSE && (team !== TEAMS.A || index !== state.actingMemberIndex)) return;
+  if (skill.type === SKILL_TYPES.DEFENSE && (team !== TEAMS.A || index !== state.combat.actingMemberIndex)) return;
   if (skill.type === SKILL_TYPES.BUFF && skill.target === 'enemy' && team !== TEAMS.B) return;
   if (skill.type === SKILL_TYPES.BUFF && skill.target !== 'enemy' && team !== TEAMS.A) return;
 
-  const target = state.teams[team].members[index];
+  const target = state.combat.teams[team].members[index];
   if (!target || target.currentHp <= 0) return;
 
-  const actor = state.teams.A.members[state.actingMemberIndex];
+  const actor = state.combat.teams.A.members[state.combat.actingMemberIndex];
   log(`🗡️ ${actor.name} prepara ${skill.name} (${actionLabel(skill.type)} ${powerLabel(skill)}) en ${target.name}`);
 
-  state.pendingActions.push({
+  state.combat.pendingActions.push({
     team: TEAMS.A,
-    actorIndex: state.actingMemberIndex,
+    actorIndex: state.combat.actingMemberIndex,
     skill,
     targetTeam: team,
     targetIdx: index
   });
   renderPendingActions();
 
-  state.actingMemberIndex = state.actingMemberIndex + 1;
-  state.selectedSkill = null;
-  state.turnPhase = TURN_PHASES.IDLE;
+  state.combat.actingMemberIndex = state.combat.actingMemberIndex + 1;
+  state.combat.selectedSkill = null;
+  state.combat.turnPhase = TURN_PHASES.IDLE;
   clearTargets();
   clearSkillHighlight();
   playerSelectSkills();

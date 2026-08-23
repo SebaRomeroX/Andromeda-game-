@@ -1,12 +1,77 @@
 import { ROLE_BY_INDEX, getLevelStats } from './models.js';
 import { TEAMS, TURN_PHASES } from './constants.js';
 
+// ── Estado de combate (se resetea por pelea) ──
+const combatState = {
+  teams: {
+    A: { members: [] },
+    B: { members: [] }
+  },
+  currentTeam: TEAMS.A,
+  actingMemberIndex: 0,
+  turnPhase: TURN_PHASES.IDLE,
+  selectedSkill: null,
+  pendingActions: [],
+  gameOver: false,
+  turnActive: false
+};
+
+// ── Estado de run (persiste entre peleas) ──
+const runState = {
+  stage: 0,
+  enfrentamientos: 0,
+  campamentos: 0,
+  fightsSinceCamp: 0,
+  fired: new Set(),
+  choices: {}
+};
+
+// ── Estado de sesion (seleccionado al elegir historia) ──
+const sessionState = {
+  selectedStory: null,
+  playerTeam: null,
+  protagonistSlot: 0,
+  currentEvent: null
+};
+
+export default { combat: combatState, run: runState, session: sessionState };
+
+// ── Reset functions ──
+export function resetCombatState() {
+  combatState.teams.A.members = [];
+  combatState.teams.B.members = [];
+  combatState.currentTeam = TEAMS.A;
+  combatState.actingMemberIndex = 0;
+  combatState.turnPhase = TURN_PHASES.IDLE;
+  combatState.selectedSkill = null;
+  combatState.pendingActions = [];
+  combatState.gameOver = false;
+  combatState.turnActive = false;
+}
+
+export function resetRunState() {
+  runState.stage = 0;
+  runState.enfrentamientos = 0;
+  runState.campamentos = 0;
+  runState.fightsSinceCamp = 0;
+  runState.fired.clear();
+  runState.choices = {};
+}
+
+export function resetSessionState() {
+  sessionState.selectedStory = null;
+  sessionState.playerTeam = null;
+  sessionState.protagonistSlot = 0;
+  sessionState.currentEvent = null;
+}
+
+// ── Team save helpers ──
 let savedTeamHp = null;
 let savedLevels = null;
 let savedTeamSkills = null;
 
 export function saveTeamState() {
-  savedTeamHp = state.teams.A.members.map(m => m ? m.currentHp : null);
+  savedTeamHp = combatState.teams.A.members.map(m => m ? m.currentHp : null);
 }
 
 export function getSavedTeamHp() {
@@ -14,7 +79,7 @@ export function getSavedTeamHp() {
 }
 
 export function saveTeamLevels() {
-  savedLevels = state.teams.A.members.map(m => m ? m.level : null);
+  savedLevels = combatState.teams.A.members.map(m => m ? m.level : null);
 }
 
 export function getSavedTeamLevels() {
@@ -22,7 +87,7 @@ export function getSavedTeamLevels() {
 }
 
 export function saveTeamSkills() {
-  savedTeamSkills = state.teams.A.members.map(m => m ? m.skills.map(s => s.level ?? 1) : null);
+  savedTeamSkills = combatState.teams.A.members.map(m => m ? m.skills.map(s => s.level ?? 1) : null);
 }
 
 export function getSavedTeamSkills() {
@@ -30,7 +95,7 @@ export function getSavedTeamSkills() {
 }
 
 export function restoreTeamHp() {
-  state.teams.A.members.forEach(m => {
+  combatState.teams.A.members.forEach(m => {
     if (m) m.currentHp = m.hp;
   });
   saveTeamState();
@@ -68,6 +133,7 @@ export function clearSavedSlot(index) {
   if (savedTeamSkills) savedTeamSkills[index] = null;
 }
 
+// ── Init / helpers ──
 function validateRoles(teamKey, data) {
   data.forEach((char, i) => {
     if (char && char.role !== ROLE_BY_INDEX[i]) {
@@ -100,55 +166,41 @@ function createMember(charData, initialHp, level, skillLevels) {
   };
 }
 
-const state = {
-  teams: {
-    A: { members: [] },
-    B: { members: [] }
-  },
-  currentTeam: TEAMS.A,
-  actingMemberIndex: 0,
-  turnPhase: TURN_PHASES.IDLE,
-  selectedSkill: null,
-  pendingActions: [],
-  gameOver: false,
-  turnActive: false
-};
-
 export function initState(teamAData, teamBData) {
   validateRoles('A', teamAData);
   validateRoles('B', teamBData);
 
-  state.teams.A.members = teamAData.map((charData, i) => {
+  combatState.teams.A.members = teamAData.map((charData, i) => {
     const saved = savedTeamHp ? savedTeamHp[i] : null;
     const savedLevel = savedLevels ? savedLevels[i] : null;
     const savedSkills = savedTeamSkills ? savedTeamSkills[i] : null;
     return createMember(charData, saved, savedLevel, savedSkills);
   });
-  state.teams.B.members = teamBData.map(charData => createMember(charData));
-  while (state.teams.A.members.length < 4) state.teams.A.members.push(null);
-  while (state.teams.B.members.length < 4) state.teams.B.members.push(null);
-  state.currentTeam = TEAMS.A;
-  state.actingMemberIndex = 0;
-  state.turnPhase = TURN_PHASES.IDLE;
-  state.selectedSkill = null;
-  state.pendingActions = [];
-  state.gameOver = false;
-  state.turnActive = false;
+  combatState.teams.B.members = teamBData.map(charData => createMember(charData));
+  while (combatState.teams.A.members.length < 4) combatState.teams.A.members.push(null);
+  while (combatState.teams.B.members.length < 4) combatState.teams.B.members.push(null);
+  combatState.currentTeam = TEAMS.A;
+  combatState.actingMemberIndex = 0;
+  combatState.turnPhase = TURN_PHASES.IDLE;
+  combatState.selectedSkill = null;
+  combatState.pendingActions = [];
+  combatState.gameOver = false;
+  combatState.turnActive = false;
 }
 
 export function resetTeam() {
-  state.teams.A.members = [];
-  state.teams.B.members = [];
-  state.actingMemberIndex = 0;
-  state.turnPhase = TURN_PHASES.IDLE;
-  state.selectedSkill = null;
-  state.pendingActions = [];
-  state.gameOver = false;
-  state.turnActive = false;
+  combatState.teams.A.members = [];
+  combatState.teams.B.members = [];
+  combatState.actingMemberIndex = 0;
+  combatState.turnPhase = TURN_PHASES.IDLE;
+  combatState.selectedSkill = null;
+  combatState.pendingActions = [];
+  combatState.gameOver = false;
+  combatState.turnActive = false;
 }
 
 export function isDead(teamKey, index) {
-  const m = state.teams[teamKey].members[index];
+  const m = combatState.teams[teamKey].members[index];
   return !m || m.currentHp <= 0;
 }
 
@@ -157,17 +209,15 @@ export function isAlive(teamKey, index) {
 }
 
 export function aliveMembers(teamKey) {
-  return state.teams[teamKey].members
+  return combatState.teams[teamKey].members
     .map((m, i) => ({ member: m, index: i }))
     .filter(({ member }) => member && member.currentHp > 0);
 }
 
 export function allDead(teamKey) {
-  return state.teams[teamKey].members.every(m => !m || m.currentHp <= 0);
+  return combatState.teams[teamKey].members.every(m => !m || m.currentHp <= 0);
 }
 
 let gameEndCallback = null;
 export function setGameEndCallback(cb) { gameEndCallback = cb; }
 export function getGameEndCallback() { return gameEndCallback; }
-
-export default state;

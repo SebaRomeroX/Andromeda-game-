@@ -110,7 +110,7 @@ Funciones puras (sin DOM, sin estado):
 
 ---
 
-## FASE 3: Unificar estado de run (RIESGO MEDIO)
+## FASE 3: Unificar estado de run (RIESGO MEDIO) ✅ COMPLETADA
 
 ### Problema
 El estado del juego esta fragmentado:

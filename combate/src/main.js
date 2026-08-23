@@ -1,4 +1,4 @@
-import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, saveTeamLevels, allDead, resetTeam, clearSavedSlot, exportTeamSave, importTeamSave } from './state.js';
+import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, saveTeamLevels, allDead, resetTeam, clearSavedSlot, exportTeamSave, importTeamSave, resetRunState, resetSessionState } from './state.js';
 import { getLevelStats, ROLE_BY_INDEX } from './models.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
@@ -12,30 +12,6 @@ import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
 import { TEAMS } from './constants.js';
 import './mobile.js';
-
-let selectedStory = null;
-let playerTeam = null;
-let protagonistSlot = 0;
-let currentEvent = null;
-
-const run = {
-  stage: 0,
-  enfrentamientos: 0,
-  campamentos: 0,
-  fightsSinceCamp: 0,
-  fired: new Set(),
-  choices: {}
-};
-
-function resetRun() {
-  run.stage = 0;
-  run.enfrentamientos = 0;
-  run.campamentos = 0;
-  run.fightsSinceCamp = 0;
-  run.fired.clear();
-  run.choices = {};
-  currentEvent = null;
-}
 
 function showOverlay(message, buttonText, onClick) {
   const overlay = document.getElementById('camp-overlay');
@@ -62,29 +38,30 @@ function showToast(text) {
 }
 
 function persistProgress() {
-  if (!selectedStory || !selectedStory.sequential) return;
-  const ok = saveGame(selectedStory.id, {
-    playerTeam,
-    protagonistSlot,
-    run,
+  const sel = state.session.selectedStory;
+  if (!sel || !sel.sequential) return;
+  const ok = saveGame(sel.id, {
+    playerTeam: state.session.playerTeam,
+    protagonistSlot: state.session.protagonistSlot,
+    run: state.run,
     team: exportTeamSave()
   });
-  console.log('[guardado] persistProgress ->', selectedStory.id, 'stage', run.stage, ok ? 'OK' : 'FALLO');
+  console.log('[guardado] persistProgress ->', sel.id, 'stage', state.run.stage, ok ? 'OK' : 'FALLO');
   if (!ok) {
     showToast('⚠️ No se pudo guardar (almacenamiento local)');
-  } else if (run.stage > 0) {
+  } else if (state.run.stage > 0) {
     showToast('💾 Partida Guardada');
   }
 
   const badge = document.getElementById('map-save-badge');
   if (badge) {
-    badge.textContent = `💾 Progreso guardado · Etapa ${run.stage + 1}`;
+    badge.textContent = `💾 Progreso guardado · Etapa ${state.run.stage + 1}`;
     badge.classList.remove('hidden');
   }
 }
 
 function buildTeamAData() {
-  return (playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
+  return (state.session.playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
 }
 
 function validateStoryCast(story) {
@@ -205,7 +182,7 @@ function renderMenu() {
 }
 
 function startStory(story, { loadSave }) {
-  selectedStory = story;
+  state.session.selectedStory = story;
   validateStoryCast(story);
 
   if (loadSave) {
@@ -214,20 +191,20 @@ function startStory(story, { loadSave }) {
       startStory(story, { loadSave: false });
       return;
     }
-    run.stage = data.run.stage;
-    run.enfrentamientos = data.run.enfrentamientos;
-    run.campamentos = data.run.campamentos;
-    run.fightsSinceCamp = data.run.fightsSinceCamp;
-    run.fired = data.fired;
-    run.choices = data.run.choices ?? {};
-    playerTeam = data.playerTeam;
-    protagonistSlot = data.protagonistSlot;
+    state.run.stage = data.run.stage;
+    state.run.enfrentamientos = data.run.enfrentamientos;
+    state.run.campamentos = data.run.campamentos;
+    state.run.fightsSinceCamp = data.run.fightsSinceCamp;
+    state.run.fired = data.fired;
+    state.run.choices = data.run.choices ?? {};
+    state.session.playerTeam = data.playerTeam;
+    state.session.protagonistSlot = data.protagonistSlot;
     resetTeam();
     importTeamSave(data.team);
   } else {
-    resetRun();
-    playerTeam = [...story.teamA];
-    protagonistSlot = ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);
+    resetRunState();
+    state.session.playerTeam = [...story.teamA];
+    state.session.protagonistSlot = ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);
     resetTeam();
     clearSavedTeamHp();
     clearSavedTeamLevels();
@@ -242,17 +219,17 @@ function renderMap() {
   showScreen('map');
 
   const title = document.getElementById('map-title');
-  title.textContent = selectedStory.title;
+  title.textContent = state.session.selectedStory.title;
 
   const events = document.getElementById('map-events');
   events.innerHTML = '';
 
-  if (selectedStory.sequential) {
+  if (state.session.selectedStory.sequential) {
     const header = document.getElementById('map-header');
-    header.textContent = `Etapa ${run.stage + 1}`;
+    header.textContent = `Etapa ${state.run.stage + 1}`;
 
-    currentEvent = pickNextEvent(selectedStory, run);
-    const event = currentEvent;
+    state.session.currentEvent = pickNextEvent(state.session.selectedStory, state.run);
+    const event = state.session.currentEvent;
     const card = document.createElement('div');
     card.className = 'event-card';
     card.innerHTML = `
@@ -267,7 +244,7 @@ function renderMap() {
     const header = document.getElementById('map-header');
     header.textContent = 'Elige un evento';
 
-    selectedStory.events.forEach(event => {
+    state.session.selectedStory.events.forEach(event => {
       const card = document.createElement('div');
       card.className = 'event-card';
       card.innerHTML = `
@@ -287,8 +264,8 @@ function renderMap() {
   menuBtn.className = 'map-menu-btn';
   menuBtn.textContent = 'Volver al Menú';
   menuBtn.addEventListener('click', () => {
-    selectedStory = null;
-    resetRun();
+    state.session.selectedStory = null;
+    resetRunState();
     showScreen('menu');
   });
   menuArea.appendChild(menuBtn);
@@ -311,7 +288,7 @@ function showCampEvent(event) {
   button.onclick = () => {
     const leveledNames = [];
     const leveledMembers = [];
-    state.teams.A.members.forEach(m => {
+    state.combat.teams.A.members.forEach(m => {
       if (m && m.currentHp > 0) {
         m.level++;
         const st = getLevelStats(m);
@@ -345,7 +322,7 @@ function showCampEvent(event) {
 }
 
 function startCombat(event) {
-  currentEvent = event;
+  state.session.currentEvent = event;
 
   if (event.type === 'campamento') {
     showCampEvent(event);
@@ -373,14 +350,14 @@ function startCombat(event) {
 
   let teamBData;
   if (event.type === 'enfrentamiento' && !event.narrativo) {
-    const memberLevels = state.teams.A.members.filter(Boolean).map(m => m.level ?? 1);
+    const memberLevels = state.combat.teams.A.members.filter(Boolean).map(m => m.level ?? 1);
     const playerMemberCount = teamAData.filter(Boolean).length;
     const playerAvgLevel = memberLevels.length > 0
       ? memberLevels.reduce((sum, l) => sum + l, 0) / memberLevels.length
       : 1;
     const generated = generateEnemyTeam({
-      story: selectedStory,
-      stage: run.stage,
+      story: state.session.selectedStory,
+      stage: state.run.stage,
       playerMemberCount,
       playerAvgLevel
     });
@@ -422,14 +399,14 @@ function showRecruitEvent(event) {
   const char = characters[event.character];
   const slot = ROLE_BY_INDEX.indexOf(char.role);
 
-  if (playerTeam[slot] !== -1) {
+  if (state.session.playerTeam[slot] !== -1) {
     showOverlay(`${char.name} quiere unirse, pero su puesto ya está ocupado.`, 'Continuar', () => {
       advanceStage();
     });
     return;
   }
 
-  playerTeam[slot] = event.character;
+  state.session.playerTeam[slot] = event.character;
   clearSavedSlot(slot);
   showOverlay(`✨ <strong>${char.name}</strong> se ha unido al grupo.`, 'Continuar', () => {
     advanceStage();
@@ -514,7 +491,7 @@ function showChoiceEvent(event) {
     btn.className = 'choice-btn';
     btn.textContent = option.label;
     btn.onclick = () => {
-      run.choices[event.id ?? event.title] = option.id;
+      state.run.choices[event.id ?? event.title] = option.id;
       overlay.classList.add('hidden');
       advanceStage();
     };
@@ -525,19 +502,19 @@ function showChoiceEvent(event) {
 }
 
 function advanceStage() {
-  const event = currentEvent;
+  const event = state.session.currentEvent;
   const type = event?.type;
 
   if (type === 'campamento') {
-    run.campamentos++;
-    run.fightsSinceCamp = 0;
+    state.run.campamentos++;
+    state.run.fightsSinceCamp = 0;
   } else if (type === 'enfrentamiento') {
-    run.enfrentamientos++;
-    run.fightsSinceCamp++;
+    state.run.enfrentamientos++;
+    state.run.fightsSinceCamp++;
   }
 
-  if (event?.id) run.fired.add(event.id);
-  run.stage++;
+  if (event?.id) state.run.fired.add(event.id);
+  state.run.stage++;
 
   if (event?.final) {
     showEnding(event);
@@ -550,17 +527,17 @@ function advanceStage() {
 
 function handleVictory() {
   const fallen = [];
-  state.teams.A.members.forEach((m, i) => {
+  state.combat.teams.A.members.forEach((m, i) => {
     if (m && m.currentHp <= 0) fallen.push(i);
   });
 
-  if (fallen.includes(protagonistSlot)) {
-    const protagonistName = characters[selectedStory.protagonist ?? 0].name;
+  if (fallen.includes(state.session.protagonistSlot)) {
+    const protagonistName = characters[state.session.selectedStory.protagonist ?? 0].name;
     showOverlay(`💀 <strong>${protagonistName}</strong> ha caído en batalla.<br>La historia termina aquí.`, 'Volver al Menú', () => {
-      clearGame(selectedStory.id);
-      selectedStory = null;
-      resetRun();
-      playerTeam = null;
+      clearGame(state.session.selectedStory.id);
+      state.session.selectedStory = null;
+      resetRunState();
+      state.session.playerTeam = null;
       clearSavedTeamHp();
       clearSavedTeamLevels();
       clearSavedTeamSkills();
@@ -573,13 +550,13 @@ function handleVictory() {
   saveTeamState();
 
   if (fallen.length > 0) {
-    const names = fallen.map(i => characters[playerTeam[i]].name);
+    const names = fallen.map(i => characters[state.session.playerTeam[i]].name);
     showOverlay(
       names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>'),
       'Continuar',
       () => {
         fallen.forEach(i => {
-          playerTeam[i] = -1;
+          state.session.playerTeam[i] = -1;
           clearSavedSlot(i);
         });
         advanceStage();
@@ -592,11 +569,11 @@ function handleVictory() {
 }
 
 function showEnding(event) {
-  clearGame(selectedStory.id);
+  clearGame(state.session.selectedStory.id);
   showScreen('map');
 
   const title = document.getElementById('map-title');
-  title.textContent = selectedStory.title;
+  title.textContent = state.session.selectedStory.title;
 
   const header = document.getElementById('map-header');
   header.textContent = 'Final';
@@ -616,8 +593,8 @@ function showEnding(event) {
   menuBtn.className = 'map-menu-btn';
   menuBtn.textContent = 'Volver al Menú';
   menuBtn.addEventListener('click', () => {
-    selectedStory = null;
-    resetRun();
+    state.session.selectedStory = null;
+    resetRunState();
     showScreen('menu');
   });
   menuArea.appendChild(menuBtn);

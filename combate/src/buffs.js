@@ -2,7 +2,7 @@ import state from './state.js';
 import { BUFF_STATS } from './constants.js';
 
 function memberBuffs(teamKey, memberIndex) {
-  return state.teams[teamKey].members[memberIndex]?.buffs ?? [];
+  return state.combat.teams[teamKey].members[memberIndex]?.buffs ?? [];
 }
 
 export function applyBuff(teamKey, memberIndex, buffDef) {
@@ -33,7 +33,7 @@ export function applyBuff(teamKey, memberIndex, buffDef) {
 export function processBuffs() {
   const expired = [];
   ['A', 'B'].forEach(teamKey => {
-    state.teams[teamKey].members.forEach((member, idx) => {
+    state.combat.teams[teamKey].members.forEach((member, idx) => {
       if (!member || member.currentHp <= 0) return;
       const list = member.buffs;
       for (let i = list.length - 1; i >= 0; i--) {

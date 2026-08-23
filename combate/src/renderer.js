@@ -6,7 +6,7 @@ export const $ = id => document.getElementById(id);
 
 export function renderPendingActions() {
   document.querySelectorAll('.member-action').forEach(el => { el.textContent = ""; });
-  state.pendingActions.forEach(a => {
+  state.combat.pendingActions.forEach(a => {
     const el = $(`action-${a.team}-${a.actorIndex}`);
     if (el) el.textContent = formatAction(a.skill);
   });
@@ -31,7 +31,7 @@ function renderMemberSlot(teamKey, index) {
   slot.dataset.team = teamKey;
   slot.dataset.index = index;
 
-  const member = state.teams[teamKey].members[index];
+  const member = state.combat.teams[teamKey].members[index];
 
   if (!member || member.currentHp <= 0) {
     if (!member) {
@@ -151,7 +151,7 @@ export function renderTeams() {
 
 export function renderHP() {
   ['A', 'B'].forEach(teamKey => {
-    state.teams[teamKey].members.forEach((member, i) => {
+    state.combat.teams[teamKey].members.forEach((member, i) => {
       if (!member) return;
       const fill = $(`hp-fill-${teamKey}-${i}`);
       const text = $(`hp-text-${teamKey}-${i}`);
@@ -163,7 +163,7 @@ export function renderHP() {
 
 export function renderStatus() {
   ['A', 'B'].forEach(teamKey => {
-    state.teams[teamKey].members.forEach((member, i) => {
+    state.combat.teams[teamKey].members.forEach((member, i) => {
       const el = $(`status-${teamKey}-${i}`);
       if (!el || !member) return;
       if (member.currentHp <= 0) {
@@ -185,7 +185,7 @@ export function renderStatus() {
 
 export function renderBuffs() {
   ['A', 'B'].forEach(teamKey => {
-    state.teams[teamKey].members.forEach((member, i) => {
+    state.combat.teams[teamKey].members.forEach((member, i) => {
       const el = $(`buffs-${teamKey}-${i}`);
       if (!el || !member) return;
       const active = member.buffs.filter(b => b.active);
@@ -209,8 +209,8 @@ export function renderTeamsHeader() {
 
 export function renderCurrentActor() {
   document.querySelectorAll('.member-slot.active').forEach(el => el.classList.remove('active'));
-  const i = state.actingMemberIndex;
-  if (state.currentTeam === 'A' && state.teams.A.members[i]) {
+  const i = state.combat.actingMemberIndex;
+  if (state.combat.currentTeam === 'A' && state.combat.teams.A.members[i]) {
     const slot = document.querySelector(`.member-slot[data-team="A"][data-index="${i}"]`);
     if (slot && !slot.classList.contains('dead')) slot.classList.add('active');
   }
