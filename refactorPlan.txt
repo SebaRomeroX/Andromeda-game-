@@ -226,7 +226,7 @@ combat.js se queda como orquestador:
 
 ---
 
-## FASE 5: Separar game flow de main.js (RIESGO MEDIO-ALTO)
+## FASE 5: Separar game flow de main.js (RIESGO MEDIO-ALTO) ✅ COMPLETADA
 
 ### Problema
 main.js tiene 637 lineas con:
