@@ -26,7 +26,7 @@
  * @typedef {"tanque"|"asesino"|"rango"|"soporte"} Role
  */
 
-import { ROLES, SKILL_TYPES } from './constants.js';
+import { ROLES, SKILL_TYPES, BUFF_STATS } from './constants.js';
 
 export const ROLE_BY_INDEX = ROLES;
 
@@ -113,7 +113,7 @@ export function createSkill({ name, type, precision = 80, aparicion = 1, power, 
     case SKILL_TYPES.DEFENSE:
       return { ...base, power: power ?? 10 };
     case SKILL_TYPES.BUFF:
-      return { ...base, target: target ?? 'self', stat: stat ?? 'attack', value: value ?? 0 };
+      return { ...base, target: target ?? 'self', stat: stat ?? BUFF_STATS.ATTACK, value: value ?? 0 };
     default:
       throw new Error(`createSkill: tipo desconocido "${type}". Usá: attack, cura, defense, buff`);
   }
