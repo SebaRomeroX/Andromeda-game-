@@ -1,5 +1,6 @@
 import state, { isDead, isAlive, aliveMembers, allDead, getGameEndCallback } from './state.js';
 import { ATTACK_ROUTES, ROLE_BY_INDEX, getSkillScaledStats } from './models.js';
+import { SKILL_TYPES, TEAMS, TURN_PHASES, BUFF_STATS } from './constants.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
 import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction, showCombatMessage } from './renderer.js';
 import { log } from './log.js';
@@ -40,31 +41,31 @@ function computeEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   const hit = Math.random() * 100 < precision;
   const scaled = getSkillScaledStats(skill);
 
-  if (skill.type === "cura") {
+  if (skill.type === SKILL_TYPES.CURA) {
     if (!hit) {
       log(`💚 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
       return { type: "miss" };
     }
     return {
-      type: "cura",
+      type: SKILL_TYPES.CURA,
       heal: Math.min(target.currentHp + scaled.power, target.hp) - target.currentHp
     };
   }
 
-  if (skill.type === "buff") {
+  if (skill.type === SKILL_TYPES.BUFF) {
     if (!hit) {
       log(`💥 ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
       return { type: "miss" };
     }
-    return { type: "buff" };
+    return { type: SKILL_TYPES.BUFF };
   }
 
-  if (skill.type === "defense") {
+  if (skill.type === SKILL_TYPES.DEFENSE) {
     if (!hit) {
       log(`🛡️ ${actor.name} intenta ${skill.name}... ¡PERO FALLA!`);
       return { type: "miss" };
     }
-    return { type: "defense", power: scaled.power };
+    return { type: SKILL_TYPES.DEFENSE, power: scaled.power };
   }
 
   if (!hit) {
@@ -80,14 +81,14 @@ function computeEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill) {
   }
 
   const defSkill = target.defense;
-  const defBuffs = getFlatBuffSum(targetTeam, targetIndex, 'defense');
+  const defBuffs = getFlatBuffSum(targetTeam, targetIndex, BUFF_STATS.DEFENSE);
   const def = defSkill + defBuffs;
-  const atkMult = getMultiplier(actorTeam, actorIndex, "attack");
+  const atkMult = getMultiplier(actorTeam, actorIndex, BUFF_STATS.ATTACK);
   const rawDmg = Math.round(scaled.power * atkMult);
   const finalDmg = Math.max(0, rawDmg - def);
 
   return {
-    type: "attack",
+    type: SKILL_TYPES.ATTACK,
     rawDmg,
     finalDmg,
     def,
@@ -103,7 +104,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outc
   const target = state.teams[targetTeam].members[targetIndex];
   if (!actor || !target) return;
 
-  if (outcome.type === "cura") {
+  if (outcome.type === SKILL_TYPES.CURA) {
     const oldHp = target.currentHp;
     target.currentHp = Math.min(target.currentHp + outcome.heal, target.hp);
     const healed = target.currentHp - oldHp;
@@ -116,7 +117,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outc
     return;
   }
 
-  if (outcome.type === "buff") {
+  if (outcome.type === SKILL_TYPES.BUFF) {
     applyBuff(targetTeam, targetIndex, {
       id: skillNameToId(skill.name),
       name: skill.name,
@@ -126,15 +127,15 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outc
     const sign = skill.value > 0 ? '+' : '-';
     const emoji = skill.value > 0 ? '🔥' : '💀';
     const verb = skill.value > 0 ? 'aumenta' : 'reduce';
-    if (skill.stat === 'defense') {
+    if (skill.stat === BUFF_STATS.DEFENSE) {
       log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: ${verb} defensa en ${sign}${skill.value}`);
-    } else if (skill.stat === 'precision') {
+    } else if (skill.stat === BUFF_STATS.PRECISION) {
       if (skill.value >= 1) {
         log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: precision aumentada al 100%`);
       } else {
         log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: precision reducida`);
       }
-    } else if (skill.stat === 'evasion') {
+    } else if (skill.stat === BUFF_STATS.EVASION) {
       if (skill.value > 0) {
         log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: evasión aumentada en +${skill.value}`);
       } else {
@@ -147,7 +148,7 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outc
     return;
   }
 
-  if (outcome.type === "defense") {
+  if (outcome.type === SKILL_TYPES.DEFENSE) {
     actor.defense = outcome.power;
     log(`🛡️ ${actor.name} usa ${skill.name}: defensa ${outcome.power} activada`);
     return;
@@ -186,7 +187,7 @@ function enemySelectSkills() {
   if (state.gameOver) return;
 
   state.pendingActions = [];
-  state.turnPhase = 'enemy_select';
+  state.turnPhase = TURN_PHASES.ENEMY_SELECT;
   log(`=== Equipo B elige sus skills ===`);
 
   for (let i = 0; i < state.teams.B.members.length; i++) {
@@ -204,39 +205,39 @@ function enemySelectSkills() {
 
     let targetTeam, targetIdx;
     switch (skill.type) {
-      case 'attack':
-        targetTeam = 'A';
-        const atkTargets = getAttackTargets(i, 'A');
+      case SKILL_TYPES.ATTACK:
+        targetTeam = TEAMS.A;
+        const atkTargets = getAttackTargets(i, TEAMS.A);
         if (atkTargets.length === 0) continue;
         targetIdx = atkTargets[Math.floor(Math.random() * atkTargets.length)].index;
         break;
-      case 'cura':
-        targetTeam = 'B';
-        targetIdx = pickRandomTarget('B', 'B');
+      case SKILL_TYPES.CURA:
+        targetTeam = TEAMS.B;
+        targetIdx = pickRandomTarget(TEAMS.B, TEAMS.B);
         break;
-      case 'buff':
+      case SKILL_TYPES.BUFF:
         if (skill.target === 'enemy') {
-          targetTeam = 'A';
-          targetIdx = pickRandomTarget('B', 'A');
+          targetTeam = TEAMS.A;
+          targetIdx = pickRandomTarget(TEAMS.B, TEAMS.A);
         } else {
-          targetTeam = 'B';
-          targetIdx = pickRandomTarget('B', 'B');
+          targetTeam = TEAMS.B;
+          targetIdx = pickRandomTarget(TEAMS.B, TEAMS.B);
         }
         break;
       default:
-        targetTeam = 'B';
+        targetTeam = TEAMS.B;
         targetIdx = i;
         break;
     }
 
     if (targetIdx === null) continue;
 
-    const actionLabel = skill.type === "attack" ? "atq" : skill.type === "cura" ? "cura" : skill.type === "buff" ? "buff" : "def";
+    const actionLabel = skill.type === SKILL_TYPES.ATTACK ? "atq" : skill.type === SKILL_TYPES.CURA ? "cura" : skill.type === SKILL_TYPES.BUFF ? "buff" : "def";
     const powerLabel = skill.type === "buff" ? skill.value : getSkillScaledStats(skill).power;
     log(`💀 ${member.name} prepara ${skill.name} (${actionLabel} ${powerLabel})`);
 
     state.pendingActions.push({
-      team: 'B',
+      team: TEAMS.B,
       actorIndex: i,
       skill,
       targetTeam,
@@ -250,19 +251,19 @@ function enemySelectSkills() {
     log(`=== Equipo A elige sus skills ===`);
     state.actingMemberIndex = 0;
     state.selectedSkill = null;
-    state.turnPhase = 'idle';
+    state.turnPhase = TURN_PHASES.IDLE;
     playerSelectSkills();
   }, 600);
 }
 
 function checkGameOver() {
-  if (allDead('A')) {
+  if (allDead(TEAMS.A)) {
     state.gameOver = true;
     log(`☠️ ¡El EQUIPO A ha sido derrotado! El EQUIPO B gana.`);
     showRestart(false, getGameEndCallback());
     return true;
   }
-  if (allDead('B')) {
+  if (allDead(TEAMS.B)) {
     state.gameOver = true;
     log(`🏆 ¡El EQUIPO B ha sido derrotado! El EQUIPO A gana.`);
     showRestart(true, getGameEndCallback());
@@ -283,7 +284,7 @@ function endRound() {
 function resolveAction(index, sorted) {
   if (state.gameOver || index >= sorted.length) {
     if (index > 0) clearMemberAction(sorted[index - 1].team, sorted[index - 1].actorIndex);
-    state.turnPhase = 'idle';
+    state.turnPhase = TURN_PHASES.IDLE;
     endRound();
     return;
   }
@@ -345,12 +346,12 @@ function resolveAction(index, sorted) {
 }
 
 function resolveTurn() {
-  state.turnPhase = 'resolving';
+  state.turnPhase = TURN_PHASES.RESOLVING;
   renderActions([], () => {});
   log(`=== Resolución ===`);
 
-  const priority = ['buff', 'cura', 'defense', 'attack'];
-  const teamOrder = { A: 0, B: 1 };
+  const priority = [SKILL_TYPES.BUFF, SKILL_TYPES.CURA, SKILL_TYPES.DEFENSE, SKILL_TYPES.ATTACK];
+  const teamOrder = { [TEAMS.A]: 0, [TEAMS.B]: 1 };
 
   const sorted = [...state.pendingActions].sort((a, b) => {
     const typeDiff = priority.indexOf(a.skill.type) - priority.indexOf(b.skill.type);
@@ -390,20 +391,20 @@ function getAttackTargets(actorIndex, targetTeam) {
 }
 
 function computeTargets(skill, actorIndex) {
-  if (skill.type === 'attack') {
-    return getAttackTargets(actorIndex, 'B');
+  if (skill.type === SKILL_TYPES.ATTACK) {
+    return getAttackTargets(actorIndex, TEAMS.B);
   }
-  if (skill.type === 'cura') {
-    return aliveMembers('A').map(t => ({ team: 'A', index: t.index }));
+  if (skill.type === SKILL_TYPES.CURA) {
+    return aliveMembers(TEAMS.A).map(t => ({ team: TEAMS.A, index: t.index }));
   }
-  if (skill.type === 'buff') {
+  if (skill.type === SKILL_TYPES.BUFF) {
     if (skill.target === 'enemy') {
-      return aliveMembers('B').map(t => ({ team: 'B', index: t.index }));
+      return aliveMembers(TEAMS.B).map(t => ({ team: TEAMS.B, index: t.index }));
     }
-    return aliveMembers('A').map(t => ({ team: 'A', index: t.index }));
+    return aliveMembers(TEAMS.A).map(t => ({ team: TEAMS.A, index: t.index }));
   }
-  if (skill.type === 'defense') {
-    return [{ team: 'A', index: actorIndex }];
+  if (skill.type === SKILL_TYPES.DEFENSE) {
+    return [{ team: TEAMS.A, index: actorIndex }];
   }
   return [];
 }
@@ -425,23 +426,23 @@ function playerSelectSkills() {
     renderCurrentActor();
     const skills = pickWeighted(member.skills, 3);
     state.selectedSkill = null;
-    state.turnPhase = 'select_skill';
+    state.turnPhase = TURN_PHASES.SELECT_SKILL;
     clearSkillHighlight();
     renderActions(skills, (skillIdx) => {
       const skill = skills[skillIdx];
 
-      if (state.turnPhase === 'select_skill') {
+      if (state.turnPhase === TURN_PHASES.SELECT_SKILL) {
         state.selectedSkill = skill;
         highlightSkill(skillIdx);
-        state.turnPhase = 'select_target';
+        state.turnPhase = TURN_PHASES.SELECT_TARGET;
         renderTargets(computeTargets(skill, i));
         return;
       }
 
-      if (state.turnPhase === 'select_target') {
+      if (state.turnPhase === TURN_PHASES.SELECT_TARGET) {
         if (state.selectedSkill === skill) {
           state.selectedSkill = null;
-          state.turnPhase = 'select_skill';
+          state.turnPhase = TURN_PHASES.SELECT_SKILL;
           clearSkillHighlight();
           clearTargets();
           return;
@@ -462,12 +463,12 @@ function playerSelectSkills() {
 export function startTurn() {
   if (state.gameOver) return;
 
-  ['A', 'B'].forEach(teamKey => {
+  [TEAMS.A, TEAMS.B].forEach(teamKey => {
     state.teams[teamKey].members.forEach(m => { if (m) m.defense = 0; });
   });
   state.turnActive = true;
 
-  ['A', 'B'].forEach(teamKey => {
+  [TEAMS.A, TEAMS.B].forEach(teamKey => {
     state.teams[teamKey].members.forEach(m => {
       if (!m || !m.stunned) return;
       m.stunTurns = (m.stunTurns ?? 2) - 1;
@@ -482,7 +483,7 @@ export function startTurn() {
   });
   renderBuffs();
 
-  ['A', 'B'].forEach(teamKey => {
+  [TEAMS.A, TEAMS.B].forEach(teamKey => {
     state.teams[teamKey].members.forEach(m => {
       if (!m || m.currentHp <= 0) return;
       if (m.wounded) {
@@ -502,26 +503,26 @@ export function startTurn() {
 }
 
 export function onTargetClick(team, index) {
-  if (state.turnPhase !== 'select_target' || !state.selectedSkill) return;
+  if (state.turnPhase !== TURN_PHASES.SELECT_TARGET || !state.selectedSkill) return;
 
   const skill = state.selectedSkill;
 
-  if (skill.type === 'attack' && team !== 'B') return;
-  if (skill.type === 'cura' && team !== 'A') return;
-  if (skill.type === 'defense' && (team !== 'A' || index !== state.actingMemberIndex)) return;
-  if (skill.type === 'buff' && skill.target === 'enemy' && team !== 'B') return;
-  if (skill.type === 'buff' && skill.target !== 'enemy' && team !== 'A') return;
+  if (skill.type === SKILL_TYPES.ATTACK && team !== TEAMS.B) return;
+  if (skill.type === SKILL_TYPES.CURA && team !== TEAMS.A) return;
+  if (skill.type === SKILL_TYPES.DEFENSE && (team !== TEAMS.A || index !== state.actingMemberIndex)) return;
+  if (skill.type === SKILL_TYPES.BUFF && skill.target === 'enemy' && team !== TEAMS.B) return;
+  if (skill.type === SKILL_TYPES.BUFF && skill.target !== 'enemy' && team !== TEAMS.A) return;
 
   const target = state.teams[team].members[index];
   if (!target || target.currentHp <= 0) return;
 
   const actor = state.teams.A.members[state.actingMemberIndex];
-  const skillLabel = skill.type === "attack" ? "atq" : skill.type === "cura" ? "cura" : skill.type === "buff" ? "buff" : "def";
-  const powerLabel = skill.type === "buff" ? skill.value : skill.power;
+  const skillLabel = skill.type === SKILL_TYPES.ATTACK ? "atq" : skill.type === SKILL_TYPES.CURA ? "cura" : skill.type === SKILL_TYPES.BUFF ? "buff" : "def";
+  const powerLabel = skill.type === SKILL_TYPES.BUFF ? skill.value : skill.power;
   log(`🗡️ ${actor.name} prepara ${skill.name} (${skillLabel} ${powerLabel}) en ${target.name}`);
 
   state.pendingActions.push({
-    team: 'A',
+    team: TEAMS.A,
     actorIndex: state.actingMemberIndex,
     skill,
     targetTeam: team,
@@ -531,7 +532,7 @@ export function onTargetClick(team, index) {
 
   state.actingMemberIndex = state.actingMemberIndex + 1;
   state.selectedSkill = null;
-  state.turnPhase = 'idle';
+  state.turnPhase = TURN_PHASES.IDLE;
   clearTargets();
   clearSkillHighlight();
   playerSelectSkills();

@@ -1,19 +1,20 @@
 import state from './state.js';
 import { getSkillScaledStats } from './models.js';
+import { SKILL_TYPES, BUFF_STATS } from './constants.js';
 
 export const $ = id => document.getElementById(id);
 
-const BUFF_EMOJIS = { attack: '⚔️', defense: '🛡️', evasion: '🏃', precision: '🎯' };
+const BUFF_EMOJIS = { [BUFF_STATS.ATTACK]: '⚔️', [BUFF_STATS.DEFENSE]: '🛡️', [BUFF_STATS.EVASION]: '🏃', [BUFF_STATS.PRECISION]: '🎯' };
 
 function formatAction(skill) {
   const scaled = getSkillScaledStats(skill);
-  if (skill.type === "attack") {
+  if (skill.type === SKILL_TYPES.ATTACK) {
     const icon = skill.stun ? "⚡" : "🗡️";
     return `${icon} (${scaled.power})`;
   }
-  if (skill.type === "cura") return `💚 (${scaled.power})`;
-  if (skill.type === "defense") return `🛡️ (${scaled.power})`;
-  if (skill.type === "buff") {
+  if (skill.type === SKILL_TYPES.CURA) return `💚 (${scaled.power})`;
+  if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ (${scaled.power})`;
+  if (skill.type === SKILL_TYPES.BUFF) {
     const sign = skill.value > 0 ? '+' : '-';
     return `✨ (${BUFF_EMOJIS[skill.stat] ?? '⚔️'}${sign})`;
   }
@@ -200,7 +201,7 @@ export function renderStatus() {
 }
 
 export function renderBuffs() {
-  const emojis = { attack: '⚔️', defense: '🛡️', evasion: '🏃', precision: '🎯' };
+  const emojis = { [BUFF_STATS.ATTACK]: '⚔️', [BUFF_STATS.DEFENSE]: '🛡️', [BUFF_STATS.EVASION]: '🏃', [BUFF_STATS.PRECISION]: '🎯' };
   ['A', 'B'].forEach(teamKey => {
     state.teams[teamKey].members.forEach((member, i) => {
       const el = $(`buffs-${teamKey}-${i}`);
@@ -214,14 +215,14 @@ export function renderBuffs() {
         const emoji = emojis[b.stat] || '⚔️';
         const cls = b.value > 0 ? 'buff-positive' : 'buff-negative';
         const sign = b.value > 0 ? '+' : '-';
-        if (b.stat === 'defense') {
+        if (b.stat === BUFF_STATS.DEFENSE) {
           return `<span class="${cls}">${emoji}${sign}${b.value} (${b.turnsLeft})</span>`;
         }
-        if (b.stat === 'precision') {
+        if (b.stat === BUFF_STATS.PRECISION) {
           const displayVal = b.value >= 1 ? '100%' : '↓';
           return `<span class="${cls}">${emoji}${displayVal} (${b.turnsLeft})</span>`;
         }
-        if (b.stat === 'evasion') {
+        if (b.stat === BUFF_STATS.EVASION) {
           const displayVal = b.value === 0 ? '0' : `+${b.value}`;
           return `<span class="${cls}">${emoji}${displayVal} (${b.turnsLeft})</span>`;
         }
@@ -286,15 +287,15 @@ export function renderActionIndicators(actorTeam, actorIndex, targetTeam, target
 }
 
 function isDebuff(skill) {
-  if (skill.type !== 'buff') return false;
+  if (skill.type !== SKILL_TYPES.BUFF) return false;
   if (skill.value < 0) return true;
-  if (skill.stat === 'precision' && skill.value < 1) return true;
-  if (skill.stat === 'evasion' && skill.value === 0) return true;
+  if (skill.stat === BUFF_STATS.PRECISION && skill.value < 1) return true;
+  if (skill.stat === BUFF_STATS.EVASION && skill.value === 0) return true;
   return false;
 }
 
 export function flashObjective(targetTeam, targetIndex, skill) {
-  const beneficial = skill.type === 'defense' || skill.type === 'cura' || (skill.type === 'buff' && !isDebuff(skill));
+  const beneficial = skill.type === SKILL_TYPES.DEFENSE || skill.type === SKILL_TYPES.CURA || (skill.type === SKILL_TYPES.BUFF && !isDebuff(skill));
   const cls = beneficial ? 'objective-flash-green' : 'objective-flash-red';
 
   document.querySelectorAll('.member-slot.objective-flash-green, .member-slot.objective-flash-red')
@@ -334,28 +335,28 @@ export function clearSkillHighlight() {
 export function renderActions(skills, onChoose) {
   const container = $("actions");
   container.innerHTML = "";
-  const emojis = { attack: '⚔️', defense: '🛡️', evasion: '🏃', precision: '🎯' };
+  const emojis = { [BUFF_STATS.ATTACK]: '⚔️', [BUFF_STATS.DEFENSE]: '🛡️', [BUFF_STATS.EVASION]: '🏃', [BUFF_STATS.PRECISION]: '🎯' };
   skills.forEach((skill, i) => {
     const btn = document.createElement("button");
     btn.className = "skill-btn";
 
     let statsLine = "";
     const scaled = getSkillScaledStats(skill);
-    if (skill.type === "attack") {
+    if (skill.type === SKILL_TYPES.ATTACK) {
       statsLine = `⚔️ ${scaled.power} · ${scaled.precision}% prec`;
-    } else if (skill.type === "cura") {
+    } else if (skill.type === SKILL_TYPES.CURA) {
       statsLine = `💚 ${scaled.power} · ${scaled.precision}% prec`;
-    } else if (skill.type === "defense") {
+    } else if (skill.type === SKILL_TYPES.DEFENSE) {
       statsLine = `🛡️ ${scaled.power} · ${scaled.precision}% prec`;
-    } else if (skill.type === "buff") {
+    } else if (skill.type === SKILL_TYPES.BUFF) {
       const emoji = emojis[skill.stat] || '⚔️';
       const sign = skill.value > 0 ? '+' : '';
-      if (skill.stat === 'defense') {
+      if (skill.stat === BUFF_STATS.DEFENSE) {
         statsLine = `${emoji} ${sign}${skill.value} · ${scaled.precision}% prec`;
-      } else if (skill.stat === 'precision') {
+      } else if (skill.stat === BUFF_STATS.PRECISION) {
         const displayVal = skill.value >= 1 ? '100%' : '↓';
         statsLine = `${emoji} ${displayVal} · ${scaled.precision}% prec`;
-      } else if (skill.stat === 'evasion') {
+      } else if (skill.stat === BUFF_STATS.EVASION) {
         const displayVal = skill.value === 0 ? '0' : `${sign}${skill.value}`;
         statsLine = `${emoji} ${displayVal} · ${scaled.precision}% prec`;
       } else {

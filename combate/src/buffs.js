@@ -1,4 +1,5 @@
 import state from './state.js';
+import { BUFF_STATS } from './constants.js';
 
 function memberBuffs(teamKey, memberIndex) {
   return state.teams[teamKey].members[memberIndex]?.buffs ?? [];
@@ -12,7 +13,7 @@ export function applyBuff(teamKey, memberIndex, buffDef) {
     existing.active = true;
     return;
   }
-  if (buffDef.stat === 'precision' || buffDef.stat === 'evasion') {
+  if (buffDef.stat === BUFF_STATS.PRECISION || buffDef.stat === BUFF_STATS.EVASION) {
     for (let i = list.length - 1; i >= 0; i--) {
       if (list[i].stat === buffDef.stat) {
         list.splice(i, 1);
@@ -65,7 +66,7 @@ export function getFlatBuffSum(teamKey, memberIndex, stat) {
 
 export function getPrecision(teamKey, memberIndex, basePrecision) {
   const list = memberBuffs(teamKey, memberIndex);
-  const precBuff = list.find(b => b.active && b.stat === 'precision');
+  const precBuff = list.find(b => b.active && b.stat === BUFF_STATS.PRECISION);
   if (!precBuff) return basePrecision;
   if (precBuff.value >= 1) return 100;
   return Math.round(basePrecision * 0.8);
@@ -73,7 +74,7 @@ export function getPrecision(teamKey, memberIndex, basePrecision) {
 
 export function getEvasion(teamKey, memberIndex, baseEvasion) {
   const list = memberBuffs(teamKey, memberIndex);
-  const evaBuff = list.find(b => b.active && b.stat === 'evasion');
+  const evaBuff = list.find(b => b.active && b.stat === BUFF_STATS.EVASION);
   if (!evaBuff) return baseEvasion;
   if (evaBuff.value === 0) return 0;
   return Math.min(100, baseEvasion + evaBuff.value);

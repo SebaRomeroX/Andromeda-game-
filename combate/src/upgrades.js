@@ -8,6 +8,7 @@
 
 import { upgradeSkill, getSkillScaledStats } from './models.js';
 import { saveTeamSkills } from './state.js';
+import { SKILL_TYPES, BUFF_STATS } from './constants.js';
 
 const overlay = () => document.getElementById('upgrade-overlay');
 const title = () => document.getElementById('upgrade-title');
@@ -16,17 +17,17 @@ const confirmBtn = () => document.getElementById('upgrade-confirm');
 
 function skillStatsLine(skill) {
   const scaled = getSkillScaledStats(skill);
-  const emojis = { attack: '⚔️', defense: '🛡️', evasion: '🏃', precision: '🎯' };
+  const emojis = { [BUFF_STATS.ATTACK]: '⚔️', [BUFF_STATS.DEFENSE]: '🛡️', [BUFF_STATS.EVASION]: '🏃', [BUFF_STATS.PRECISION]: '🎯' };
   const prec = `${scaled.precision}% prec`;
-  if (skill.type === 'attack') return `⚔️ ${scaled.power} · ${prec}`;
-  if (skill.type === 'cura') return `💚 ${scaled.power} · ${prec}`;
-  if (skill.type === 'defense') return `🛡️ ${scaled.power} · ${prec}`;
-  if (skill.type === 'buff') {
+  if (skill.type === SKILL_TYPES.ATTACK) return `⚔️ ${scaled.power} · ${prec}`;
+  if (skill.type === SKILL_TYPES.CURA) return `💚 ${scaled.power} · ${prec}`;
+  if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ ${scaled.power} · ${prec}`;
+  if (skill.type === SKILL_TYPES.BUFF) {
     const emoji = emojis[skill.stat] || '⚔️';
     const sign = skill.value > 0 ? '+' : '';
-    if (skill.stat === 'defense') return `${emoji} ${sign}${skill.value} · ${prec}`;
-    if (skill.stat === 'precision') return `${emoji} ${skill.value >= 1 ? '100%' : '↓'} · ${prec}`;
-    if (skill.stat === 'evasion') return `${emoji} ${skill.value} · ${prec}`;
+    if (skill.stat === BUFF_STATS.DEFENSE) return `${emoji} ${sign}${skill.value} · ${prec}`;
+    if (skill.stat === BUFF_STATS.PRECISION) return `${emoji} ${skill.value >= 1 ? '100%' : '↓'} · ${prec}`;
+    if (skill.stat === BUFF_STATS.EVASION) return `${emoji} ${skill.value} · ${prec}`;
     return `${emoji} ${sign}${(Math.abs(skill.value) * 100).toFixed(0)}% · ${prec}`;
   }
   return prec;
@@ -47,7 +48,7 @@ function showUpgradeFor(member, onDone) {
     confirmBtn().disabled = selectedIndex === null;
   };
 
-  const upgradeable = member.skills.filter(s => s.type !== 'buff');
+  const upgradeable = member.skills.filter(s => s.type !== SKILL_TYPES.BUFF);
   upgradeable.forEach((skill, i) => {
     const btn = document.createElement('button');
     btn.className = 'skill-btn';

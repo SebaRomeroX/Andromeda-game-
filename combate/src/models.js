@@ -26,7 +26,7 @@
  * @typedef {"tanque"|"asesino"|"rango"|"soporte"} Role
  */
 
-const ROLES = ['tanque', 'asesino', 'rango', 'soporte'];
+import { ROLES, SKILL_TYPES } from './constants.js';
 
 export const ROLE_BY_INDEX = ROLES;
 
@@ -106,13 +106,13 @@ export function createSkill({ name, type, precision = 80, aparicion = 1, power, 
   const base = { name, type, precision, aparicion, level };
 
   switch (type) {
-    case 'attack':
+    case SKILL_TYPES.ATTACK:
       return { ...base, power: power ?? 10, stun: !!stun, herida: !!herida };
-    case 'cura':
+    case SKILL_TYPES.CURA:
       return { ...base, power: power ?? 10 };
-    case 'defense':
+    case SKILL_TYPES.DEFENSE:
       return { ...base, power: power ?? 10 };
-    case 'buff':
+    case SKILL_TYPES.BUFF:
       return { ...base, target: target ?? 'self', stat: stat ?? 'attack', value: value ?? 0 };
     default:
       throw new Error(`createSkill: tipo desconocido "${type}". Usá: attack, cura, defense, buff`);
@@ -187,7 +187,7 @@ export function upgradeSkill(skill) {
  */
 export function getSkillScaledStats(skill) {
   const level = skill.level ?? 1;
-  const hasPower = skill.type === 'attack' || skill.type === 'cura' || skill.type === 'defense';
+  const hasPower = skill.type === SKILL_TYPES.ATTACK || skill.type === SKILL_TYPES.CURA || skill.type === SKILL_TYPES.DEFENSE;
   const power = hasPower ? skill.power + (level - 1) * 5 : skill.power;
   return {
     power,

@@ -10,6 +10,7 @@ import stories from '../data/stories.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
 import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
+import { TEAMS } from './constants.js';
 import './mobile.js';
 
 let selectedStory = null;
@@ -389,7 +390,7 @@ function startCombat(event) {
   }
 
   setGameEndCallback(() => {
-    if (allDead('B')) {
+    if (allDead(TEAMS.B)) {
       handleVictory();
       return;
     }

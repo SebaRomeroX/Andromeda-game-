@@ -1,0 +1,327 @@
+# Refactor Plan — Andromeda Game
+# ================================
+# Objetivo: Manteniabilidad + Testing
+# Estrategia: Implementar por fases, evaluar entre cada una
+
+---
+
+## FASE 1: Constantes y tipos (RIESGO BAJO) ✅ COMPLETADA
+
+### Problema
+Strings magicos repetidos ~40 veces en todo el codigo:
+- Tipos de skill: 'attack', 'cura', 'defense', 'buff'
+- Team keys: 'A', 'B'
+- Turn phases: 'idle', 'select_skill', 'select_target', 'enemy_select', 'resolving'
+- Buff stats: 'attack', 'defense', 'evasion', 'precision'
+
+### Solucion
+Crear archivo: combate/src/constants.js
+
+  // Tipos de habilidad
+  export const SKILL_TYPES = Object.freeze({
+    ATTACK: 'attack',
+    CURA: 'cura',
+    DEFENSE: 'defense',
+    BUFF: 'buff',
+  });
+
+  // Equipos
+  export const TEAMS = Object.freeze({ A: 'A', B: 'B' });
+
+  // Fases del turno
+  export const TURN_PHASES = Object.freeze({
+    IDLE: 'idle',
+    SELECT_SKILL: 'select_skill',
+    SELECT_TARGET: 'select_target',
+    ENEMY_SELECT: 'enemy_select',
+    RESOLVING: 'resolving',
+  });
+
+  // Stats que afectan buffs
+  export const BUFF_STATS = Object.freeze({
+    ATTACK: 'attack',
+    DEFENSE: 'defense',
+    EVASION: 'evasion',
+    PRECISION: 'precision',
+  });
+
+  // Roles
+  export const ROLES = ['tanque', 'asesino', 'rango', 'soporte'];
+
+### Archivos a modificar
+- combate/src/combat.js — reemplazar strings por constantes
+- combate/src/state.js — reemplazar TURN_PHASES
+- combate/src/renderer.js — reemplazar BUFF_STATS
+- combate/src/buffs.js — reemplazar BUFF_STATS
+- combate/src/main.js — reemplazar TURN_PHASES, TEAMS
+- combate/src/models.js — reemplazar ROLES (usar import de constants)
+
+### Criterio de exito
+- Todos los strings magicos reemplazados
+- Tests (futuros) pueden importar constantes para asserts
+- No se rompe nada — es solo renombrar
+
+---
+
+## FASE 2: Extraer formateadores puros (RIESGO BAJO)
+
+### Problema
+Logica de formateo de skills duplicada en 3 archivos:
+- renderer.js:formatAction() — formato para acciones pendientes
+- renderer.js:renderActions() — formato inline para botones de skill
+- upgrades.js:skillStatsLine() — formato para menu de mejoras
+- renderer.js:renderBuffs() — formateo inline de buffs
+
+### Solucion
+Crear archivo: combate/src/formatters.js
+
+Funciones puras (sin DOM, sin estado):
+
+  // Retorna label corto del tipo de skill: 'atq', 'cura', 'buff', 'def'
+  export function actionLabel(skillType) { ... }
+
+  // Retorna el emoji de una stat de buff
+  export function buffEmoji(stat) { ... }
+
+  // Retorna string formateado de una skill para UI
+  // Ej: "⚔️ (15)", "💚 (12)", "✨ (⚔️+)"
+  export function formatAction(skill) { ... }
+
+  // Retorna linea de stats completa de una skill
+  // Ej: "⚔️ 15 · 80% prec"
+  export function formatSkillStats(skill) { ... }
+
+  // Retorna el label de poder para log/pantalla
+  // Ej: 15 (attack), 12 (cura), +3 (buff defense)
+  export function powerLabel(skill) { ... }
+
+  // Retorna HTML de un buff activo para renderBuffs
+  export function formatBuffHtml(buff) { ... }
+
+### Archivos a modificar
+- combate/src/renderer.js — importar desde formatters.js, eliminar duplicacion
+- combate/src/upgrades.js — importar formatSkillStats
+- combate/src/combat.js — importar actionLabel, powerLabel para logs
+
+### Criterio de exito
+- Una sola fuente de verdad para formateo
+- Si cambias el formato de un buff, se cambia en todos lados automaticamente
+- Las funciones son testables (input → string)
+
+---
+
+## FASE 3: Unificar estado de run (RIESGO MEDIO)
+
+### Problema
+El estado del juego esta fragmentado:
+- state.js: estado de combate (teams, turnPhase, pendingActions, gameOver)
+- main.js: estado de run (run.stage, run.enfrentamientos, etc.)
+- main.js: estado de seleccion (selectedStory, playerTeam, protagonistSlot, currentEvent)
+
+No queda claro que es "estado global" vs "estado temporal de la UI".
+
+### Solucion
+Reorganizar combate/src/state.js:
+
+  // Estado de combate (se resetea por pelea)
+  const combatState = {
+    teams: { A: { members: [] }, B: { members: [] } },
+    actingMemberIndex: 0,
+    turnPhase: TURN_PHASES.IDLE,
+    selectedSkill: null,
+    pendingActions: [],
+    gameOver: false,
+    turnActive: false,
+  };
+
+  // Estado de run (persiste entre peleas)
+  const runState = {
+    stage: 0,
+    enfrentamientos: 0,
+    campamentos: 0,
+    fightsSinceCamp: 0,
+    fired: new Set(),
+    choices: {},
+  };
+
+  // Estado de sesion (seleccionado al elegir historia)
+  const sessionState = {
+    selectedStory: null,
+    playerTeam: null,
+    protagonistSlot: 0,
+    currentEvent: null,
+  };
+
+  export default { combat: combatState, run: runState, session: sessionState };
+
+  // Funciones de reset
+  export function resetCombatState() { ... }
+  export function resetRunState() { ... }
+  export function resetSessionState() { ... }
+
+### Archivos a modificar
+- combate/src/state.js — reestructurar exports
+- combate/src/main.js — usar sessionState y runState en vez de variables sueltas
+- combate/src/combat.js — apuntar a state.combat
+- combate/src/renderer.js — apuntar a state.combat
+- combate/src/buffs.js — apuntar a state.combat
+- combate/src/eventGenerator.js — recibir runState como parametro (ya recibe ctx)
+- combate/src/save.js — serializar/deserializar runState
+
+### Criterio de exito
+- state.js es la UNICA fuente de verdad para todo el estado del juego
+- Queda claro que se persiste (runState) y que no (combatState, sessionState)
+- main.js tiene ~15 lineas menos de variables sueltas
+
+---
+
+## FASE 4: Combat engine puro (RIESGO MEDIO)
+
+### Problema
+combat.js tiene 538 lineas mezclando:
+- Logica pura: computeEffect, pickWeighted, getAttackTargets, computeTargets
+- Orquestacion con DOM: resolveAction (setTimeout + render)
+- Seleccion de IA: enemySelectSkills
+
+### Solucion
+Crear archivo: combate/src/combatEngine.js
+
+Funciones puras extraidas (sin DOM, sin state mutation):
+
+  // Peso total de un pool de skills
+  function totalWeight(skills) { ... }
+
+  // Selecciona N skills de un pool por peso
+  export function pickWeighted(skills, count) { ... }
+
+  // Calcula el efecto de una skill (puro: recibe datos, retorna outcome)
+  export function computeEffect(actor, target, skill, buffs) { ... }
+
+  // Retorna targets posibles para una skill
+  export function computeTargets(skill, actorIndex, aliveA, aliveB) { ... }
+
+  // Retorna targets de ataque segun rol y rutas
+  export function getAttackTargets(actorIndex, targetTeam, aliveMembers) { ... }
+
+  // Ordena acciones por prioridad
+  export function sortActions(pendingActions) { ... }
+
+  // Genera la seleccion de skills de un enemigo (retorna actions, no muta state)
+  export function planEnemyActions(members) { ... }
+
+combat.js se queda como orquestador:
+- Importa combatEngine para logica
+- Importa renderer para UI
+- Importa state para leer/escribir estado
+- Maneja setTimeout/animaciones
+
+### Archivos a modificar
+- combate/src/combatEngine.js — NUEVO, funciones puras
+- combate/src/combat.js — importar desde combatEngine, simplificar
+
+### Criterio de exito
+- combatEngine.js es testeable puro (input → output)
+- combat.js se reduce a orquestacion (~200-250 lineas)
+- No se rompe el flujo de combate
+
+---
+
+## FASE 5: Separar game flow de main.js (RIESGO MEDIO-ALTO)
+
+### Problema
+main.js tiene 637 lineas con:
+- Flujo de juego: advanceStage, handleVictory, showEnding
+- Handlers de UI: showCampEvent, showRecruitEvent, showDialogueEvent, showChoiceEvent
+- Wiring inicial: DOM listeners, renderMenu, setupDevPanel
+
+### Solucion
+Crear archivos:
+
+**combate/src/gameFlow.js** — logica de flujo pura:
+
+  // Avanza la stage, actualiza contadores de run
+  export function advanceStage(currentEvent, runState) { ... }
+
+  // Determina que pasa al ganar (protagonist cae, aliados caen, victoria)
+  export function handleVictory(state, selectedStory, protagonistSlot, playerTeam) { ... }
+
+  // Muestra ending
+  export function showEnding(event, selectedStory) { ... }
+
+
+**combate/src/eventHandlers.js** — handlers de UI para eventos:
+
+  // Muestra evento de campamento con su overlay
+  export function showCampEvent(event, teamAData, callbacks) { ... }
+
+  // Muestra evento de reclutamiento
+  export function showRecruitEvent(event, playerTeam, callbacks) { ... }
+
+  // Muestra evento de dialogo (secuencia de lineas)
+  export function showDialogueEvent(event, callbacks) { ... }
+
+  // Muestra evento de eleccion (botones de opcion)
+  export function showChoiceEvent(event, callbacks) { ... }
+
+
+main.js queda como punto de entrada ligero:
+  import { showCampEvent, ... } from './eventHandlers.js';
+  import { advanceStage, ... } from './gameFlow.js';
+
+  // Wiring: DOM listeners, render inicial, setup dev panel
+
+### Archivos a modificar
+- combate/src/gameFlow.js — NUEVO
+- combate/src/eventHandlers.js — NUEVO
+- combate/src/main.js — importar desde nuevos modulos
+
+### Criterio de exito
+- main.js < 200 lineas (solo wiring)
+- gameFlow.js es testeable (simular run + verificar contadores)
+- eventHandlers.js encapsula toda la UI de eventos
+
+---
+
+## RESUMEN DE ARCHIVOS NUEVOS
+
+| Archivo          | Fase | Responsabilidad                        |
+|------------------|------|----------------------------------------|
+| constants.js     | 1    | Strings magicos, tipos, enums          |
+| formatters.js    | 2    | Formateo puro de skills y buffs        |
+| combatEngine.js  | 4    | Logica pura de combate                 |
+| gameFlow.js      | 5    | Flujo de juego puro                    |
+| eventHandlers.js | 5    | UI handlers para eventos               |
+
+## ORDEN DE IMPLEMENTACION
+
+1. FASE 1: constants.js (30 min) — bajo riesgo, alto impacto
+2. FASE 2: formatters.js (30 min) — bajo riesgo, elimina duplicacion
+3. FASE 3: reestructurar state.js (1 hora) — medio riesgo, clarifica ownership
+4. FASE 4: combatEngine.js (1-2 horas) — medio riesgo, habilita testing
+5. FASE 5: gameFlow.js + eventHandlers.js (1-2 horas) — mayor riesgo, mayor payoff
+
+## VERIFICACION ENTRE FASES
+
+Despues de cada fase:
+1. Abrir el juego en el navegador
+2. Jugar al menos 1 combate completo
+3. Probar campamento (mejora de skills)
+4. Probar save/load
+5. Probar evento de dialogo y eleccion
+6. Verificar que no hay errores en consola
+
+---
+
+## NOTAS ADICIONALES
+
+### Cosas que NO tocar en este refactor
+- La estructura de datos de characters.js y stories.js
+- El CSS/HTML
+- La logica de escalado de niveles (models.js:getLevelStats)
+- La generacion de enemigos (enemyGenerator.js) — ya esta bien encapsulado
+
+### Mejoras futuras (fuera de este refactor)
+- Agregar un bundler (Vite) para imports ES modules nativos
+- TypeScript para tipado estatico
+- Tests unitarios para combatEngine y formatters
+- Event bus o pub/sub para desacoplar renderer de state

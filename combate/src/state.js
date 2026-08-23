@@ -1,4 +1,5 @@
 import { ROLE_BY_INDEX, getLevelStats } from './models.js';
+import { TEAMS, TURN_PHASES } from './constants.js';
 
 let savedTeamHp = null;
 let savedLevels = null;
@@ -104,9 +105,9 @@ const state = {
     A: { members: [] },
     B: { members: [] }
   },
-  currentTeam: 'A',
+  currentTeam: TEAMS.A,
   actingMemberIndex: 0,
-  turnPhase: 'idle',
+  turnPhase: TURN_PHASES.IDLE,
   selectedSkill: null,
   pendingActions: [],
   gameOver: false,
@@ -126,9 +127,9 @@ export function initState(teamAData, teamBData) {
   state.teams.B.members = teamBData.map(charData => createMember(charData));
   while (state.teams.A.members.length < 4) state.teams.A.members.push(null);
   while (state.teams.B.members.length < 4) state.teams.B.members.push(null);
-  state.currentTeam = 'A';
+  state.currentTeam = TEAMS.A;
   state.actingMemberIndex = 0;
-  state.turnPhase = 'idle';
+  state.turnPhase = TURN_PHASES.IDLE;
   state.selectedSkill = null;
   state.pendingActions = [];
   state.gameOver = false;
@@ -139,7 +140,7 @@ export function resetTeam() {
   state.teams.A.members = [];
   state.teams.B.members = [];
   state.actingMemberIndex = 0;
-  state.turnPhase = 'idle';
+  state.turnPhase = TURN_PHASES.IDLE;
   state.selectedSkill = null;
   state.pendingActions = [];
   state.gameOver = false;
