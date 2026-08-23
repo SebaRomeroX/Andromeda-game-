@@ -1371,3 +1371,96 @@ html.mobile #log-overlay #log {
   padding: 6px 10px;
   font-size: 0.75rem;
 } */
+
+/* ── Desktop ───────────────────────────────────────────── */
+@media (min-width: 768px) {
+  html:not(.mobile) #app {
+    max-width: 1200px;
+    padding: 28px;
+  }
+
+  #combat-area {
+    --card-w: min(180px, calc(36vh - 90px));
+    gap: 100px;
+  }
+
+  .team-container {
+    max-width: 400px;
+  }
+
+  .team-label {
+    font-size: 1.25rem;
+  }
+
+  .team-grid {
+    gap: 36px;
+  }
+
+  .game-title {
+    font-size: 3.2rem;
+  }
+
+  .screen-subtitle {
+    font-size: 1.3rem;
+  }
+
+  html:not(.mobile) .log-open-btn {
+    position: static;
+    transform: none;
+    margin: 0 auto 12px;
+    display: block;
+  }
+
+  html:not(.mobile) .log-open-btn:hover {
+    transform: translateY(-2px);
+  }
+
+  html:not(.mobile) #actions {
+    position: static;
+    transform: none;
+    max-width: 620px;
+    margin: 28px auto 0;
+    padding: 12px 16px;
+    gap: 14px;
+  }
+
+  .skill-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+  }
+
+  .skill-name {
+    font-size: 0.95rem;
+  }
+
+  .skill-stats {
+    font-size: 0.8rem;
+  }
+
+  .member-name {
+    font-size: 0.85rem;
+  }
+
+  .member-slot .hp-bar {
+    height: 16px;
+  }
+
+  .member-slot .hp-text {
+    font-size: 0.65rem;
+  }
+
+  .member-status {
+    font-size: 0.8rem;
+  }
+
+  .member-buffs {
+    font-size: 0.7rem;
+  }
+
+  html:not(.mobile) #combat-panel {
+    height: auto;
+    margin-top: 16px;
+  }
+}
