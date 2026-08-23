@@ -175,7 +175,7 @@ Reorganizar combate/src/state.js:
 
 ---
 
-## FASE 4: Combat engine puro (RIESGO MEDIO)
+## FASE 4: Combat engine puro (RIESGO MEDIO) ✅ COMPLETADA
 
 ### Problema
 combat.js tiene 538 lineas mezclando:
