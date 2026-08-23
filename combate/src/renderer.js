@@ -1,25 +1,8 @@
 import state from './state.js';
-import { getSkillScaledStats } from './models.js';
 import { SKILL_TYPES, BUFF_STATS } from './constants.js';
+import { formatAction, formatSkillStats, formatBuffHtml } from './formatters.js';
 
 export const $ = id => document.getElementById(id);
-
-const BUFF_EMOJIS = { [BUFF_STATS.ATTACK]: '⚔️', [BUFF_STATS.DEFENSE]: '🛡️', [BUFF_STATS.EVASION]: '🏃', [BUFF_STATS.PRECISION]: '🎯' };
-
-function formatAction(skill) {
-  const scaled = getSkillScaledStats(skill);
-  if (skill.type === SKILL_TYPES.ATTACK) {
-    const icon = skill.stun ? "⚡" : "🗡️";
-    return `${icon} (${scaled.power})`;
-  }
-  if (skill.type === SKILL_TYPES.CURA) return `💚 (${scaled.power})`;
-  if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ (${scaled.power})`;
-  if (skill.type === SKILL_TYPES.BUFF) {
-    const sign = skill.value > 0 ? '+' : '-';
-    return `✨ (${BUFF_EMOJIS[skill.stat] ?? '⚔️'}${sign})`;
-  }
-  return "";
-}
 
 export function renderPendingActions() {
   document.querySelectorAll('.member-action').forEach(el => { el.textContent = ""; });
@@ -201,7 +184,6 @@ export function renderStatus() {
 }
 
 export function renderBuffs() {
-  const emojis = { [BUFF_STATS.ATTACK]: '⚔️', [BUFF_STATS.DEFENSE]: '🛡️', [BUFF_STATS.EVASION]: '🏃', [BUFF_STATS.PRECISION]: '🎯' };
   ['A', 'B'].forEach(teamKey => {
     state.teams[teamKey].members.forEach((member, i) => {
       const el = $(`buffs-${teamKey}-${i}`);
@@ -211,24 +193,7 @@ export function renderBuffs() {
         el.textContent = '';
         return;
       }
-      el.innerHTML = active.map(b => {
-        const emoji = emojis[b.stat] || '⚔️';
-        const cls = b.value > 0 ? 'buff-positive' : 'buff-negative';
-        const sign = b.value > 0 ? '+' : '-';
-        if (b.stat === BUFF_STATS.DEFENSE) {
-          return `<span class="${cls}">${emoji}${sign}${b.value} (${b.turnsLeft})</span>`;
-        }
-        if (b.stat === BUFF_STATS.PRECISION) {
-          const displayVal = b.value >= 1 ? '100%' : '↓';
-          return `<span class="${cls}">${emoji}${displayVal} (${b.turnsLeft})</span>`;
-        }
-        if (b.stat === BUFF_STATS.EVASION) {
-          const displayVal = b.value === 0 ? '0' : `+${b.value}`;
-          return `<span class="${cls}">${emoji}${displayVal} (${b.turnsLeft})</span>`;
-        }
-        const pct = (Math.abs(b.value) * 100).toFixed(0);
-        return `<span class="${cls}">${emoji}${sign}${pct}% (${b.turnsLeft})</span>`;
-      }).join(' ');
+      el.innerHTML = active.map(b => formatBuffHtml(b)).join(' ');
     });
   });
 }
@@ -335,42 +300,16 @@ export function clearSkillHighlight() {
 export function renderActions(skills, onChoose) {
   const container = $("actions");
   container.innerHTML = "";
-  const emojis = { [BUFF_STATS.ATTACK]: '⚔️', [BUFF_STATS.DEFENSE]: '🛡️', [BUFF_STATS.EVASION]: '🏃', [BUFF_STATS.PRECISION]: '🎯' };
   skills.forEach((skill, i) => {
     const btn = document.createElement("button");
     btn.className = "skill-btn";
-
-    let statsLine = "";
-    const scaled = getSkillScaledStats(skill);
-    if (skill.type === SKILL_TYPES.ATTACK) {
-      statsLine = `⚔️ ${scaled.power} · ${scaled.precision}% prec`;
-    } else if (skill.type === SKILL_TYPES.CURA) {
-      statsLine = `💚 ${scaled.power} · ${scaled.precision}% prec`;
-    } else if (skill.type === SKILL_TYPES.DEFENSE) {
-      statsLine = `🛡️ ${scaled.power} · ${scaled.precision}% prec`;
-    } else if (skill.type === SKILL_TYPES.BUFF) {
-      const emoji = emojis[skill.stat] || '⚔️';
-      const sign = skill.value > 0 ? '+' : '';
-      if (skill.stat === BUFF_STATS.DEFENSE) {
-        statsLine = `${emoji} ${sign}${skill.value} · ${scaled.precision}% prec`;
-      } else if (skill.stat === BUFF_STATS.PRECISION) {
-        const displayVal = skill.value >= 1 ? '100%' : '↓';
-        statsLine = `${emoji} ${displayVal} · ${scaled.precision}% prec`;
-      } else if (skill.stat === BUFF_STATS.EVASION) {
-        const displayVal = skill.value === 0 ? '0' : `${sign}${skill.value}`;
-        statsLine = `${emoji} ${displayVal} · ${scaled.precision}% prec`;
-      } else {
-        const pct = (Math.abs(skill.value) * 100).toFixed(0);
-        statsLine = `${emoji} ${sign}${pct}% · ${scaled.precision}% prec`;
-      }
-    }
 
     let effectsLine = "";
     if (skill.stun) effectsLine += "⚡";
     if (skill.herida) effectsLine += " 🩸";
 
     let html = `<div class="skill-name">${skill.name}</div>`;
-    html += `<div class="skill-stats">${statsLine}</div>`;
+    html += `<div class="skill-stats">${formatSkillStats(skill)}</div>`;
     if (effectsLine) {
       html += `<div class="skill-effects">${effectsLine}</div>`;
     }

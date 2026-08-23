@@ -4,6 +4,7 @@ import { SKILL_TYPES, TEAMS, TURN_PHASES, BUFF_STATS } from './constants.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
 import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction, showCombatMessage } from './renderer.js';
 import { log } from './log.js';
+import { actionLabel, powerLabel } from './formatters.js';
 
 function pickWeighted(items, count) {
   const pool = items.map(item => ({ item, weight: item.aparicion ?? 100 }));
@@ -232,9 +233,7 @@ function enemySelectSkills() {
 
     if (targetIdx === null) continue;
 
-    const actionLabel = skill.type === SKILL_TYPES.ATTACK ? "atq" : skill.type === SKILL_TYPES.CURA ? "cura" : skill.type === SKILL_TYPES.BUFF ? "buff" : "def";
-    const powerLabel = skill.type === "buff" ? skill.value : getSkillScaledStats(skill).power;
-    log(`💀 ${member.name} prepara ${skill.name} (${actionLabel} ${powerLabel})`);
+    log(`💀 ${member.name} prepara ${skill.name} (${actionLabel(skill.type)} ${powerLabel(skill)})`);
 
     state.pendingActions.push({
       team: TEAMS.B,
@@ -517,9 +516,7 @@ export function onTargetClick(team, index) {
   if (!target || target.currentHp <= 0) return;
 
   const actor = state.teams.A.members[state.actingMemberIndex];
-  const skillLabel = skill.type === SKILL_TYPES.ATTACK ? "atq" : skill.type === SKILL_TYPES.CURA ? "cura" : skill.type === SKILL_TYPES.BUFF ? "buff" : "def";
-  const powerLabel = skill.type === SKILL_TYPES.BUFF ? skill.value : skill.power;
-  log(`🗡️ ${actor.name} prepara ${skill.name} (${skillLabel} ${powerLabel}) en ${target.name}`);
+  log(`🗡️ ${actor.name} prepara ${skill.name} (${actionLabel(skill.type)} ${powerLabel(skill)}) en ${target.name}`);
 
   state.pendingActions.push({
     team: TEAMS.A,

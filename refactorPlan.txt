@@ -63,7 +63,7 @@ Crear archivo: combate/src/constants.js
 
 ---
 
-## FASE 2: Extraer formateadores puros (RIESGO BAJO)
+## FASE 2: Extraer formateadores puros (RIESGO BAJO) ✅ COMPLETADA
 
 ### Problema
 Logica de formateo de skills duplicada en 3 archivos:
