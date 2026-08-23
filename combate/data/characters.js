@@ -32,6 +32,7 @@ const characters = [
     role: "soporte",
     skills: [
       createSkill({ name: "Bolpe de baculo",        type: "attack",  power: 6,   precision: 90,    aparicion: 50 }),
+      createSkill({ name: "Ataque fugaz",           type: "attack",  power: 4,   precision: 90,    aparicion: 70 }),
       createSkill({ name: "Medicina druidica",      type: "cura",    power: 8,   precision: 99,    aparicion: 70   }),
       createSkill({ name: "Disminucion",            type: "buff",    target: "enemy", stat: "attack",    value: -0.2,  precision: 99, aparicion: 30 }),
       createSkill({ name: "Hechizo de proteccion",  type: "buff",    target: "self",  stat: "defense",   value: 6,     precision: 99, aparicion: 30  }),
@@ -40,13 +41,14 @@ const characters = [
   createCharacter({
     name: "Urbol",
     image: "assets/images/Urbol.jpg",
-    hp: 150,
-    evasion: 5,
+    hp: 170,
+    evasion: 4,
     role: "tanque",
     skills: [
-      createSkill({ name: "Abatida",            type: "attack",  power: 10,   precision: 90,    aparicion: 70 }),
-      createSkill({ name: "Postura Defensiva",  type: "defense", power: 18,   precision: 99,    aparicion: 20   }),
-      createSkill({ name: "Rugido",             type: "buff",    target: "enemy",  stat: "attack",    value: -0.2,  precision: 99, aparicion: 10 }),
+      createSkill({ name: "Abatida",            type: "attack",  power: 8,    precision: 90,    aparicion: 70 }),
+      createSkill({ name: "Tajo",               type: "attack",  power: 10,   precision: 90,    aparicion: 40 }),
+      createSkill({ name: "Postura Defensiva",  type: "defense", power: 15,   precision: 99,    aparicion: 40   }),
+      createSkill({ name: "Rugido",             type: "buff",    target: "enemy",  stat: "attack",    value: -0.2,  precision: 99, aparicion: 20 }),
     ]
   }),
   createCharacter({

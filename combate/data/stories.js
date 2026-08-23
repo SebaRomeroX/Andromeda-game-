@@ -387,9 +387,9 @@ const stories = [
     title: 'Modo libre para desarrollo',
     description: 'Se puede elegir el evento.',
     protagonist: 0,
-    allies: [1],
+    allies: [1,2,9],
     genericEnemies: [3, 7, 8, 10, 11, 12, 13, 14, 15],
-    narrativeEnemies: [4],
+    narrativeEnemies: [4, 5, 6, 16, 17],
     teamA: [-1, 0, -1, -1],
     events: [
       {
@@ -447,7 +447,7 @@ const stories = [
         narrativo: true,
         title: 'Final',
         description: 'Una amenaza ineludible se cierne sobre ti.',
-        enemyTeam: [4, 5, 6, -1]
+        enemyTeam: [4, 5, 17, 6]
       },
     ]
   }

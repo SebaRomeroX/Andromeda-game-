@@ -1375,7 +1375,7 @@ html.mobile #log-overlay #log {
 /* ── Desktop ───────────────────────────────────────────── */
 @media (min-width: 768px) {
   html:not(.mobile) #app {
-    max-width: 1200px;
+    max-width: 1600px;
     padding: 28px;
   }
 
