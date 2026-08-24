@@ -19,21 +19,22 @@ const characters = [
       createSkill({ name: "Furia de batalla",   type: "buff",    target: "self",  stat: "attack",    value: 0.10,  precision: 99, aparicion: 50 }),
       createSkill({ name: "Proteccion",         type: "buff",    target: "self",  stat: "defense",   value: 10,    precision: 99, aparicion: 50  }),
       // ESPECIALES
-      createSkill({ name: "Lanze Potenciado",   type: "attack",  power: 100,   precision: 80,    aparicion: 5 }),
+      createSkill({ name: "Lanze Potenciado",   type: "attack",  power: 70,    precision: 70,    aparicion: 5 }),
       createSkill({ name: "Salto brutal",       type: "attack",  power: 22,    precision: 99,    aparicion: 5,  stun: true }),
-      createSkill({ name: "Proteccion Divina",  type: "buff",    target: "self",  stat: "defense",   value: 50,    precision: 99, aparicion: 5  }),
+      createSkill({ name: "Proteccion Divina",  type: "buff",    target: "self",  stat: "defense",   value: 20,    precision: 99, aparicion: 5  }),
     ]
   }),
   createCharacter({
     name: "La druida",
     image: "assets/images/Druida.jpg",
-    hp: 90,
-    evasion: 7,
+    hp: 80,
+    evasion: 5,
     role: "soporte",
     skills: [
       createSkill({ name: "Bolpe de baculo",        type: "attack",  power: 6,   precision: 90,    aparicion: 50 }),
       createSkill({ name: "Ataque fugaz",           type: "attack",  power: 4,   precision: 90,    aparicion: 70 }),
-      createSkill({ name: "Medicina druidica",      type: "cura",    power: 8,   precision: 99,    aparicion: 70   }),
+      createSkill({ name: "Medicina druidica",      type: "cura",    power: 8,   precision: 99,    aparicion: 50   }),
+      createSkill({ name: "Magia curativa",         type: "cura",    power: 4,   precision: 99,    aparicion: 70   }),
       createSkill({ name: "Disminucion",            type: "buff",    target: "enemy", stat: "attack",    value: -0.2,  precision: 99, aparicion: 30 }),
       createSkill({ name: "Hechizo de proteccion",  type: "buff",    target: "self",  stat: "defense",   value: 6,     precision: 99, aparicion: 30  }),
     ]
@@ -42,12 +43,13 @@ const characters = [
     name: "Urbol",
     image: "assets/images/Urbol.jpg",
     hp: 170,
-    evasion: 4,
+    evasion: 3,
     role: "tanque",
     skills: [
-      createSkill({ name: "Abatida",            type: "attack",  power: 8,    precision: 90,    aparicion: 70 }),
-      createSkill({ name: "Tajo",               type: "attack",  power: 10,   precision: 90,    aparicion: 40 }),
-      createSkill({ name: "Postura Defensiva",  type: "defense", power: 15,   precision: 99,    aparicion: 40   }),
+      createSkill({ name: "Abatida",            type: "attack",  power: 8,   precision: 90,    aparicion: 70 }),
+      createSkill({ name: "Golpe contundente",  type: "attack",  power: 10,  precision: 90,    aparicion: 40 }),
+      createSkill({ name: "Corte",              type: "attack",  power: 6,   precision: 90,    aparicion: 70 }),
+      createSkill({ name: "Postura Defensiva",  type: "defense", power: 15,  precision: 99,    aparicion: 40   }),
       createSkill({ name: "Rugido",             type: "buff",    target: "enemy",  stat: "attack",    value: -0.2,  precision: 99, aparicion: 20 }),
     ]
   }),
@@ -58,9 +60,9 @@ const characters = [
     evasion: 4,
     role: "soporte",
     skills: [
-      createSkill({ name: "Ataque mental",            type: "attack",  power: 4,    precision: 75, aparicion: 10,}),
-      createSkill({ name: "Vision de muerte",         type: "buff",    target: "enemy", stat: "attack",    value: -0.10, precision: 90, aparicion: 5 }),
-      createSkill({ name: "Recubrimiento Calaverico", type: "buff",    target: "self",  stat: "defense",   value: 5,     precision: 95, aparicion: 7 }),
+      createSkill({ name: "Ataque mental",            type: "attack",  power: 5,    precision: 75, aparicion: 50,}),
+      createSkill({ name: "Vision de muerte",         type: "buff",    target: "enemy", stat: "attack",    value: -0.10, precision: 90, aparicion: 50 }),
+      createSkill({ name: "Recubrimiento Calaverico", type: "buff",    target: "self",  stat: "defense",   value: 5,     precision: 95, aparicion: 70 }),
     ]
   }),
   createCharacter({
@@ -110,8 +112,8 @@ const characters = [
     role: "tanque",
     skills: [
       createSkill({ name: "Corte",            type: "attack",  power: 8,  precision: 85, aparicion: 60 }),
-      createSkill({ name: "Golpe de escudo",  type: "attack",  power: 3,  precision: 90, aparicion: 20,  stun: true  }),
-      createSkill({ name: "Proteccion",       type: "buff",    target: "self",  stat: "defense",   value: 4,    precision: 99, aparicion: 50  }),
+      createSkill({ name: "Golpe de escudo",  type: "attack",  power: 4,  precision: 90, aparicion: 20,  stun: true  }),
+      createSkill({ name: "Proteccion",       type: "buff",    target: "self",  stat: "defense",   value: 4,    precision: 99, aparicion: 40  }),
     ]
   }),
   createCharacter({
@@ -132,7 +134,8 @@ const characters = [
     evasion: 7,
     role: "soporte",
     skills: [
-      createSkill({ name: "Disparo aguijon",    type: "attack",  power: 6,   precision: 90,    aparicion: 80 }),
+      createSkill({ name: "Disparo aguijon",    type: "attack",  power: 4,   precision: 90,    aparicion: 80 }),
+      createSkill({ name: "Agujas",             type: "attack",  power: 6,   precision: 90,    aparicion: 80 }),
       createSkill({ name: "Picadura venonosa",  type: "attack",  power: 2,   precision: 90,    aparicion: 50,  herida: true }),
       createSkill({ name: "Telaraña",           type: "attack",  power: 1,   precision: 95,    aparicion: 40,  stun: true }),
       createSkill({ name: "Vendaje aracnido",   type: "cura",    power: 4,   precision: 99,    aparicion: 50   }),
@@ -145,8 +148,8 @@ const characters = [
     evasion: 2,
     role: "tanque",
     skills: [
-      createSkill({ name: "Lanza",            type: "attack",  power: 4,  precision: 85, aparicion: 30, herida: true }),
-      createSkill({ name: "Defensa",          type: "defense", power: 10, precision: 95, aparicion: 80   }),
+      createSkill({ name: "Lanza",            type: "attack",  power: 7,  precision: 85, aparicion: 40, herida: true }),
+      createSkill({ name: "Defensa",          type: "defense", power: 10, precision: 95, aparicion: 60   }),
     ]
   }),
   createCharacter({
@@ -157,7 +160,7 @@ const characters = [
     role: "tanque",
     skills: [
       createSkill({ name: "Golpe cargado",  type: "attack",  power: 12,  precision: 85, aparicion: 30 }),
-      createSkill({ name: "Reves",          type: "attack",  power: 4,   precision: 85, aparicion: 80 }),
+      createSkill({ name: "Reves",          type: "attack",  power: 7,   precision: 85, aparicion: 80 }),
       createSkill({ name: "Rabia",          type: "buff",    target: "self", stat: "attack", value: 0.10,   precision: 95, aparicion: 40 }),
     ]
   }),
@@ -168,9 +171,9 @@ const characters = [
     evasion: 6,
     role: "asesino",
     skills: [
-      createSkill({ name: "Corte",         type: "attack",  power: 6,        precision: 80,      aparicion: 70 }),
-      createSkill({ name: "Puñalada",      type: "attack",  power: 10,       precision: 90,      aparicion: 20 }),
-      createSkill({ name: "Concentracion", type: "buff",    target: "self",  stat: "precision",  value: 100,   precision: 90, aparicion: 50 }),
+      createSkill({ name: "Corte",         type: "attack",  power: 7,        precision: 80,      aparicion: 70 }),
+      createSkill({ name: "Puñalada",      type: "attack",  power: 13,       precision: 90,      aparicion: 30 }),
+      createSkill({ name: "Concentracion", type: "buff",    target: "self",  stat: "precision",  value: 100,   precision: 90, aparicion: 40 }),
     ]
   }),
   createCharacter({
@@ -180,9 +183,9 @@ const characters = [
     evasion: 7,
     role: "asesino",
     skills: [
-      createSkill({ name: "Corte",      type: "attack",  power: 4,        precision: 80,      aparicion: 70 }),
-      createSkill({ name: "Puñalada",   type: "attack",  power: 6,        precision: 90,      aparicion: 20 , herida: true}),
-      createSkill({ name: "Devilitar",  type: "buff",    target: "enemy", stat: "attack",      value: -0.10,  precision: 90, aparicion: 50 }),
+      createSkill({ name: "Corte",      type: "attack",  power: 7,        precision: 80,      aparicion: 70 }),
+      createSkill({ name: "Puñalada",   type: "attack",  power: 10,       precision: 90,      aparicion: 30 , herida: true}),
+      createSkill({ name: "Devilitar",  type: "buff",    target: "enemy", stat: "attack",      value: -0.10,  precision: 90, aparicion: 30 }),
     ]
   }),
   createCharacter({
@@ -192,9 +195,9 @@ const characters = [
     evasion: 4,
     role: "rango",
     skills: [
-      createSkill({ name: "Flecha",        type: "attack",  power: 4,    precision: 85, aparicion: 60,}),
-      createSkill({ name: "Tiro certero",  type: "attack",  power: 5,    precision: 90, aparicion: 40,}),
-      createSkill({ name: "Concentracion", type: "buff",    target: "self",  stat: "precision",  value: 100,   precision: 90, aparicion: 50 }),
+      createSkill({ name: "Flecha",        type: "attack",  power: 9,    precision: 85, aparicion: 60,}),
+      createSkill({ name: "Tiro certero",  type: "attack",  power: 13,   precision: 90, aparicion: 40,}),
+      createSkill({ name: "Concentracion", type: "buff",    target: "self",  stat: "precision",  value: 100,   precision: 90, aparicion: 30 }),
     ]
   }),
   createCharacter({
@@ -204,8 +207,8 @@ const characters = [
     evasion: 3,
     role: "rango",
     skills: [
-      createSkill({ name: "Ataque mental",    type: "attack",  power: 3,    precision: 85, aparicion: 50,}),
-      createSkill({ name: "Fuego fatuo",      type: "attack",  power: 8,    precision: 85, aparicion: 30, herida: true}),
+      createSkill({ name: "Ataque mental",    type: "attack",  power: 8,    precision: 85, aparicion: 50,}),
+      createSkill({ name: "Fuego fatuo",      type: "attack",  power: 15,   precision: 85, aparicion: 30, herida: true}),
     ]
   }),
   createCharacter({
