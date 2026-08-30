@@ -75,11 +75,7 @@ function persistProgress() {
     showToast('💾 Partida Guardada');
   }
 
-  const badge = document.getElementById('map-save-badge');
-  if (badge) {
-    badge.textContent = `💾 Progreso guardado · Etapa ${state.run.stage + 1}`;
-    badge.classList.remove('hidden');
-  }
+
 }
 
 function buildTeamAData() {

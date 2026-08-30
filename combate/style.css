@@ -1072,19 +1072,6 @@ body {
   transform: translateY(-2px);
 }
 
-.map-save-badge {
-  text-align: center;
-  margin: 4px 0 12px;
-  font-size: 0.85rem;
-  font-weight: bold;
-  color: #a0f0a0;
-  text-shadow: 0 0 8px rgba(80, 200, 80, 0.3);
-}
-
-.map-save-badge.hidden {
-  display: none;
-}
-
 .toast {
   position: fixed;
   top: 20px;
