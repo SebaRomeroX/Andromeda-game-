@@ -28,7 +28,7 @@ body {
 }
 
 #combat-area {
-  --card-w: min(15vw, calc(36vh - 90px));
+  --card-w: min(15vw, calc(36vh - 90px), calc((100vw - 80px) / 7));
   display: flex;
   justify-content: space-evenly;
   align-items: flex-start;
@@ -1411,12 +1411,8 @@ html.mobile #log-overlay #log {
   }
 
   #combat-area {
-    --card-w: min(180px, calc(36vh - 90px));
-    gap: 100px;
-  }
-
-  .team-container {
-    max-width: 400px;
+    --card-w: min(180px, calc(36vh - 90px), calc((100vw - 200px) / 6));
+    gap: clamp(16px, 5vw, 100px);
   }
 
   .team-label {
