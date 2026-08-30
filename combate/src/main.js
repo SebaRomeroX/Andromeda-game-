@@ -28,6 +28,37 @@ function showToast(text) {
   }, 1500);
 }
 
+function showConfirmModal(message) {
+  return new Promise(resolve => {
+    const overlay = document.getElementById('confirm-overlay');
+    const msg = document.getElementById('confirm-message');
+    const okBtn = document.getElementById('confirm-ok');
+    const cancelBtn = document.getElementById('confirm-cancel');
+
+    msg.textContent = message;
+
+    function cleanup() {
+      overlay.classList.add('hidden');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onBackdrop);
+      document.removeEventListener('keydown', onKey);
+    }
+
+    function onOk() { cleanup(); resolve(true); }
+    function onCancel() { cleanup(); resolve(false); }
+    function onBackdrop(e) { if (e.target === overlay) onCancel(); }
+    function onKey(e) { if (e.key === 'Escape') onCancel(); }
+
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onBackdrop);
+    document.addEventListener('keydown', onKey);
+
+    overlay.classList.remove('hidden');
+  });
+}
+
 function persistProgress() {
   const sel = state.session.selectedStory;
   if (!sel || !sel.sequential) return;
@@ -174,9 +205,9 @@ function renderMenu() {
       const newBtn = document.createElement('button');
       newBtn.className = 'story-card-new';
       newBtn.textContent = '⚔ Nueva partida';
-      newBtn.addEventListener('click', (e) => {
+      newBtn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (saved && !confirm('Empezar de nuevo borrará tu progreso actual. ¿Continuar?')) return;
+        if (saved && !(await showConfirmModal('Empezar de nuevo borrará tu progreso actual. ¿Continuar?'))) return;
         startStory(story, { loadSave: false });
       });
       actions.appendChild(newBtn);

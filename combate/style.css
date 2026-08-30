@@ -919,6 +919,49 @@ body {
   box-shadow: 0 4px 20px rgba(80, 200, 80, 0.3);
 }
 
+/* Confirm overlay */
+.confirm-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.confirm-cancel,
+.confirm-ok {
+  padding: 12px 36px;
+  border: 2px solid;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-cancel {
+  border-color: #5a5a7a;
+  background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
+  color: #a0a0c0;
+}
+
+.confirm-cancel:hover {
+  background: linear-gradient(135deg, #3a3a4e, #2a2a3e);
+  border-color: #7a7a9a;
+  transform: translateY(-2px);
+}
+
+.confirm-ok {
+  border-color: #4a7a4a;
+  background: linear-gradient(135deg, #1a3a1a, #0a2a0a);
+  color: #a0f0a0;
+}
+
+.confirm-ok:hover {
+  background: linear-gradient(135deg, #2a5a2a, #1a4a1a);
+  border-color: #6aaa6a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(80, 200, 80, 0.3);
+}
+
 /* Choice overlay */
 .choice-options {
   display: flex;
