@@ -1,21 +1,20 @@
 arround 1hs play run
-captains
 
 UI:
-  pantalla definitiva ***
-  animaciones(basicas) acciones **
+  animaciones(basicas) acciones
 
   description pop (character, skill)
-  show improve at levelup(health, evation)
-  log(just this turn), register(all combat)
-
+  show improve at levelup(health, evation) *
+  
+  music and sounds
+  
 MECHANIC:
   buff target(self, alie, enemy) 
   ataques en area
   critics
 
 NARRATIVE:
-  mas dialogos
+  mas dialogos *
   eleccion dialogos
 
 
