@@ -223,7 +223,7 @@ const stories = [
           { speaker: 0, text: 'Eres otra de los subordinados de esa escoria y caeras como el resto de ellos.' },
           { text: 'Sima apunta su lanza hacia el enemigo, decision en su mirada.' },
         ],
-        conditions: { eleccion: { 'camino-cueva': 'cueva' } }
+        conditions: { eleccion: { 'camino-cueva': 'directo' } }
       },
       {
         id: 'primero-demonica',
