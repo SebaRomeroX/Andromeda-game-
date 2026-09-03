@@ -75,16 +75,13 @@ export function showCampEvent(event, advanceStageCb) {
     function showLevelUp() {
       const { member, oldLevel, oldHp, oldEvasion } = leveledMembers[idx];
       message.textContent = '';
-      titleEl.textContent = 'Personaje sube de nivel';
+      titleEl.textContent = `${member.name} sube de nivel`;
       levelupImg.src = member.image;
       levelupImg.alt = member.name;
       levelupStats.innerHTML = `
         <div class="stat-row">
           <span class="stat-label">Nivel:</span>
-          <span class="stat-old">${oldLevel}</span>
-          <span class="stat-arrow">\u2192</span>
           <span class="stat-new">${member.level}</span>
-          <span class="stat-up">(+${member.level - oldLevel})</span>
         </div>
         <div class="stat-row">
           <span class="stat-label">Salud:</span>

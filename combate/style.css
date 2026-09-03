@@ -931,12 +931,12 @@ body {
 }
 
 .camp-levelup-img {
-  width: 100px;
-  height: 100px;
-  border-radius: 10px;
+  width: 120px;
+  aspect-ratio: 3 / 4;
   object-fit: contain;
   border: 2px solid #4a4a6a;
-  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .camp-levelup-stats {
