@@ -2,13 +2,13 @@ const STORAGE_KEY = 'andromeda-music-muted';
 
 const TRACKS = {
   chill: [
-    '../assets/audio/chill/the-britons.mp3',
-    '../assets/audio/chill/wandering-knight.mp3'
+    'assets/audio/chill/the-britons.mp3',
+    'assets/audio/chill/wandering-knight.mp3'
   ],
   combat: [
-    '../assets/audio/combat/action-adventure-fantasy.mp3',
-    '../assets/audio/combat/cinematic-powerful-background.mp3',
-    '../assets/audio/combat/epic-rise.mp3'
+    'assets/audio/combat/action-adventure-fantasy.mp3',
+    'assets/audio/combat/cinematic-powerful-background.mp3',
+    'assets/audio/combat/epic-rise.mp3'
   ]
 };
 
