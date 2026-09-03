@@ -51,41 +51,32 @@ export function showCampEvent(event, advanceStageCb) {
     saveTeamLevels();
     restoreTeamHp();
 
-    if (leveledMembers.length > 0) {
-      message.textContent = 'Los supervivientes descansan y recuperan su vida.';
-    } else {
-      message.textContent = 'El equipo descansa y recupera su vida, pero nadie sube de nivel.';
+    if (leveledMembers.length === 0) {
+      overlay.classList.add('hidden');
+      advanceStageCb();
+      return;
     }
 
-    button.textContent = 'Continuar';
-    button.onclick = () => {
-      if (leveledMembers.length === 0) {
-        overlay.classList.add('hidden');
-        advanceStageCb();
-        return;
-      }
+    let idx = 0;
 
-      let idx = 0;
+    function showLevelUp() {
+      const m = leveledMembers[idx];
+      message.innerHTML = `✨ ${m.name} sube a nivel ${m.level}!`;
+      button.textContent = 'Continuar';
+      button.onclick = () => {
+        startSkillUpgrades([m], () => {
+          idx++;
+          if (idx < leveledMembers.length) {
+            showLevelUp();
+          } else {
+            overlay.classList.add('hidden');
+            advanceStageCb();
+          }
+        });
+      };
+    }
 
-      function showLevelUp() {
-        const m = leveledMembers[idx];
-        message.innerHTML = `✨ ${m.name} sube a nivel ${m.level}!`;
-        button.textContent = 'Continuar';
-        button.onclick = () => {
-          startSkillUpgrades([m], () => {
-            idx++;
-            if (idx < leveledMembers.length) {
-              showLevelUp();
-            } else {
-              overlay.classList.add('hidden');
-              advanceStageCb();
-            }
-          });
-        };
-      }
-
-      showLevelUp();
-    };
+    showLevelUp();
   };
 }
 
