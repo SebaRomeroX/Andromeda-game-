@@ -1321,6 +1321,33 @@ html.mobile #app {
   display: none;
 }
 
+/* Mute toggle button */
+.mute-btn {
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  left: 16px;
+  z-index: 3000;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #5a5a8a;
+  background: rgba(20, 20, 40, 0.85);
+  color: #e0dcd0;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+.mute-btn:hover {
+  border-color: #f0d060;
+  color: #f0d060;
+}
+
 html.mobile #combat-area {
   --card-w: min(14vw, calc(48vh - 70px));
   align-items: center;

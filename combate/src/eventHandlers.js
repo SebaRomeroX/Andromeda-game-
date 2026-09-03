@@ -3,6 +3,7 @@ import { getLevelStats, ROLE_BY_INDEX } from './models.js';
 import { startSkillUpgrades } from './upgrades.js';
 import { clearGame } from './save.js';
 import characters from '../data/characters.js';
+import { stopMusic } from './music.js';
 
 function buildTeamAData() {
   return (state.session.playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
@@ -255,6 +256,7 @@ export function showEnding(event, selectedStory, resetRunStateCb) {
   menuBtn.addEventListener('click', () => {
     state.session.selectedStory = null;
     resetRunStateCb();
+    stopMusic();
     showScreen('menu');
   });
   menuArea.appendChild(menuBtn);

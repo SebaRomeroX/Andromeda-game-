@@ -13,6 +13,7 @@ import { TEAMS } from './constants.js';
 import { advanceStage as advanceStageFlow, resolveVictory } from './gameFlow.js';
 import { showCampEvent, showRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding } from './eventHandlers.js';
 import './mobile.js';
+import { playChill, playCombat, stopMusic, initMuteButton } from './music.js';
 
 let toastTimer = null;
 function showToast(text) {
@@ -165,6 +166,7 @@ function advanceStage() {
 }
 
 function renderMenu() {
+  stopMusic();
   const list = document.getElementById('story-list');
   list.innerHTML = '';
 
@@ -247,6 +249,7 @@ function startStory(story, { loadSave }) {
 
 function renderMap() {
   showScreen('map');
+  playChill();
 
   const title = document.getElementById('map-title');
   title.textContent = state.session.selectedStory.title;
@@ -296,6 +299,7 @@ function renderMap() {
   menuBtn.addEventListener('click', () => {
     state.session.selectedStory = null;
     resetRunState();
+    stopMusic();
     showScreen('menu');
   });
   menuArea.appendChild(menuBtn);
@@ -327,6 +331,7 @@ function startCombat(event) {
   }
 
   showScreen('combat');
+  playCombat();
 
   const teamAData = buildTeamAData();
 
@@ -438,3 +443,4 @@ setupDevPanel(stories, (story, payload) => {
 
 renderMenu();
 showScreen('menu');
+initMuteButton();
