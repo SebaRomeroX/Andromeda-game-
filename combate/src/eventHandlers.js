@@ -12,9 +12,13 @@ function showOverlay(message, buttonText, onClick) {
   const overlay = document.getElementById('camp-overlay');
   const msg = document.getElementById('camp-message');
   const btn = document.getElementById('camp-continue');
+  const levelup = document.getElementById('camp-levelup');
+  const title = document.getElementById('camp-title');
   msg.innerHTML = message;
   btn.textContent = buttonText;
   btn.onclick = () => { overlay.classList.add('hidden'); if (onClick) onClick(); };
+  levelup.classList.add('hidden');
+  title.textContent = '';
   overlay.classList.remove('hidden');
 }
 
@@ -29,23 +33,32 @@ export function showCampEvent(event, advanceStageCb) {
   const overlay = document.getElementById('camp-overlay');
   const message = document.getElementById('camp-message');
   const button = document.getElementById('camp-continue');
+  const levelupEl = document.getElementById('camp-levelup');
+  const levelupImg = document.getElementById('camp-levelup-img');
+  const levelupStats = document.getElementById('camp-levelup-stats');
+  const titleEl = document.getElementById('camp-title');
 
   const teamAData = buildTeamAData();
   initState(teamAData, []);
 
   message.textContent = event.description;
   button.textContent = 'Descansar';
+  levelupEl.classList.add('hidden');
+  titleEl.textContent = '';
   overlay.classList.remove('hidden');
 
   button.onclick = () => {
     const leveledMembers = [];
     state.combat.teams.A.members.forEach(m => {
       if (m && m.currentHp > 0) {
+        const oldLevel = m.level;
+        const oldHp = m.hp;
+        const oldEvasion = m.evasion;
         m.level++;
         const st = getLevelStats(m);
         m.hp = st.hp;
         m.evasion = st.evasion;
-        leveledMembers.push(m);
+        leveledMembers.push({ member: m, oldLevel, oldHp, oldEvasion });
       }
     });
     saveTeamLevels();
@@ -60,11 +73,39 @@ export function showCampEvent(event, advanceStageCb) {
     let idx = 0;
 
     function showLevelUp() {
-      const m = leveledMembers[idx];
-      message.innerHTML = `✨ ${m.name} sube a nivel ${m.level}!`;
+      const { member, oldLevel, oldHp, oldEvasion } = leveledMembers[idx];
+      message.textContent = '';
+      titleEl.textContent = 'Personaje sube de nivel';
+      levelupImg.src = member.image;
+      levelupImg.alt = member.name;
+      levelupStats.innerHTML = `
+        <div class="stat-row">
+          <span class="stat-label">Nivel:</span>
+          <span class="stat-old">${oldLevel}</span>
+          <span class="stat-arrow">\u2192</span>
+          <span class="stat-new">${member.level}</span>
+          <span class="stat-up">(+${member.level - oldLevel})</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Salud:</span>
+          <span class="stat-old">${oldHp}</span>
+          <span class="stat-arrow">\u2192</span>
+          <span class="stat-new">${member.hp}</span>
+          <span class="stat-up">(+${member.hp - oldHp})</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Evasion:</span>
+          <span class="stat-old">${oldEvasion}</span>
+          <span class="stat-arrow">\u2192</span>
+          <span class="stat-new">${member.evasion}</span>
+          <span class="stat-up">(+${member.evasion - oldEvasion})</span>
+        </div>
+      `;
+      levelupEl.classList.remove('hidden');
       button.textContent = 'Continuar';
       button.onclick = () => {
-        startSkillUpgrades([m], () => {
+        levelupEl.classList.add('hidden');
+        startSkillUpgrades([member], () => {
           idx++;
           if (idx < leveledMembers.length) {
             showLevelUp();

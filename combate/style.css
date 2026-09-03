@@ -919,6 +919,70 @@ body {
   box-shadow: 0 4px 20px rgba(80, 200, 80, 0.3);
 }
 
+.camp-levelup {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.camp-levelup.hidden {
+  display: none;
+}
+
+.camp-levelup-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 10px;
+  object-fit: contain;
+  border: 2px solid #4a4a6a;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.camp-levelup-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.camp-levelup-stats .stat-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: #e0dcd0;
+}
+
+.camp-levelup-stats .stat-label {
+  min-width: 70px;
+  color: #f0d060;
+  font-weight: 600;
+}
+
+.camp-levelup-stats .stat-old {
+  color: #a0a0c0;
+}
+
+.camp-levelup-stats .stat-arrow {
+  color: #6a6a8a;
+}
+
+.camp-levelup-stats .stat-new {
+  color: #e0dcd0;
+  font-weight: 600;
+}
+
+.camp-levelup-stats .stat-up {
+  color: #60d060;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+#camp-title {
+  color: #f0d060;
+}
+
 /* Confirm overlay */
 .confirm-buttons {
   display: flex;
