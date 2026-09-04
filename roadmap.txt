@@ -5,8 +5,6 @@ UI:
 
   description pop (character, skill) *
   
-  music and sounds *
-  
 MECHANIC:
   buff   **     **    **
     target(self, alie, enemy) 
@@ -19,6 +17,7 @@ MECHANIC:
 NARRATIVE:
   mas dialogos *
   new route or consequence *
+  map routes visualization *
   eleccion dialogos
 
 

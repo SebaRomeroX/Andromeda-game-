@@ -909,6 +909,10 @@ body {
   margin-bottom: 10px;
 }
 
+#pause-load-game {
+  margin-top: 28px;
+}
+
 #pause-load-game:hover,
 #pause-back-menu:hover {
   border-color: #f0d060;
