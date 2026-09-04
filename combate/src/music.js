@@ -149,3 +149,10 @@ export function initMuteButton() {
     btn.textContent = nowMuted ? '🔇' : '🔊';
   });
 }
+
+export function playSound(name) {
+  if (muted) return;
+  const a = new Audio(`assets/audio/sound/${name}.mp3`);
+  a.volume = DEFAULT_VOLUME;
+  a.play().catch(() => {});
+}

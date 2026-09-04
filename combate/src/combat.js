@@ -5,6 +5,7 @@ import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clea
 import { log } from './log.js';
 import { actionLabel, powerLabel } from './formatters.js';
 import { pickWeighted, computeEffect, computeTargets, sortActions, planEnemyActions, skillNameToId } from './combatEngine.js';
+import { playSound } from './music.js';
 
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
   const actor = state.combat.teams[actorTeam].members[actorIndex];
@@ -135,12 +136,14 @@ function checkGameOver() {
   if (allDead(TEAMS.A)) {
     state.combat.gameOver = true;
     log(`☠️ ¡El EQUIPO A ha sido derrotado! El EQUIPO B gana.`);
+    playSound('defeat');
     showRestart(false, getGameEndCallback());
     return true;
   }
   if (allDead(TEAMS.B)) {
     state.combat.gameOver = true;
     log(`🏆 ¡El EQUIPO B ha sido derrotado! El EQUIPO A gana.`);
+    playSound('achievement');
     showRestart(true, getGameEndCallback());
     return true;
   }
@@ -206,8 +209,10 @@ function resolveAction(index, sorted) {
       const typeEmojis = { [SKILL_TYPES.CURA]: '💚', [SKILL_TYPES.BUFF]: '💥', [SKILL_TYPES.DEFENSE]: '🛡️' };
       const emoji = typeEmojis[action.skill.type] ?? '💥';
       log(`${emoji} ${actor.name} usa ${action.skill.name}... ¡PERO FALLA!`);
+      playSound('error');
     } else {
       log(`💥 ${actor.name} usa ${action.skill.name}... ¡${target.name} esquiva el ataque!`);
+      playSound('swoosh');
     }
     const msg = outcome.type === "miss" ? "¡Falla!" : "¡Esquiva!";
     const variant = outcome.type === "miss" ? "combat-msg-miss" : "combat-msg-evade";
@@ -221,12 +226,27 @@ function resolveAction(index, sorted) {
     setTimeout(() => flashObjective(action.targetTeam, action.targetIdx, action.skill), 1500);
   } else {
     setTimeout(() => showCombatMessage(action.targetTeam, action.targetIdx, "¡Defiende!", "combat-msg-defend"), 1500);
+    playSound('slam');
   }
   setTimeout(() => {
+    const hpBefore = target.currentHp;
     applyEffect(action.team, action.actorIndex, action.targetTeam, action.targetIdx, action.skill, outcome);
     renderHP();
     renderStatus();
     renderBuffs();
+
+    if (outcome.type === SKILL_TYPES.ATTACK && !blocked) {
+      playSound('punch');
+    } else if (outcome.type === SKILL_TYPES.CURA || outcome.type === SKILL_TYPES.BUFF) {
+      playSound('spell');
+    } else if (outcome.type === SKILL_TYPES.DEFENSE) {
+      playSound('metal');
+    }
+
+    if (hpBefore > 0 && target.currentHp <= 0) {
+      playSound('pain');
+    }
+
     if (checkGameOver()) {
       clearMemberAction(action.team, action.actorIndex);
       return;
