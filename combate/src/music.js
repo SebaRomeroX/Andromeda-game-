@@ -150,16 +150,24 @@ export function initMuteButton() {
   });
 }
 
-const activeSounds = [];
+const SOUND_NAMES = ['achievement', 'defeat', 'error', 'metal', 'pain', 'punch', 'slam', 'spell', 'swoosh'];
+const soundPool = {};
+
+function ensureSoundPool() {
+  if (Object.keys(soundPool).length) return;
+  for (const name of SOUND_NAMES) {
+    const a = new Audio(`assets/audio/sound/${name}.mp3`);
+    a.preload = 'auto';
+    a.volume = DEFAULT_VOLUME;
+    soundPool[name] = a;
+  }
+}
 
 export function playSound(name) {
   if (muted) return;
-  const a = new Audio(`assets/audio/sound/${name}.mp3`);
-  a.volume = DEFAULT_VOLUME;
-  activeSounds.push(a);
-  a.addEventListener('ended', () => {
-    const idx = activeSounds.indexOf(a);
-    if (idx !== -1) activeSounds.splice(idx, 1);
-  });
-  a.play().catch(() => {});
+  ensureSoundPool();
+  const a = soundPool[name];
+  if (!a) return;
+  a.currentTime = 0;
+  a.play().catch(e => console.warn('[sound]', name, e));
 }
