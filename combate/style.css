@@ -865,10 +865,10 @@ body {
   transform: translateY(-2px);
 }
 
-#combat-pause-btn {
+#global-pause-btn {
   position: fixed;
   top: 14px;
-  left: calc(50% - 100px);
+  left: 14px;
   z-index: 950;
   padding: 10px 28px;
   border: 2px solid #5a5a8a;
@@ -882,7 +882,7 @@ body {
   transition: all 0.2s;
 }
 
-#combat-pause-btn:hover {
+#global-pause-btn:hover {
   border-color: #f0d060;
   color: #f0e0a0;
   transform: translateY(-2px);
@@ -890,7 +890,8 @@ body {
 }
 
 #log-open-btn {
-  left: calc(50% + 100px);
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 #pause-resume {

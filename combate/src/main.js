@@ -140,7 +140,7 @@ document.getElementById('combat-area').addEventListener('click', (e) => {
 });
 
 document.getElementById('log-open-btn').addEventListener('click', openLog);
-document.getElementById('combat-pause-btn').addEventListener('click', showPause);
+document.getElementById('global-pause-btn').addEventListener('click', showPause);
 document.getElementById('log-close-btn').addEventListener('click', closeLog);
 document.getElementById('log-overlay').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeLog();
@@ -153,6 +153,8 @@ function showScreen(name) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
   const screen = document.getElementById(`screen-${name}`);
   if (screen) screen.classList.add('active');
+  const pauseBtn = document.getElementById('global-pause-btn');
+  if (pauseBtn) pauseBtn.hidden = (name === 'menu');
 }
 
 function advanceStage() {
@@ -295,12 +297,6 @@ function renderMap() {
 
   const menuArea = document.getElementById('map-menu-area');
   menuArea.innerHTML = '';
-
-  const pauseBtn = document.createElement('button');
-  pauseBtn.className = 'map-menu-btn';
-  pauseBtn.textContent = 'Pausa';
-  pauseBtn.addEventListener('click', showPause);
-  menuArea.appendChild(pauseBtn);
 
   const menuBtn = document.createElement('button');
   menuBtn.className = 'map-menu-btn';
