@@ -1,4 +1,6 @@
-const STORAGE_KEY = 'andromeda-music-muted';
+const STORAGE_MUTED = 'andromeda-music-muted';
+const STORAGE_MUSIC_VOL = 'andromeda-music-volume';
+const STORAGE_SFX_VOL = 'andromeda-sfx-volume';
 
 const TRACKS = {
   chill: [
@@ -13,8 +15,14 @@ const TRACKS = {
 };
 
 const CROSSFADE_MS = 1500;
-const MUSIC_VOLUME = 0.3;
-const SFX_VOLUME = 0.5;
+const DEFAULT_MUSIC_VOLUME = 0.3;
+const DEFAULT_SFX_VOLUME = 0.5;
+
+let musicVolume = parseFloat(localStorage.getItem(STORAGE_MUSIC_VOL));
+if (isNaN(musicVolume)) musicVolume = DEFAULT_MUSIC_VOLUME;
+
+let sfxVolume = parseFloat(localStorage.getItem(STORAGE_SFX_VOL));
+if (isNaN(sfxVolume)) sfxVolume = DEFAULT_SFX_VOLUME;
 
 const audioA = new Audio();
 const audioB = new Audio();
@@ -26,7 +34,7 @@ audioB.loop = false;
 let active = audioA;
 let inactive = audioB;
 let currentCategory = null;
-let muted = localStorage.getItem(STORAGE_KEY) === 'true';
+let muted = localStorage.getItem(STORAGE_MUTED) === 'true';
 let fadeTimer = null;
 
 function pickRandom(category) {
@@ -41,7 +49,7 @@ function applyMute(audio) {
 function crossfade(audio, durationMs) {
   const steps = 20;
   const stepMs = durationMs / steps;
-  const targetVolume = muted ? 0 : MUSIC_VOLUME;
+  const targetVolume = muted ? 0 : musicVolume;
   let i = 0;
 
   clearInterval(fadeTimer);
@@ -131,8 +139,8 @@ export function stopMusic() {
 
 export function toggleMute() {
   muted = !muted;
-  localStorage.setItem(STORAGE_KEY, muted);
-  active.volume = muted ? 0 : MUSIC_VOLUME;
+  localStorage.setItem(STORAGE_MUTED, muted);
+  active.volume = muted ? 0 : musicVolume;
   applyMute(active);
   return muted;
 }
@@ -141,14 +149,23 @@ export function isMuted() {
   return muted;
 }
 
-export function initMuteButton() {
-  const btn = document.getElementById('mute-btn');
-  if (!btn) return;
-  btn.textContent = muted ? '🔇' : '🔊';
-  btn.addEventListener('click', () => {
-    const nowMuted = toggleMute();
-    btn.textContent = nowMuted ? '🔇' : '🔊';
-  });
+export function setMusicVolume(percent) {
+  musicVolume = Math.max(0, Math.min(1, percent));
+  localStorage.setItem(STORAGE_MUSIC_VOL, musicVolume);
+  if (!muted) active.volume = musicVolume;
+}
+
+export function getMusicVolume() {
+  return musicVolume;
+}
+
+export function setSfxVolume(percent) {
+  sfxVolume = Math.max(0, Math.min(1, percent));
+  localStorage.setItem(STORAGE_SFX_VOL, sfxVolume);
+}
+
+export function getSfxVolume() {
+  return sfxVolume;
 }
 
 const SOUND_NAMES = ['achievement', 'defeat', 'error', 'metal', 'pain', 'punch', 'slam', 'spell', 'swoosh'];
@@ -160,7 +177,6 @@ function ensureSoundPool() {
   for (const name of SOUND_NAMES) {
     const a = new Audio(`assets/audio/sound/${name}.mp3`);
     a.preload = 'auto';
-    a.volume = SOUND_VOLUME_OVERRIDES[name] ?? SFX_VOLUME;
     soundPool[name] = a;
   }
 }
@@ -170,6 +186,7 @@ export function playSound(name) {
   ensureSoundPool();
   const a = soundPool[name];
   if (!a) return;
+  a.volume = SOUND_VOLUME_OVERRIDES[name] ?? sfxVolume;
   a.currentTime = 0;
   a.play().catch(e => console.warn('[sound]', name, e));
 }

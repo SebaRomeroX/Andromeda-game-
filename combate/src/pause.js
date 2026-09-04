@@ -1,8 +1,28 @@
-export function initPause() {
-  const overlay = document.getElementById('pause-overlay');
-  const resumeBtn = document.getElementById('pause-resume');
+import { toggleMute, isMuted, setMusicVolume, getMusicVolume, setSfxVolume, getSfxVolume } from './music.js';
 
-  resumeBtn.addEventListener('click', () => overlay.classList.add('hidden'));
+let overlay, muteBtn, musicSlider, sfxSlider;
+
+function syncUI() {
+  muteBtn.textContent = isMuted() ? '🔊 Reanudar sonido' : '🔇 Silenciar todo';
+  musicSlider.value = Math.round(getMusicVolume() * 100);
+  sfxSlider.value = Math.round(getSfxVolume() * 100);
+}
+
+export function initPause() {
+  overlay = document.getElementById('pause-overlay');
+  muteBtn = document.getElementById('pause-mute-all');
+  musicSlider = document.getElementById('pause-music-vol');
+  sfxSlider = document.getElementById('pause-sfx-vol');
+
+  document.getElementById('pause-resume').addEventListener('click', () => overlay.classList.add('hidden'));
+
+  muteBtn.addEventListener('click', () => {
+    toggleMute();
+    syncUI();
+  });
+
+  musicSlider.addEventListener('input', () => setMusicVolume(musicSlider.value / 100));
+  sfxSlider.addEventListener('input', () => setSfxVolume(sfxSlider.value / 100));
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !overlay.classList.contains('hidden')) {
@@ -12,5 +32,6 @@ export function initPause() {
 }
 
 export function showPause() {
-  document.getElementById('pause-overlay').classList.remove('hidden');
+  syncUI();
+  overlay.classList.remove('hidden');
 }

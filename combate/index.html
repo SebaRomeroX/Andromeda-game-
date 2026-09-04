@@ -8,7 +8,6 @@
 </head>
 <body>
   <button id="fullscreen-btn" class="fullscreen-btn" title="Pantalla completa" hidden>⛶</button>
-  <button id="mute-btn" class="mute-btn" title="Silenciar música">🔊</button>
   <button id="global-pause-btn">Pausa</button>
   <div id="app">
     <div id="screen-menu" class="screen active">
@@ -132,6 +131,15 @@
     <div id="pause-overlay" class="overlay hidden">
       <div class="overlay-content">
         <h3 class="screen-subtitle">Juego pausado</h3>
+        <button id="pause-mute-all">Silenciar todo</button>
+        <div class="audio-control">
+          <label for="pause-music-vol">Música</label>
+          <input type="range" id="pause-music-vol" min="0" max="100" value="30">
+        </div>
+        <div class="audio-control">
+          <label for="pause-sfx-vol">Efectos de sonido</label>
+          <input type="range" id="pause-sfx-vol" min="0" max="100" value="50">
+        </div>
         <button id="pause-resume">Reanudar</button>
       </div>
     </div>

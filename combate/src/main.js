@@ -13,7 +13,7 @@ import { TEAMS } from './constants.js';
 import { advanceStage as advanceStageFlow, resolveVictory } from './gameFlow.js';
 import { showCampEvent, showRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding } from './eventHandlers.js';
 import './mobile.js';
-import { playChill, playCombat, stopMusic, initMuteButton } from './music.js';
+import { playChill, playCombat, stopMusic } from './music.js';
 import { initPause, showPause } from './pause.js';
 
 let toastTimer = null;
@@ -448,5 +448,4 @@ setupDevPanel(stories, (story, payload) => {
 
 renderMenu();
 showScreen('menu');
-initMuteButton();
 initPause();
