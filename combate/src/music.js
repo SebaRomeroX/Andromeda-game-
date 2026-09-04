@@ -150,9 +150,16 @@ export function initMuteButton() {
   });
 }
 
+const activeSounds = [];
+
 export function playSound(name) {
   if (muted) return;
   const a = new Audio(`assets/audio/sound/${name}.mp3`);
   a.volume = DEFAULT_VOLUME;
+  activeSounds.push(a);
+  a.addEventListener('ended', () => {
+    const idx = activeSounds.indexOf(a);
+    if (idx !== -1) activeSounds.splice(idx, 1);
+  });
   a.play().catch(() => {});
 }
