@@ -14,6 +14,7 @@ import { advanceStage as advanceStageFlow, resolveVictory } from './gameFlow.js'
 import { showCampEvent, showRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding } from './eventHandlers.js';
 import './mobile.js';
 import { playChill, playCombat, stopMusic, initMuteButton } from './music.js';
+import { initPause, showPause } from './pause.js';
 
 let toastTimer = null;
 function showToast(text) {
@@ -139,6 +140,7 @@ document.getElementById('combat-area').addEventListener('click', (e) => {
 });
 
 document.getElementById('log-open-btn').addEventListener('click', openLog);
+document.getElementById('combat-pause-btn').addEventListener('click', showPause);
 document.getElementById('log-close-btn').addEventListener('click', closeLog);
 document.getElementById('log-overlay').addEventListener('click', (e) => {
   if (e.target === e.currentTarget) closeLog();
@@ -293,6 +295,13 @@ function renderMap() {
 
   const menuArea = document.getElementById('map-menu-area');
   menuArea.innerHTML = '';
+
+  const pauseBtn = document.createElement('button');
+  pauseBtn.className = 'map-menu-btn';
+  pauseBtn.textContent = 'Pausa';
+  pauseBtn.addEventListener('click', showPause);
+  menuArea.appendChild(pauseBtn);
+
   const menuBtn = document.createElement('button');
   menuBtn.className = 'map-menu-btn';
   menuBtn.textContent = 'Volver al Menú';
@@ -444,3 +453,4 @@ setupDevPanel(stories, (story, payload) => {
 renderMenu();
 showScreen('menu');
 initMuteButton();
+initPause();
