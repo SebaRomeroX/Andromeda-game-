@@ -5,7 +5,7 @@ import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clea
 import { log } from './log.js';
 import { actionLabel, powerLabel } from './formatters.js';
 import { pickWeighted, computeEffect, computeTargets, sortActions, planEnemyActions, skillNameToId } from './combatEngine.js';
-import { playSound } from './music.js';
+import { playSound, stopMusic } from './music.js';
 
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
   const actor = state.combat.teams[actorTeam].members[actorIndex];
@@ -136,14 +136,16 @@ function checkGameOver() {
   if (allDead(TEAMS.A)) {
     state.combat.gameOver = true;
     log(`☠️ ¡El EQUIPO A ha sido derrotado! El EQUIPO B gana.`);
-    playSound('defeat');
+    stopMusic();
+    setTimeout(() => playSound('defeat'), 300);
     showRestart(false, getGameEndCallback());
     return true;
   }
   if (allDead(TEAMS.B)) {
     state.combat.gameOver = true;
     log(`🏆 ¡El EQUIPO B ha sido derrotado! El EQUIPO A gana.`);
-    playSound('achievement');
+    stopMusic();
+    setTimeout(() => playSound('achievement'), 300);
     showRestart(true, getGameEndCallback());
     return true;
   }
