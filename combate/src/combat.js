@@ -209,14 +209,15 @@ function resolveAction(index, sorted) {
       const typeEmojis = { [SKILL_TYPES.CURA]: '💚', [SKILL_TYPES.BUFF]: '💥', [SKILL_TYPES.DEFENSE]: '🛡️' };
       const emoji = typeEmojis[action.skill.type] ?? '💥';
       log(`${emoji} ${actor.name} usa ${action.skill.name}... ¡PERO FALLA!`);
-      playSound('error');
     } else {
       log(`💥 ${actor.name} usa ${action.skill.name}... ¡${target.name} esquiva el ataque!`);
-      playSound('swoosh');
     }
     const msg = outcome.type === "miss" ? "¡Falla!" : "¡Esquiva!";
     const variant = outcome.type === "miss" ? "combat-msg-miss" : "combat-msg-evade";
-    setTimeout(() => showCombatMessage(action.targetTeam, action.targetIdx, msg, variant), 1500);
+    setTimeout(() => {
+      showCombatMessage(action.targetTeam, action.targetIdx, msg, variant);
+      playSound(outcome.type === "miss" ? 'error' : 'swoosh');
+    }, 1500);
     setTimeout(() => resolveAction(index + 1, sorted), 2200);
     return;
   }
@@ -225,8 +226,10 @@ function resolveAction(index, sorted) {
   if (!blocked) {
     setTimeout(() => flashObjective(action.targetTeam, action.targetIdx, action.skill), 1500);
   } else {
-    setTimeout(() => showCombatMessage(action.targetTeam, action.targetIdx, "¡Defiende!", "combat-msg-defend"), 1500);
-    playSound('slam');
+    setTimeout(() => {
+      showCombatMessage(action.targetTeam, action.targetIdx, "¡Defiende!", "combat-msg-defend");
+      playSound('slam');
+    }, 1500);
   }
   setTimeout(() => {
     const hpBefore = target.currentHp;
