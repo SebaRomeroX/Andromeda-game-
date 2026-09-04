@@ -349,9 +349,7 @@ function startCombat(event) {
       handleVictory();
       return;
     }
-    clearSavedTeamHp();
-    showScreen('map');
-    renderMap();
+    startStory(state.session.selectedStory, { loadSave: false });
   });
 
   initState(teamAData, teamBData);
@@ -381,18 +379,10 @@ function handleVictory() {
     const msg = document.getElementById('camp-message');
     const btn = document.getElementById('camp-continue');
     msg.innerHTML = `💀 <strong>${protagonistName}</strong> ha caído en batalla.<br>La historia termina aquí.`;
-    btn.textContent = 'Volver al Menú';
+    btn.textContent = 'Reintentar';
     btn.onclick = () => {
       overlay.classList.add('hidden');
-      clearGame(state.session.selectedStory.id);
-      state.session.selectedStory = null;
-      resetRunState();
-      state.session.playerTeam = null;
-      clearSavedTeamHp();
-      clearSavedTeamLevels();
-      clearSavedTeamSkills();
-      renderMenu();
-      showScreen('menu');
+      startStory(state.session.selectedStory, { loadSave: false });
     };
     overlay.classList.remove('hidden');
     return;
