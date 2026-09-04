@@ -152,6 +152,7 @@ export function initMuteButton() {
 }
 
 const SOUND_NAMES = ['achievement', 'defeat', 'error', 'metal', 'pain', 'punch', 'slam', 'spell', 'swoosh'];
+const SOUND_VOLUME_OVERRIDES = { swoosh: 0.7, slam: 0.7 };
 const soundPool = {};
 
 function ensureSoundPool() {
@@ -159,7 +160,7 @@ function ensureSoundPool() {
   for (const name of SOUND_NAMES) {
     const a = new Audio(`assets/audio/sound/${name}.mp3`);
     a.preload = 'auto';
-    a.volume = SFX_VOLUME;
+    a.volume = SOUND_VOLUME_OVERRIDES[name] ?? SFX_VOLUME;
     soundPool[name] = a;
   }
 }
