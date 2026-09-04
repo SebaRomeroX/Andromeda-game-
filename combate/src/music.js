@@ -13,7 +13,8 @@ const TRACKS = {
 };
 
 const CROSSFADE_MS = 1500;
-const DEFAULT_VOLUME = 0.4;
+const MUSIC_VOLUME = 0.3;
+const SFX_VOLUME = 0.5;
 
 const audioA = new Audio();
 const audioB = new Audio();
@@ -40,7 +41,7 @@ function applyMute(audio) {
 function crossfade(audio, durationMs) {
   const steps = 20;
   const stepMs = durationMs / steps;
-  const targetVolume = muted ? 0 : DEFAULT_VOLUME;
+  const targetVolume = muted ? 0 : MUSIC_VOLUME;
   let i = 0;
 
   clearInterval(fadeTimer);
@@ -131,7 +132,7 @@ export function stopMusic() {
 export function toggleMute() {
   muted = !muted;
   localStorage.setItem(STORAGE_KEY, muted);
-  active.volume = muted ? 0 : DEFAULT_VOLUME;
+  active.volume = muted ? 0 : MUSIC_VOLUME;
   applyMute(active);
   return muted;
 }
@@ -158,7 +159,7 @@ function ensureSoundPool() {
   for (const name of SOUND_NAMES) {
     const a = new Audio(`assets/audio/sound/${name}.mp3`);
     a.preload = 'auto';
-    a.volume = DEFAULT_VOLUME;
+    a.volume = SFX_VOLUME;
     soundPool[name] = a;
   }
 }
