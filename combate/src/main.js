@@ -295,20 +295,6 @@ function renderMap() {
     });
   }
 
-  const menuArea = document.getElementById('map-menu-area');
-  menuArea.innerHTML = '';
-
-  const menuBtn = document.createElement('button');
-  menuBtn.className = 'map-menu-btn';
-  menuBtn.textContent = 'Volver al Menú';
-  menuBtn.addEventListener('click', () => {
-    state.session.selectedStory = null;
-    resetRunState();
-    stopMusic();
-    showScreen('menu');
-  });
-  menuArea.appendChild(menuBtn);
-
   persistProgress();
 }
 
