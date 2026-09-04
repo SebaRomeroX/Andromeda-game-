@@ -449,3 +449,17 @@ setupDevPanel(stories, (story, payload) => {
 renderMenu();
 showScreen('menu');
 initPause();
+
+document.getElementById('pause-load-game').addEventListener('click', () => {
+  document.getElementById('pause-overlay').classList.add('hidden');
+  startStory(state.session.selectedStory, { loadSave: true });
+});
+
+document.getElementById('pause-back-menu').addEventListener('click', () => {
+  document.getElementById('pause-overlay').classList.add('hidden');
+  state.session.selectedStory = null;
+  resetRunState();
+  stopMusic();
+  renderMenu();
+  showScreen('menu');
+});
