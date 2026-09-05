@@ -1,6 +1,6 @@
 import state, { aliveMembers, allDead, getGameEndCallback } from './state.js';
 import { SKILL_TYPES, TEAMS, TURN_PHASES, BUFF_STATS } from './constants.js';
-import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion } from './buffs.js';
+import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion, hasNegativeBuff } from './buffs.js';
 import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction, showCombatMessage } from './renderer.js';
 import { log } from './log.js';
 import { actionLabel, powerLabel } from './formatters.js';
@@ -204,8 +204,9 @@ function resolveAction(index, sorted) {
   const evasion = getEvasion(action.targetTeam, action.targetIdx, baseEvasion);
   const atkMult = getMultiplier(action.team, action.actorIndex, BUFF_STATS.ATTACK);
   const defBuffs = getFlatBuffSum(action.targetTeam, action.targetIdx, BUFF_STATS.DEFENSE);
+  const hasDefDebuff = hasNegativeBuff(action.targetTeam, action.targetIdx, BUFF_STATS.DEFENSE);
 
-  const outcome = computeEffect(actor, target, action.skill, { precision, evasion, atkMult, defBuffs });
+  const outcome = computeEffect(actor, target, action.skill, { precision, evasion, atkMult, defBuffs, hasDefDebuff });
 
   if (outcome.type === "miss" || outcome.type === "evade") {
     if (outcome.type === "miss") {

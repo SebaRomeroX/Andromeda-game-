@@ -28,7 +28,7 @@ export function pickWeighted(items, count) {
   return result;
 }
 
-export function computeEffect(actor, target, skill, { precision, evasion, atkMult, defBuffs }) {
+export function computeEffect(actor, target, skill, { precision, evasion, atkMult, defBuffs, hasDefDebuff }) {
   if (!actor || !target) return null;
 
   const basePrecision = skill.precision ?? 100;
@@ -62,11 +62,8 @@ export function computeEffect(actor, target, skill, { precision, evasion, atkMul
   }
 
   const defSkill = target.defense;
-  let defBuffsVal = defBuffs ?? 0;
-  if (defBuffsVal < 0 && defSkill > 0) {
-    defBuffsVal = -(defSkill / 2);
-  }
-  const def = defSkill + defBuffsVal;
+  const defBuffsVal = defBuffs ?? 0;
+  const def = hasDefDebuff ? Math.round((defSkill + defBuffsVal) / 2) : defSkill + defBuffsVal;
   const rawDmg = Math.round(scaled.power * (atkMult ?? 1));
   const finalDmg = Math.max(0, rawDmg - def);
 

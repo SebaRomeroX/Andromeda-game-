@@ -73,6 +73,11 @@ export function getPrecision(teamKey, memberIndex, basePrecision) {
   return Math.round(basePrecision * (1 - precBuff.value));
 }
 
+export function hasNegativeBuff(teamKey, memberIndex, stat) {
+  const list = memberBuffs(teamKey, memberIndex);
+  return list.some(b => b.active && b.stat === stat && b.value < 0);
+}
+
 export function getEvasion(teamKey, memberIndex, baseEvasion) {
   const list = memberBuffs(teamKey, memberIndex);
   const evaBuff = list.find(b => b.active && b.stat === BUFF_STATS.EVASION);
