@@ -6,10 +6,11 @@ function memberBuffs(teamKey, memberIndex) {
 }
 
 export function applyBuff(teamKey, memberIndex, buffDef) {
+  const duration = buffDef.duration ?? 3;
   const list = memberBuffs(teamKey, memberIndex);
   const existing = list.find(b => b.id === buffDef.id);
   if (existing) {
-    existing.turnsLeft = 3;
+    existing.turnsLeft = duration;
     existing.active = true;
     return;
   }
@@ -25,7 +26,7 @@ export function applyBuff(teamKey, memberIndex, buffDef) {
     name: buffDef.name,
     stat: buffDef.stat,
     value: buffDef.value,
-    turnsLeft: 3,
+    turnsLeft: duration,
     active: true
   });
 }

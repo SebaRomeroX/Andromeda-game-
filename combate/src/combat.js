@@ -30,7 +30,8 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outc
       id: skillNameToId(skill.name),
       name: skill.name,
       stat: skill.stat,
-      value: skill.value
+      value: skill.value,
+      duration: skill.duration ?? 3
     });
     const sign = skill.value > 0 ? '+' : '-';
     const emoji = skill.value > 0 ? '🔥' : '💀';

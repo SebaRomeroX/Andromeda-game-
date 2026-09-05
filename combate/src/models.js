@@ -106,7 +106,7 @@ export const ATTACK_ROUTES = {
  * @param {number} [opts.level=1]   - Nivel de la habilidad
  * @returns {Skill}
  */
-export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, scope, stat, value, level = 1 }) {
+export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, scope, stat, value, duration = 3, level = 1 }) {
   if (!name) throw new Error('createSkill: name es requerido');
   if (!type) throw new Error('createSkill: type es requerido');
 
@@ -120,7 +120,7 @@ export function createSkill({ name, type, precision = 80, aparicion = 1, power, 
     case SKILL_TYPES.DEFENSE:
       return { ...base, power: power ?? 10 };
     case SKILL_TYPES.BUFF:
-      return { ...base, target: target ?? 'self', scope: scope ?? 'one', stat: stat ?? BUFF_STATS.ATTACK, value: value ?? 0 };
+      return { ...base, target: target ?? 'self', scope: scope ?? 'one', stat: stat ?? BUFF_STATS.ATTACK, value: value ?? 0, duration: Math.min(10, Math.max(1, Math.round(duration))) };
     default:
       throw new Error(`createSkill: tipo desconocido "${type}". Usá: attack, cura, defense, buff`);
   }
