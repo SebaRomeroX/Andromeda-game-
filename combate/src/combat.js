@@ -299,6 +299,38 @@ function playerSelectSkills() {
       if (state.combat.turnPhase === TURN_PHASES.SELECT_SKILL) {
         state.combat.selectedSkill = skill;
         highlightSkill(skillIdx);
+
+        if (skill.type === SKILL_TYPES.BUFF && skill.scope === 'all') {
+          let targets;
+          if (skill.target === 'self') {
+            targets = [{ team: TEAMS.A, index: i }];
+          } else if (skill.target === 'enemy') {
+            targets = getAttackTargets(i, TEAMS.B, aliveB.map(t => t.index));
+          } else {
+            targets = aliveA.map(t => ({ team: TEAMS.A, index: t.index }));
+          }
+          targets.forEach(t => {
+            const tgt = state.combat.teams[t.team].members[t.index];
+            if (!tgt || tgt.currentHp <= 0) return;
+            state.combat.pendingActions.push({
+              team: TEAMS.A,
+              actorIndex: i,
+              skill,
+              targetTeam: t.team,
+              targetIdx: t.index
+            });
+            log(`🗡️ ${member.name} prepara ${skill.name} (${actionLabel(skill.type)} ${powerLabel(skill)}) en ${tgt.name}`);
+          });
+          renderPendingActions();
+          state.combat.actingMemberIndex = i + 1;
+          state.combat.selectedSkill = null;
+          state.combat.turnPhase = TURN_PHASES.IDLE;
+          clearSkillHighlight();
+          clearTargets();
+          playerSelectSkills();
+          return;
+        }
+
         state.combat.turnPhase = TURN_PHASES.SELECT_TARGET;
         renderTargets(computeTargets(skill, i, aliveA, aliveB));
         return;

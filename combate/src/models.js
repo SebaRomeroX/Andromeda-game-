@@ -17,6 +17,11 @@
  */
 
 /**
+ * Alcance de un buff — determina cuántos objetivos afecta
+ * @typedef {"one"|"all"} BuffScope
+ */
+
+/**
  * Estadística afectada por un buff
  * @typedef {"attack"|"defense"|"precision"|"evasion"} BuffStat
  */
@@ -50,6 +55,7 @@ export const ATTACK_ROUTES = {
  * | stun         | ◻️     | —    | —       | —    |
  * | herida       | ◻️     | —    | —       | —    |
  * | target       | —      | —    | —       | ✅   |
+ * | scope        | —      | —    | —       | ◻️   |
  * | stat         | —      | —    | —       | ✅   |
  * | value        | —      | —    | —       | ✅   |
  *
@@ -64,6 +70,7 @@ export const ATTACK_ROUTES = {
  * @property {boolean} [stun] - Aturde al rival (solo attack)
  * @property {boolean} [herida] - Hiere al rival (solo attack)
  * @property {BuffTarget} [target] - Objetivo del buff (solo buff)
+ * @property {BuffScope} [scope="one"] - one = un objetivo, all = todos los válidos (solo buff)
  * @property {BuffStat} [stat] - Estadística a modificar (solo buff)
  * @property {number} [value] - Magnitud del buff (solo buff)
  * @property {number} [level=1] - Nivel de la habilidad (mejorable en el campamento)
@@ -99,7 +106,7 @@ export const ATTACK_ROUTES = {
  * @param {number} [opts.level=1]   - Nivel de la habilidad
  * @returns {Skill}
  */
-export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, stat, value, level = 1 }) {
+export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, scope, stat, value, level = 1 }) {
   if (!name) throw new Error('createSkill: name es requerido');
   if (!type) throw new Error('createSkill: type es requerido');
 
@@ -113,7 +120,7 @@ export function createSkill({ name, type, precision = 80, aparicion = 1, power, 
     case SKILL_TYPES.DEFENSE:
       return { ...base, power: power ?? 10 };
     case SKILL_TYPES.BUFF:
-      return { ...base, target: target ?? 'self', stat: stat ?? BUFF_STATS.ATTACK, value: value ?? 0 };
+      return { ...base, target: target ?? 'self', scope: scope ?? 'one', stat: stat ?? BUFF_STATS.ATTACK, value: value ?? 0 };
     default:
       throw new Error(`createSkill: tipo desconocido "${type}". Usá: attack, cura, defense, buff`);
   }

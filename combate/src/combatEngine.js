@@ -164,6 +164,27 @@ export function planEnemyActions(members, aliveA, aliveB) {
         break;
       }
       case SKILL_TYPES.BUFF: {
+        if (skill.scope === 'all') {
+          let targets;
+          if (skill.target === 'self') {
+            targets = [{ team: TEAMS.B, index: i }];
+          } else if (skill.target === 'enemy') {
+            targets = getAttackTargets(i, TEAMS.A, aliveA.map(t => t.index));
+          } else {
+            targets = aliveB.map(t => ({ team: TEAMS.B, index: t.index }));
+          }
+          if (targets.length === 0) continue;
+          targets.forEach(t => {
+            actions.push({
+              actorIndex: i,
+              skill,
+              targetTeam: t.team,
+              targetIdx: t.index,
+              label: `${member.name} prepara ${skill.name} (${actionLabel(skill.type)} ${powerLabel(skill)})`
+            });
+          });
+          continue;
+        }
         if (skill.target === 'self') {
           targetTeam = TEAMS.B;
           targetIdx = i;
