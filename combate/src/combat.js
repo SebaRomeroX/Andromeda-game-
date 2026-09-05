@@ -4,7 +4,7 @@ import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, g
 import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction, showCombatMessage } from './renderer.js';
 import { log } from './log.js';
 import { actionLabel, powerLabel } from './formatters.js';
-import { pickWeighted, computeEffect, computeTargets, sortActions, planEnemyActions, skillNameToId } from './combatEngine.js';
+import { pickWeighted, computeEffect, computeTargets, getAttackTargets, sortActions, planEnemyActions, skillNameToId } from './combatEngine.js';
 import { playSound, stopMusic } from './music.js';
 
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
@@ -375,8 +375,18 @@ export function onTargetClick(team, index) {
   if (skill.type === SKILL_TYPES.ATTACK && team !== TEAMS.B) return;
   if (skill.type === SKILL_TYPES.CURA && team !== TEAMS.A) return;
   if (skill.type === SKILL_TYPES.DEFENSE && (team !== TEAMS.A || index !== state.combat.actingMemberIndex)) return;
-  if (skill.type === SKILL_TYPES.BUFF && skill.target === 'enemy' && team !== TEAMS.B) return;
-  if (skill.type === SKILL_TYPES.BUFF && skill.target !== 'enemy' && team !== TEAMS.A) return;
+  if (skill.type === SKILL_TYPES.BUFF) {
+    const aliveB = aliveMembers(TEAMS.B);
+    if (skill.target === 'self') {
+      if (team !== TEAMS.A || index !== state.combat.actingMemberIndex) return;
+    } else if (skill.target === 'enemy') {
+      if (team !== TEAMS.B) return;
+      const atkTargets = getAttackTargets(state.combat.actingMemberIndex, TEAMS.B, aliveB.map(t => t.index));
+      if (!atkTargets.some(t => t.index === index)) return;
+    } else {
+      if (team !== TEAMS.A) return;
+    }
+  }
 
   const target = state.combat.teams[team].members[index];
   if (!target || target.currentHp <= 0) return;

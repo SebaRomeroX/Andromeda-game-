@@ -13,7 +13,7 @@
 
 /**
  * Objetivo de un buff
- * @typedef {"self"|"enemy"} BuffTarget
+ * @typedef {"self"|"ally"|"enemy"} BuffTarget
  */
 
 /**

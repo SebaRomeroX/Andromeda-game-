@@ -112,8 +112,11 @@ export function computeTargets(skill, actorIndex, aliveA, aliveB) {
     return aliveA.map(t => ({ team: TEAMS.A, index: t.index }));
   }
   if (skill.type === SKILL_TYPES.BUFF) {
+    if (skill.target === 'self') {
+      return [{ team: TEAMS.A, index: actorIndex }];
+    }
     if (skill.target === 'enemy') {
-      return aliveB.map(t => ({ team: TEAMS.B, index: t.index }));
+      return getAttackTargets(actorIndex, TEAMS.B, aliveB.map(t => t.index));
     }
     return aliveA.map(t => ({ team: TEAMS.A, index: t.index }));
   }
@@ -161,10 +164,14 @@ export function planEnemyActions(members, aliveA, aliveB) {
         break;
       }
       case SKILL_TYPES.BUFF: {
-        if (skill.target === 'enemy') {
+        if (skill.target === 'self') {
+          targetTeam = TEAMS.B;
+          targetIdx = i;
+        } else if (skill.target === 'enemy') {
           targetTeam = TEAMS.A;
-          if (aliveA.length === 0) continue;
-          targetIdx = aliveA[Math.floor(Math.random() * aliveA.length)].index;
+          const atkTargets = getAttackTargets(i, TEAMS.A, aliveA.map(t => t.index));
+          if (atkTargets.length === 0) continue;
+          targetIdx = atkTargets[Math.floor(Math.random() * atkTargets.length)].index;
         } else {
           targetTeam = TEAMS.B;
           if (aliveB.length === 0) continue;
