@@ -62,7 +62,11 @@ export function computeEffect(actor, target, skill, { precision, evasion, atkMul
   }
 
   const defSkill = target.defense;
-  const def = defSkill + (defBuffs ?? 0);
+  let defBuffsVal = defBuffs ?? 0;
+  if (defBuffsVal < 0 && defSkill > 0) {
+    defBuffsVal = -(defSkill / 2);
+  }
+  const def = defSkill + defBuffsVal;
   const rawDmg = Math.round(scaled.power * (atkMult ?? 1));
   const finalDmg = Math.max(0, rawDmg - def);
 
