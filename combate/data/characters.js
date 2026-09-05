@@ -12,13 +12,19 @@ const characters = [
     skills: [
       // createSkill({ name: "EXCALIBUR",          type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
       createSkill({ name: "Estocada",           type: "attack",  power: 20,   precision: 90,    aparicion: 70 }),
+      // createSkill({ name: "Golpe inpreciso",    type: "attack",  power: 30,   precision: 1,     aparicion: 70 }),
       createSkill({ name: "Corte grave",        type: "attack",  power: 14,   precision: 90,    aparicion: 70,  herida: true }),
       createSkill({ name: "Golpe de escudo",    type: "attack",  power: 8,    precision: 95,    aparicion: 20,  stun: true   }),
       createSkill({ name: "Vendaje",            type: "cura",    power: 4,    precision: 99,    aparicion: 20   }),
       createSkill({ name: "Postura Defensiva",  type: "defense", power: 25,   precision: 99,    aparicion: 40   }),
       createSkill({ name: "Furia de batalla",   type: "buff",    target: "ally",  scope:'all',  duration:4,   stat: "attack",     value: 0.10,   precision: 99, aparicion: 50 }),
+      // createSkill({ name: "Desmoralizar",       type: "buff",    target: "enemy", scope:'one',  duration:4,   stat: "attack",     value: -0.20,  precision: 99, aparicion: 50 }),
       createSkill({ name: "Proteccion",         type: "buff",    target: "self",  stat: "defense",   value: 10,    precision: 99, aparicion: 50  }),
-      createSkill({ name: "Intimidacion",       type: "buff",    target: "enemy", duration:5,   stat: "precision", value: 0.2,    precision: 99, aparicion: 30 }),
+      // createSkill({ name: "Romper defenza",     type: "buff",    target: "enemy", stat: "defense",   value: -1,    precision: 99, aparicion: 50  }),
+      // createSkill({ name: "Intimidacion",       type: "buff",    target: "enemy", duration:5,   stat: "precision", value: 0.9,    precision: 99, aparicion: 30 }),
+      // createSkill({ name: "Concentracion",      type: "buff",    target: "self",  duration:5,   stat: "precision", value: 1,      precision: 99, aparicion: 30 }),
+      // createSkill({ name: "Pies ligeros",       type: "buff",    target: "self",  duration:5,   stat: "evasion", value: 120,   precision: 99, aparicion: 30 }),
+      // createSkill({ name: "Inmovilizar",        type: "buff",    target: "enemy", duration:5,   stat: "evasion", value: 0,    precision: 99, aparicion: 30 }),
       // ESPECIALES
       createSkill({ name: "Lanze Potenciado",   type: "attack",  power: 70,    precision: 70,    aparicion: 5 }),
       createSkill({ name: "Salto brutal",       type: "attack",  power: 22,    precision: 99,    aparicion: 5,  stun: true }),
@@ -63,7 +69,7 @@ const characters = [
     skills: [
       createSkill({ name: "Ataque mental",            type: "attack",  power: 5,    precision: 75,  aparicion: 50,}),
       createSkill({ name: "Vision de muerte",         type: "buff",    target: "enemy", stat: "attack",    value: -0.10, precision: 90, aparicion: 50 }),
-      createSkill({ name: "Recubrimiento Calaverico", type: "buff",    target: "self",  stat: "defense",   value: 5,     precision: 95, aparicion: 70 }),
+      createSkill({ name: "Recubrimiento Calaverico", type: "buff",    target: "ally",  stat: "defense",   value: 5,     precision: 95, aparicion: 70 }),
     ]
   }),
   createCharacter({
@@ -121,7 +127,7 @@ const characters = [
     name: "Sabueso de Guerra",
     image: "assets/images/warhound.jpg",
     hp: 60,
-    evasion: 6,
+    evasion: 60,
     role: "asesino",
     skills: [
       createSkill({ name: "Mordida",     type: "attack",  power: 16,  precision: 85, aparicion: 60  }),
@@ -162,7 +168,7 @@ const characters = [
     skills: [
       createSkill({ name: "Golpe cargado",  type: "attack",  power: 12,  precision: 85, aparicion: 30 }),
       createSkill({ name: "Reves",          type: "attack",  power: 7,   precision: 85, aparicion: 80 }),
-      createSkill({ name: "Rabia",          type: "buff",    target: "self", stat: "attack", value: 0.10,   precision: 95, aparicion: 40 }),
+      createSkill({ name: "Intimidacion",   type: "buff",    target: "enemy", stat: "attack", value: -0.15,    precision: 99, aparicion: 30 }),
     ]
   }),
   createCharacter({

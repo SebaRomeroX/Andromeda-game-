@@ -6,13 +6,10 @@ UI:
   description pop (character, skill) *
   
 MECHANIC:
-  buff   **     **    **
-    target(self, alie, enemy) 
-    duration
-    values
-    set guide for new skills
   ataques en area
   critics
+
+  NEW BUFF SKILLS PLAYER **
 
 NARRATIVE:
   mas dialogos *

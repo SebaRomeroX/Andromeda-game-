@@ -84,7 +84,7 @@ export const ATTACK_ROUTES = {
  * attack (buff)  | porcentaje| 0.05 a 0.30        | +5% a +30% de daño (multiplicador)
  * attack (debuff)| porcentaje| -0.05 a -0.20      | -5% a -20% de daño (multiplicador)
  * defense (buff) | plano     | 3 a 15             | Puntos de defensa añadidos
- * defense (debuff)| auto     | -1 (convention)    | Reduce (defensa_skill + buff_defensa) a la mitad
+ * defense (debuff)| auto     | -1                 | Reduce (defensa_skill + buff_defensa) a la mitad
  * precision (buff)| especial | 1                  | Precisión = 100% (siempre acierta)
  * precision (debuff)| gradación| 0.05 a 0.5       | Reduce precisión: basePrecision * (1 - value)
  * evasion (buff) | plano     | 5 a 20             | Puntos sumados a evasion base
