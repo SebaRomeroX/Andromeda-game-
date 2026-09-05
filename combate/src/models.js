@@ -77,6 +77,26 @@ export const ATTACK_ROUTES = {
  */
 
 /**
+ * Guía de valores para skills de tipo buff (campo `value`)
+ *
+ * Stat           | Tipo      | value              | Efecto
+ * ---------------|-----------|--------------------|----------------------------------------
+ * attack (buff)  | porcentaje| 0.05 a 0.30        | +5% a +30% de daño (multiplicador)
+ * attack (debuff)| porcentaje| -0.05 a -0.20      | -5% a -20% de daño (multiplicador)
+ * defense (buff) | plano     | 3 a 15             | Puntos de defensa añadidos
+ * defense (debuff)| plano    | -(defensa/2)       | Reduce la defensa activa a la mitad
+ * precision (buff)| especial | 1                  | Precisión = 100% (siempre acierta)
+ * precision (debuff)| especial| 0.5 a 0.1         | Reduce precisión al 80% de base
+ * evasion (buff) | plano     | 5 a 20             | Puntos sumados a evasion base
+ * evasion (debuff)| especial | 0                  | Evasion = 0 (nunca esquiva)
+ *
+ * Notas:
+ * - attack usa multiplicador: daño final = power * (1 + value)
+ * - defense usa suma plana: defensa final = defensa_base + sum(buff_values)
+ * - precision y evasion son exclusivos (no apilan): solo queda el último buff del mismo stat
+ */
+
+/**
  * Personaje (Character)
  *
  * @typedef {Object} Character
