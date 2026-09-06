@@ -79,16 +79,16 @@ export const ATTACK_ROUTES = {
 /**
  * Guía de valores para skills de tipo buff (campo `value`)
  *
- * Stat           | Tipo      | value              | Efecto
- * ---------------|-----------|--------------------|----------------------------------------
- * attack (buff)  | porcentaje| 0.05 a 0.30        | +5% a +30% de daño (multiplicador)
- * attack (debuff)| porcentaje| -0.05 a -0.20      | -5% a -20% de daño (multiplicador)
- * defense (buff) | plano     | 3 a 15             | Puntos de defensa añadidos
- * defense (debuff)| auto     | -1                 | Reduce (defensa_skill + buff_defensa) a la mitad
- * precision (buff)| especial | 1                  | Precisión = 100% (siempre acierta)
- * precision (debuff)| gradación| 0.05 a 0.5       | Reduce precisión: basePrecision * (1 - value)
- * evasion (buff) | plano     | 5 a 20             | Puntos sumados a evasion base
- * evasion (debuff)| especial | 0                  | Evasion = 0 (nunca esquiva)
+ * Stat              | Tipo      | value            | Efecto
+ * ---------------   |-----------|------------------|----------------------------------------
+ * attack (buff)     | porcentaje| 0.05 a 0.30      | +5% a +30% de daño (multiplicador)
+ * attack (debuff)   | porcentaje| -0.05 a -0.20    | -5% a -20% de daño (multiplicador)
+ * defense (buff)    | plano     | 3 a 15           | Puntos de defensa añadidos
+ * defense (debuff)  | auto      | -1               | Reduce (defensa_skill + buff_defensa) a la mitad
+ * precision (buff)  | especial  | 1                | Precisión = 100% (siempre acierta)
+ * precision (debuff)| gradación | 0.05 a 0.5       | Reduce precisión: basePrecision * (1 - value)
+ * evasion (buff)    | plano     | 5 a 20           | Puntos sumados a evasion base
+ * evasion (debuff)  | especial  | 0                | Evasion = 0 (nunca esquiva)
  *
  * Notas:
  * - attack usa multiplicador: daño final = power * (1 + value)
