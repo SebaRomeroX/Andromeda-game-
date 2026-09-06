@@ -9,8 +9,6 @@ MECHANIC:
   ataques en area
   critics
 
-  NEW BUFF SKILLS PLAYER **
-
 NARRATIVE:
   mas dialogos *
   new route or consequence *
