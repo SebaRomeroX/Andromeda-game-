@@ -47,7 +47,16 @@ export function formatSkillStats(skill) {
   if (skill.type === SKILL_TYPES.BUFF) {
     const emoji = buffEmoji(skill.stat);
     const arrow = skill.value > 0 ? '↑' : skill.value < 0 ? '↓' : '—';
-    return `✨ (${emoji} ${arrow})`;
+    let val = '';
+    if (skill.stat === BUFF_STATS.DEFENSE) {
+      val = `${skill.value > 0 ? '+' : ''}${skill.value}`;
+    } else if (skill.stat === BUFF_STATS.EVASION) {
+      val = skill.value === 0 ? '0' : `${skill.value > 0 ? '+' : ''}${skill.value}`;
+    } else {
+      const pct = (Math.abs(skill.value) * 100).toFixed(0);
+      val = skill.value >= 1 ? '100%' : `${skill.value > 0 ? '+' : ''}${pct}%`;
+    }
+    return `✨ (${emoji} ${val} ${arrow})`;
   }
   return '';
 }
