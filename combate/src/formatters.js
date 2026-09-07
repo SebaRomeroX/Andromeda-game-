@@ -37,11 +37,10 @@ export function formatAction(skill) {
 export function formatSkillStats(skill) {
   const scaled = getSkillScaledStats(skill);
   if (skill.type === SKILL_TYPES.ATTACK) {
-    let icon = '⚔️';
-    if (skill.stun && skill.herida) icon = '⚡🩸';
-    else if (skill.stun) icon = '⚡';
-    else if (skill.herida) icon = '🩸';
-    return `${icon} ${scaled.power}`;
+    let effects = '';
+    if (skill.stun) effects += '⚡';
+    if (skill.herida) effects += '🩸';
+    return `⚔️${effects ? ' ' + effects : ''} ${scaled.power}`;
   }
   if (skill.type === SKILL_TYPES.CURA) return `💚 ${scaled.power}`;
   if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ ${scaled.power}`;
