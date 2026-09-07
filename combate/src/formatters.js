@@ -58,6 +58,57 @@ export function powerLabel(skill) {
   return getSkillScaledStats(skill).power;
 }
 
+const STAT_LABELS = {
+  [BUFF_STATS.ATTACK]: 'ataque',
+  [BUFF_STATS.DEFENSE]: 'defensa',
+  [BUFF_STATS.EVASION]: 'evasión',
+  [BUFF_STATS.PRECISION]: 'precisión',
+};
+
+const TYPE_LABELS = {
+  [SKILL_TYPES.ATTACK]: 'Atq',
+  [SKILL_TYPES.CURA]: 'Cura',
+  [SKILL_TYPES.DEFENSE]: 'Def',
+  [SKILL_TYPES.BUFF]: 'Buff',
+};
+
+export function skillTypeLabel(type) {
+  return TYPE_LABELS[type] ?? type;
+}
+
+export function describeSkill(skill) {
+  const scaled = getSkillScaledStats(skill);
+  if (skill.type === SKILL_TYPES.ATTACK) {
+    let text = `Inflige ${scaled.power} de daño con ${scaled.precision}% de precisión.`;
+    if (skill.stun && skill.herida) {
+      text += ' Puede aturdir y causar sangrado.';
+    } else if (skill.stun) {
+      text += ' Puede aturdir al objetivo.';
+    } else if (skill.herida) {
+      text += ' Causa sangrado.';
+    }
+    return text;
+  }
+  if (skill.type === SKILL_TYPES.CURA) {
+    return `Cura ${scaled.power} HP con ${scaled.precision}% de precisión.`;
+  }
+  if (skill.type === SKILL_TYPES.DEFENSE) {
+    return `Reduce el daño recibido en ${scaled.power} puntos.`;
+  }
+  if (skill.type === SKILL_TYPES.BUFF) {
+    const statName = STAT_LABELS[skill.stat] ?? skill.stat;
+    const direction = skill.value > 0 ? 'Aumenta' : 'Reduce';
+    const targetText = skill.target === 'self' ? 'su'
+      : skill.target === 'ally' ? 'el de un aliado'
+      : 'el del enemigo';
+    let text = `${direction} ${targetText} ${statName}`;
+    if (skill.scope === 'all') text += ' (todos)';
+    text += ` por ${skill.duration ?? 3} turnos.`;
+    return text;
+  }
+  return '';
+}
+
 export function formatBuffHtml(buff) {
   const emoji = buffEmoji(buff.stat);
   const cls = buff.value > 0 ? 'buff-positive' : 'buff-negative';

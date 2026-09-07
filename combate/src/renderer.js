@@ -1,6 +1,6 @@
 import state from './state.js';
 import { SKILL_TYPES, BUFF_STATS } from './constants.js';
-import { formatAction, formatSkillStats, formatBuffHtml } from './formatters.js';
+import { formatAction, formatSkillStats, formatBuffHtml, describeSkill, skillTypeLabel } from './formatters.js';
 
 export const $ = id => document.getElementById(id);
 
@@ -297,6 +297,64 @@ export function clearSkillHighlight() {
   document.querySelectorAll('.skill-btn.selected').forEach(el => el.classList.remove('selected'));
 }
 
+const popupEl = () => document.getElementById('skill-popup');
+let hideTimer = null;
+let longPressTimer = null;
+let popupVisible = false;
+
+function positionPopup(x, y) {
+  const el = popupEl();
+  if (!el) return;
+  el.classList.remove('hidden');
+  const pad = 12;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const rect = el.getBoundingClientRect();
+  let left = x + pad;
+  let top = y - rect.height - pad;
+  if (left + rect.width > vw - pad) left = x - rect.width - pad;
+  if (top < pad) top = y + pad;
+  if (left < pad) left = pad;
+  el.style.left = `${left}px`;
+  el.style.top = `${top}px`;
+}
+
+function showSkillPopup(skill, x, y) {
+  const el = popupEl();
+  if (!el) return;
+  clearTimeout(hideTimer);
+  const statsLine = formatSkillStats(skill);
+  const typeBadge = skillTypeLabel(skill.type);
+  const desc = describeSkill(skill);
+  el.innerHTML = `
+    <div class="skill-popup-header">
+      <span class="skill-popup-name">${skill.name}</span>
+      <span class="skill-popup-type">${typeBadge}</span>
+    </div>
+    <div class="skill-popup-stats">${statsLine}</div>
+    <div class="skill-popup-desc">${desc}</div>
+  `;
+  popupVisible = true;
+  requestAnimationFrame(() => positionPopup(x, y));
+}
+
+function hideSkillPopup() {
+  hideTimer = setTimeout(() => {
+    const el = popupEl();
+    if (el) el.classList.add('hidden');
+    popupVisible = false;
+  }, 200);
+}
+
+function cancelHide() {
+  clearTimeout(hideTimer);
+}
+
+function getTouchCoords(e) {
+  const t = e.touches?.[0] ?? e.changedTouches?.[0];
+  return t ? { x: t.clientX, y: t.clientY } : { x: 0, y: 0 };
+}
+
 export function renderActions(skills, onChoose) {
   const container = $("actions");
   container.innerHTML = "";
@@ -309,8 +367,47 @@ export function renderActions(skills, onChoose) {
 
     btn.innerHTML = html;
     btn.onclick = () => onChoose(i);
+
+    btn.addEventListener('mouseenter', (e) => {
+      showSkillPopup(skill, e.clientX, e.clientY);
+    });
+    btn.addEventListener('mousemove', (e) => {
+      if (popupVisible) positionPopup(e.clientX, e.clientY);
+    });
+    btn.addEventListener('mouseleave', () => hideSkillPopup());
+
+    btn.addEventListener('touchstart', (e) => {
+      const { x, y } = getTouchCoords(e);
+      longPressTimer = setTimeout(() => {
+        showSkillPopup(skill, x, y);
+      }, 500);
+    }, { passive: true });
+    btn.addEventListener('touchend', () => clearTimeout(longPressTimer));
+    btn.addEventListener('touchmove', () => clearTimeout(longPressTimer), { passive: true });
+
     container.appendChild(btn);
   });
+}
+
+document.addEventListener('mouseenter', (e) => {
+  if (popupVisible && !e.target.closest('.skill-btn') && !e.target.closest('.skill-popup')) {
+    hideSkillPopup();
+  }
+}, true);
+
+document.addEventListener('touchstart', (e) => {
+  if (popupVisible && !e.target.closest('.skill-btn') && !e.target.closest('.skill-popup')) {
+    clearTimeout(hideTimer);
+    const el = popupEl();
+    if (el) el.classList.add('hidden');
+    popupVisible = false;
+  }
+}, { passive: true });
+
+const popup = popupEl();
+if (popup) {
+  popup.addEventListener('mouseenter', cancelHide);
+  popup.addEventListener('mouseleave', () => hideSkillPopup());
 }
 
 export function showRestart(won, onEnd) {
