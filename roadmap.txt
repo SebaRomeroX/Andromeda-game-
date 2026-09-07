@@ -2,8 +2,8 @@ arround 1hs play run
 
 UI:
   animaciones(basicas) acciones
-
-  description pop (character, skill) *
+  
+  FIX N ARRANGE UI ***
   
 MECHANIC:
   ataques en area
