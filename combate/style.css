@@ -1751,5 +1751,6 @@ html.mobile #log-overlay #log {
   html:not(.mobile) #combat-panel {
     height: auto;
     margin-top: 16px;
+    min-height: 140px;
   }
 }
