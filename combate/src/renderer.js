@@ -304,15 +304,8 @@ export function renderActions(skills, onChoose) {
     const btn = document.createElement("button");
     btn.className = "skill-btn";
 
-    let effectsLine = "";
-    if (skill.stun) effectsLine += "⚡";
-    if (skill.herida) effectsLine += " 🩸";
-
     let html = `<div class="skill-name">${skill.name}</div>`;
     html += `<div class="skill-stats">${formatSkillStats(skill)}</div>`;
-    if (effectsLine) {
-      html += `<div class="skill-effects">${effectsLine}</div>`;
-    }
 
     btn.innerHTML = html;
     btn.onclick = () => onChoose(i);

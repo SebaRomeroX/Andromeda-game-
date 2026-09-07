@@ -36,26 +36,21 @@ export function formatAction(skill) {
 
 export function formatSkillStats(skill) {
   const scaled = getSkillScaledStats(skill);
-  const prec = `${scaled.precision}% prec`;
-  if (skill.type === SKILL_TYPES.ATTACK) return `⚔️ ${scaled.power} · ${prec}`;
-  if (skill.type === SKILL_TYPES.CURA) return `💚 ${scaled.power} · ${prec}`;
-  if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ ${scaled.power} · ${prec}`;
+  if (skill.type === SKILL_TYPES.ATTACK) {
+    let icon = '⚔️';
+    if (skill.stun && skill.herida) icon = '⚡🩸';
+    else if (skill.stun) icon = '⚡';
+    else if (skill.herida) icon = '🩸';
+    return `${icon} ${scaled.power}`;
+  }
+  if (skill.type === SKILL_TYPES.CURA) return `💚 ${scaled.power}`;
+  if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ ${scaled.power}`;
   if (skill.type === SKILL_TYPES.BUFF) {
     const emoji = buffEmoji(skill.stat);
-    const sign = skill.value > 0 ? '+' : '';
-    if (skill.stat === BUFF_STATS.DEFENSE) return `${emoji} ${sign}${skill.value} · ${prec}`;
-    if (skill.stat === BUFF_STATS.PRECISION) {
-      const displayVal = skill.value >= 1 ? '100%' : '↓';
-      return `${emoji} ${displayVal} · ${prec}`;
-    }
-    if (skill.stat === BUFF_STATS.EVASION) {
-      const displayVal = skill.value === 0 ? '0' : `${sign}${skill.value}`;
-      return `${emoji} ${displayVal} · ${prec}`;
-    }
-    const pct = (Math.abs(skill.value) * 100).toFixed(0);
-    return `${emoji} ${sign}${pct}% · ${prec}`;
+    const arrow = skill.value > 0 ? '↑' : skill.value < 0 ? '↓' : '—';
+    return `✨ (${emoji} ${arrow})`;
   }
-  return prec;
+  return '';
 }
 
 export function powerLabel(skill) {
