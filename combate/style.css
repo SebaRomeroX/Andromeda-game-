@@ -439,9 +439,9 @@ body {
 
 .log-open-btn {
   position: fixed;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 62px;
+  left: 14px;
+  transform: none;
   z-index: 950;
   padding: 10px 28px;
   border: 2px solid #5a5a8a;
@@ -950,8 +950,7 @@ body {
 }
 
 #log-open-btn {
-  left: 50%;
-  transform: translateX(-50%);
+  left: 14px;
 }
 
 #pause-load-game,
@@ -1627,7 +1626,7 @@ html.mobile #combat-panel {
 } */
 
 html.mobile .log-open-btn {
-  top: 8px;
+  top: 56px;
   padding: 8px 16px;
   font-size: 0.75rem;
 }
@@ -1695,9 +1694,9 @@ html.mobile #log-overlay #log {
   }
 
   html:not(.mobile) .log-open-btn {
-    position: static;
+    position: fixed;
     transform: none;
-    margin: 0 auto 12px;
+    margin: 0;
     display: block;
   }
 
