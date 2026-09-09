@@ -5,7 +5,7 @@ import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearT
 import { log, clearLog, openLog, closeLog } from './log.js';
 import { saveGame, loadGame, clearGame, debugSave } from './save.js';
 import characters from '../data/characters.js';
-import stories from '../data/stories.js';
+import stories from '../data/stories/index.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
 import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
