@@ -667,7 +667,7 @@ body {
 .skill-popup-desc {
   font-size: 0.75rem;
   color: #a09880;
-  font-style: italic;
+  line-height: 1.4;
 }
 
 
