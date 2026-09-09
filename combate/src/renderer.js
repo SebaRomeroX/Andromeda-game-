@@ -300,6 +300,7 @@ export function clearSkillHighlight() {
 const popupEl = () => document.getElementById('skill-popup');
 let hideTimer = null;
 let popupVisible = false;
+let touchActive = false;
 
 function positionPopup(x, y) {
   const el = popupEl();
@@ -401,20 +402,29 @@ export function renderActions(skills, onChoose) {
 
     if (!isDesktop) {
       btn.addEventListener('mouseenter', (e) => {
+        if (touchActive) return;
         showSkillPopup(skill, e.clientX, e.clientY);
       });
       btn.addEventListener('mousemove', (e) => {
+        if (touchActive) return;
         if (popupVisible) positionPopup(e.clientX, e.clientY);
       });
       btn.addEventListener('mouseleave', () => hideSkillPopup());
 
       btn.addEventListener('touchstart', () => {
+        touchActive = true;
         clearTimeout(hideTimer);
         setPopupContent(skill);
         requestAnimationFrame(() => positionPopupAbove(btn));
       }, { passive: true });
-      btn.addEventListener('touchend', () => hideSkillPopup());
-      btn.addEventListener('touchcancel', () => hideSkillPopup());
+      btn.addEventListener('touchend', () => {
+        touchActive = false;
+        hideSkillPopup();
+      });
+      btn.addEventListener('touchcancel', () => {
+        touchActive = false;
+        hideSkillPopup();
+      });
     }
 
     container.appendChild(btn);
@@ -434,6 +444,7 @@ document.addEventListener('touchstart', (e) => {
     if (el) el.classList.add('hidden');
     popupVisible = false;
   }
+  touchActive = true;
 }, { passive: true });
 
 const popup = popupEl();
