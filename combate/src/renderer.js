@@ -398,7 +398,12 @@ export function renderActions(skills, onChoose) {
       btn.innerHTML = html;
     }
 
-    btn.onclick = () => onChoose(i);
+    let touchSelected = false;
+
+    btn.onclick = () => {
+      if (touchSelected) { touchSelected = false; return; }
+      onChoose(i);
+    };
 
     if (!isDesktop) {
       btn.addEventListener('mouseenter', (e) => {
@@ -419,6 +424,8 @@ export function renderActions(skills, onChoose) {
       }, { passive: true });
       btn.addEventListener('touchend', () => {
         touchActive = false;
+        touchSelected = true;
+        onChoose(i);
         hideSkillPopup();
       });
       btn.addEventListener('touchcancel', () => {
