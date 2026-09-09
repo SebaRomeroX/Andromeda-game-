@@ -91,17 +91,21 @@ function validateStoryCast(story) {
 
   const warn = (msg) => console.warn(`[historia "${story.title}"] ${msg}`);
 
-  (story.narrativeEvents ?? story.events ?? []).forEach((event, i) => {
+  const eventList = story.storyNodes
+    ? Object.values(story.storyNodes)
+    : (story.narrativeEvents ?? story.events ?? []);
+
+  eventList.forEach((event, i) => {
     if (event.type === 'reclutamiento') {
       if (event.character != null && !allies.has(event.character)) {
-        warn(`Evento ${i + 1}: ${characters[event.character]?.name ?? event.character} es reclutable pero no está en allies.`);
+        warn(`Evento ${i + 1}: ${characters[event.character]?.name ?? event.character} es reclutable pero no esta en allies.`);
       }
       return;
     }
 
     if (event.type === 'eleccion') {
       if (!Array.isArray(event.options) || event.options.length === 0) {
-        warn(`Evento ${i + 1}: es una elección pero no tiene opciones en "options".`);
+        warn(`Evento ${i + 1}: es una eleccion pero no tiene opciones en "options".`);
       } else if (event.options.some(o => o.id == null)) {
         warn(`Evento ${i + 1}: todas las opciones deben tener un "id".`);
       }
@@ -110,12 +114,12 @@ function validateStoryCast(story) {
 
     if (event.type === 'dialogo') {
       if (!Array.isArray(event.dialog) || event.dialog.length === 0) {
-        warn(`Evento ${i + 1}: es un diálogo pero no tiene líneas en "dialog".`);
+        warn(`Evento ${i + 1}: es un dialogo pero no tiene lineas en "dialog".`);
       }
       (event.dialog ?? []).forEach((line, j) => {
         const sp = line.speaker;
         if (sp != null && (sp < 0 || sp >= characters.length)) {
-          warn(`Evento ${i + 1}, línea ${j + 1}: speaker ${sp} no es un índice válido de characters.`);
+          warn(`Evento ${i + 1}, linea ${j + 1}: speaker ${sp} no es un indice valido de characters.`);
         }
       });
       return;
@@ -126,7 +130,7 @@ function validateStoryCast(story) {
     const allowed = event.narrativo ? new Set([...generic, ...narrative]) : generic;
     event.enemyTeam.forEach(idx => {
       if (idx >= 0 && !allowed.has(idx)) {
-        warn(`Evento ${i + 1}: ${characters[idx]?.name ?? idx} no debería aparecer en un enfrentamiento ${event.narrativo ? 'narrativo' : 'genérico'}.`);
+        warn(`Evento ${i + 1}: ${characters[idx]?.name ?? idx} no deberia aparecer en un enfrentamiento ${event.narrativo ? 'narrativo' : 'generico'}.`);
       }
     });
   });
@@ -233,6 +237,7 @@ function startStory(story, { loadSave }) {
     state.run.fightsSinceCamp = data.run.fightsSinceCamp;
     state.run.fired = data.fired;
     state.run.choices = data.run.choices ?? {};
+    state.run.currentNodeId = data.run.currentNodeId ?? null;
     state.session.playerTeam = data.playerTeam;
     state.session.protagonistSlot = data.protagonistSlot;
     resetTeam();

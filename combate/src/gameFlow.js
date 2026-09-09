@@ -14,7 +14,14 @@ export function advanceStage() {
     state.run.fightsSinceCamp++;
   }
 
-  if (event?.id) state.run.fired.add(event.id);
+  if (event?.id) {
+    state.run.fired.add(event.id);
+    // Avanzar posicion en el grafo de historia.
+    // Para elecciones, el handler ya seteo currentNodeId con el next de la opcion elegida.
+    if (event.type !== 'eleccion' && event.next) {
+      state.run.currentNodeId = event.next;
+    }
+  }
   state.run.stage++;
 }
 

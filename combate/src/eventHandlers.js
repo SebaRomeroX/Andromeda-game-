@@ -219,6 +219,7 @@ export function showChoiceEvent(event, advanceStageCb) {
     btn.textContent = option.label;
     btn.onclick = () => {
       state.run.choices[event.id ?? event.title] = option.id;
+      if (option.next) state.run.currentNodeId = option.next;
       overlay.classList.add('hidden');
       advanceStageCb();
     };

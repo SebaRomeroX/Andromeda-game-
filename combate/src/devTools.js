@@ -3,7 +3,7 @@ import { pickNextEvent } from './eventGenerator.js';
 import characters from '../data/characters.js';
 
 function initialRun() {
-  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {} };
+  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null };
 }
 
 function applyEvent(ev, run, roster, choices = {}) {
@@ -18,9 +18,15 @@ function applyEvent(ev, run, roster, choices = {}) {
     const slot = ROLE_BY_INDEX.indexOf(char?.role);
     if (slot >= 0) roster[slot] = ev.character;
   } else if (ev.type === 'eleccion') {
-    if (ev.id && ev.options?.length) run.choices[ev.id] = choices[ev.id] ?? ev.options[0].id;
+    if (ev.id && ev.options?.length) {
+      const chosenId = choices[ev.id] ?? ev.options[0].id;
+      run.choices[ev.id] = chosenId;
+      const chosenOpt = ev.options.find(o => o.id === chosenId);
+      if (chosenOpt?.next) run.currentNodeId = chosenOpt.next;
+    }
   }
   if (ev.id) run.fired.add(ev.id);
+  if (ev.type !== 'eleccion' && ev.next) run.currentNodeId = ev.next;
 }
 
 /**
@@ -161,7 +167,8 @@ export function setupDevPanel(stories, onJump) {
     choicesBox.innerHTML = '';
     if (!story) return;
 
-    const elecciones = (story.narrativeEvents ?? [])
+    const allNodes = story.storyNodes ? Object.values(story.storyNodes) : (story.narrativeEvents ?? []);
+    const elecciones = allNodes
       .filter(ev => ev.type === 'eleccion' && ev.id && Array.isArray(ev.options) && ev.options.length > 0);
 
     elecciones.forEach(ev => {

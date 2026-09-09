@@ -23,7 +23,8 @@ const runState = {
   campamentos: 0,
   fightsSinceCamp: 0,
   fired: new Set(),
-  choices: {}
+  choices: {},
+  currentNodeId: null
 };
 
 // ── Estado de sesion (seleccionado al elegir historia) ──
@@ -56,6 +57,7 @@ export function resetRunState() {
   runState.fightsSinceCamp = 0;
   runState.fired.clear();
   runState.choices = {};
+  runState.currentNodeId = null;
 }
 
 export function resetSessionState() {

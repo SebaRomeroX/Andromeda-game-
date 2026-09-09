@@ -6,22 +6,16 @@ function numericMinimum(key, value, ctx) {
 
 /**
  * Manejadores de condiciones. Cada clave del objeto `conditions` se resuelve
- * contra un handler. Por ahora todos son umbrales mínimos (>=) sobre contadores,
- * salvo `eleccion`, que exige que la opción elegida en un evento de elección
- * coincida exactamente con la indicada (ej: { eleccion: { 'eleccion-caminos': 'izquierda' } }).
- * Extensiones futuras planeadas: `personajeInTeam`, `personajeHasDied`,
- * `specificNarrativeEventHasOcurred` (usaría ctx.fired.has(id)).
+ * contra un handler. Por ahora todos son umbrales minimos (>=) sobre contadores.
  */
 const CONDITION_HANDLERS = {
   campamentos: numericMinimum,
   enfrentamientos: numericMinimum,
-  stage: numericMinimum,
-  eleccion: (key, map, ctx) =>
-    Object.entries(map ?? {}).every(([eventId, optionId]) => (ctx.choices?.[eventId] ?? null) === optionId)
+  stage: numericMinimum
 };
 
 /**
- * Evalúa un objeto de condiciones. Todas las claves deben cumplirse (AND).
+ * Evalua un objeto de condiciones. Todas las claves deben cumplirse (AND).
  * Las claves sin handler registrado se ignoran.
  */
 export function evaluateConditions(conditions = {}, ctx) {
@@ -52,10 +46,42 @@ function genericFightEvent() {
 }
 
 /**
- * Genera el siguiente evento según la prioridad:
- *   1. campamento (tras superar N combates desde el último campamento)
- *   2. primer evento narrativo disponible cuyo `conditions` se cumple
- *   3. enfrentamiento genérico
+ * Busca el siguiente nodo en el grafo de historia.
+ *
+ * `currentNodeId` siempre apunta al proximo nodo que deberia dispararse
+ * (o null al inicio para bootstrap). Despues de cada evento:
+ *   - No elecciones: advanceStage setea currentNodeId = event.next
+ *   - Elecciones: el handler setea currentNodeId = option.next
+ *
+ * La funcion simplemente valida si el nodo apuntado es elegible.
+ */
+function findNextNode(story, ctx) {
+  const nodes = story.storyNodes;
+  if (!nodes) return null;
+
+  // Sin posicion: bootstrap, encontrar el primer nodo elegible
+  if (!ctx.currentNodeId) {
+    for (const [id, node] of Object.entries(nodes)) {
+      if (ctx.fired.has(id)) continue;
+      if (evaluateConditions(node.conditions, ctx)) return id;
+    }
+    return null;
+  }
+
+  // Validar si el nodo apuntado es elegible
+  const candidate = nodes[ctx.currentNodeId];
+  if (candidate && !ctx.fired.has(ctx.currentNodeId) && evaluateConditions(candidate.conditions, ctx)) {
+    return ctx.currentNodeId;
+  }
+
+  return null;
+}
+
+/**
+ * Genera el siguiente evento segun la prioridad:
+ *   1. campamento (tras superar N combates desde el ultimo campamento)
+ *   2. siguiente nodo narrativo en el grafo de historia
+ *   3. enfrentamiento generico
  */
 export function pickNextEvent(story, ctx) {
   const threshold = story.campAfterFights ?? DEFAULT_CAMP_AFTER_FIGHTS;
@@ -63,11 +89,9 @@ export function pickNextEvent(story, ctx) {
     return campEvent();
   }
 
-  for (const ev of story.narrativeEvents ?? []) {
-    if (ev.id && ctx.fired && ctx.fired.has(ev.id)) continue;
-    if (evaluateConditions(ev.conditions, ctx)) {
-      return ev;
-    }
+  const nextId = findNextNode(story, ctx);
+  if (nextId) {
+    return { ...story.storyNodes[nextId], id: nextId };
   }
 
   return genericFightEvent();
