@@ -1713,18 +1713,23 @@ html.mobile #log-overlay #log {
     gap: 14px;
   }
 
-  .skill-btn {
+  html:not(.mobile) .skill-popup {
+    display: none;
+  }
+
+  html:not(.mobile) .skill-btn {
     flex: 1 1 0;
-    min-width: 0;
+    min-width: 140px;
     padding: 10px 14px;
     font-size: 0.95rem;
+    text-align: left;
   }
 
-  .skill-name {
+  html:not(.mobile) .skill-name {
     font-size: 0.95rem;
   }
 
-  .skill-stats {
+  html:not(.mobile) .skill-stats {
     font-size: 0.8rem;
   }
 

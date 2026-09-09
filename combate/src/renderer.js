@@ -299,7 +299,6 @@ export function clearSkillHighlight() {
 
 const popupEl = () => document.getElementById('skill-popup');
 let hideTimer = null;
-let longPressTimer = null;
 let popupVisible = false;
 
 function positionPopup(x, y) {
@@ -319,7 +318,25 @@ function positionPopup(x, y) {
   el.style.top = `${top}px`;
 }
 
-function showSkillPopup(skill, x, y) {
+function positionPopupAbove(skillEl) {
+  const el = popupEl();
+  if (!el) return;
+  el.classList.remove('hidden');
+  const pad = 8;
+  const btnRect = skillEl.getBoundingClientRect();
+  const popupRect = el.getBoundingClientRect();
+  let left = btnRect.left + (btnRect.width - popupRect.width) / 2;
+  let top = btnRect.top - popupRect.height - pad;
+  if (left < pad) left = pad;
+  if (left + popupRect.width > window.innerWidth - pad) {
+    left = window.innerWidth - popupRect.width - pad;
+  }
+  if (top < pad) top = btnRect.bottom + pad;
+  el.style.left = `${left}px`;
+  el.style.top = `${top}px`;
+}
+
+function setPopupContent(skill) {
   const el = popupEl();
   if (!el) return;
   clearTimeout(hideTimer);
@@ -335,6 +352,10 @@ function showSkillPopup(skill, x, y) {
     <div class="skill-popup-desc">${desc}</div>
   `;
   popupVisible = true;
+}
+
+function showSkillPopup(skill, x, y) {
+  setPopupContent(skill);
   requestAnimationFrame(() => positionPopup(x, y));
 }
 
@@ -350,40 +371,51 @@ function cancelHide() {
   clearTimeout(hideTimer);
 }
 
-function getTouchCoords(e) {
-  const t = e.touches?.[0] ?? e.changedTouches?.[0];
-  return t ? { x: t.clientX, y: t.clientY } : { x: 0, y: 0 };
-}
-
 export function renderActions(skills, onChoose) {
   const container = $("actions");
   container.innerHTML = "";
+  const isDesktop = !document.documentElement.classList.contains('mobile');
   skills.forEach((skill, i) => {
     const btn = document.createElement("button");
     btn.className = "skill-btn";
 
-    let html = `<div class="skill-name">${skill.name}</div>`;
-    html += `<div class="skill-stats">${formatSkillStats(skill)}</div>`;
+    if (isDesktop) {
+      const typeBadge = skillTypeLabel(skill.type);
+      const statsLine = formatSkillStats(skill);
+      const desc = describeSkill(skill);
+      btn.innerHTML = `
+        <div class="skill-popup-header">
+          <span class="skill-popup-name">${skill.name}</span>
+          <span class="skill-popup-type">${typeBadge}</span>
+        </div>
+        <div class="skill-popup-stats">${statsLine}</div>
+        <div class="skill-popup-desc">${desc}</div>
+      `;
+    } else {
+      let html = `<div class="skill-name">${skill.name}</div>`;
+      html += `<div class="skill-stats">${formatSkillStats(skill)}</div>`;
+      btn.innerHTML = html;
+    }
 
-    btn.innerHTML = html;
     btn.onclick = () => onChoose(i);
 
-    btn.addEventListener('mouseenter', (e) => {
-      showSkillPopup(skill, e.clientX, e.clientY);
-    });
-    btn.addEventListener('mousemove', (e) => {
-      if (popupVisible) positionPopup(e.clientX, e.clientY);
-    });
-    btn.addEventListener('mouseleave', () => hideSkillPopup());
+    if (!isDesktop) {
+      btn.addEventListener('mouseenter', (e) => {
+        showSkillPopup(skill, e.clientX, e.clientY);
+      });
+      btn.addEventListener('mousemove', (e) => {
+        if (popupVisible) positionPopup(e.clientX, e.clientY);
+      });
+      btn.addEventListener('mouseleave', () => hideSkillPopup());
 
-    btn.addEventListener('touchstart', (e) => {
-      const { x, y } = getTouchCoords(e);
-      longPressTimer = setTimeout(() => {
-        showSkillPopup(skill, x, y);
-      }, 500);
-    }, { passive: true });
-    btn.addEventListener('touchend', () => clearTimeout(longPressTimer));
-    btn.addEventListener('touchmove', () => clearTimeout(longPressTimer), { passive: true });
+      btn.addEventListener('touchstart', () => {
+        clearTimeout(hideTimer);
+        setPopupContent(skill);
+        requestAnimationFrame(() => positionPopupAbove(btn));
+      }, { passive: true });
+      btn.addEventListener('touchend', () => hideSkillPopup());
+      btn.addEventListener('touchcancel', () => hideSkillPopup());
+    }
 
     container.appendChild(btn);
   });
