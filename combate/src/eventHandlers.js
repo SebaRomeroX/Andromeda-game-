@@ -217,6 +217,26 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
     optionsDiv.appendChild(slot);
   });
 
+  const bothOccupied = offer.every(charIdx => {
+    const char = characters[charIdx];
+    const teamSlot = ROLE_BY_INDEX.indexOf(char.role);
+    return state.session.playerTeam[teamSlot] !== -1;
+  });
+
+  if (bothOccupied) {
+    const rejectBtn = document.createElement('button');
+    rejectBtn.textContent = 'Rechazar';
+    rejectBtn.style.cssText = 'margin-top:0.75rem;padding:0.5rem 1.5rem;font-size:0.9rem;background:#444;color:#ccc;border:1px solid #666;border-radius:8px;cursor:pointer;';
+    rejectBtn.addEventListener('click', () => {
+      state.run.recruitOffer = null;
+      button.style.display = '';
+      overlay.classList.add('hidden');
+      playChill();
+      advanceStageCb();
+    });
+    optionsDiv.appendChild(rejectBtn);
+  }
+
   const content = overlay.querySelector('.overlay-content');
   content.insertBefore(optionsDiv, message);
   overlay.classList.remove('hidden');

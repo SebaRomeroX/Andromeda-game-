@@ -1575,6 +1575,15 @@ html.mobile .member-slot {
   border-radius: 8px;
 }
 
+html.mobile .recruit-selectable {
+  width: calc(50% - 1rem);
+  aspect-ratio: 3 / 4;
+}
+
+html.mobile .infinite-recruit-options {
+  gap: 2rem;
+}
+
 html.mobile .member-slot img {
   inset: 0;
   width: 100%;
