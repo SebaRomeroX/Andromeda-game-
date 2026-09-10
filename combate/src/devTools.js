@@ -3,7 +3,7 @@ import { pickNextEvent } from './eventGenerator.js';
 import characters from '../data/characters.js';
 
 function initialRun() {
-  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null };
+  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null, flags: {} };
 }
 
 function applyEvent(ev, run, roster, choices = {}) {
@@ -26,6 +26,14 @@ function applyEvent(ev, run, roster, choices = {}) {
     }
   }
   if (ev.id) run.fired.add(ev.id);
+  // Auto-flag: victoria en enfrentamiento narrativo
+  if (ev.type === 'enfrentamiento' && ev.narrativo && ev.id) {
+    run.flags[ev.id] = true;
+  }
+  // Flags explicitos del nodo
+  if (ev.setFlags) {
+    Object.assign(run.flags, ev.setFlags);
+  }
   if (ev.type !== 'eleccion' && ev.next) run.currentNodeId = ev.next;
 }
 

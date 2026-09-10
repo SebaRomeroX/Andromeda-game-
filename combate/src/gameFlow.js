@@ -16,6 +16,14 @@ export function advanceStage() {
 
   if (event?.id) {
     state.run.fired.add(event.id);
+    // Auto-flag: victoria en enfrentamiento narrativo
+    if (event.type === 'enfrentamiento' && event.narrativo) {
+      state.run.flags[event.id] = true;
+    }
+    // Flags explicitos del nodo
+    if (event.setFlags) {
+      Object.assign(state.run.flags, event.setFlags);
+    }
     // Avanzar posicion en el grafo de historia.
     // Para elecciones, el handler ya seteo currentNodeId con el next de la opcion elegida.
     if (event.type !== 'eleccion' && event.next) {

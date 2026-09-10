@@ -24,7 +24,8 @@ const runState = {
   fightsSinceCamp: 0,
   fired: new Set(),
   choices: {},
-  currentNodeId: null
+  currentNodeId: null,
+  flags: {}
 };
 
 // ── Estado de sesion (seleccionado al elegir historia) ──
@@ -58,6 +59,7 @@ export function resetRunState() {
   runState.fired.clear();
   runState.choices = {};
   runState.currentNodeId = null;
+  runState.flags = {};
 }
 
 export function resetSessionState() {

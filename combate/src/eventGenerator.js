@@ -6,12 +6,24 @@ function numericMinimum(key, value, ctx) {
 
 /**
  * Manejadores de condiciones. Cada clave del objeto `conditions` se resuelve
- * contra un handler. Por ahora todos son umbrales minimos (>=) sobre contadores.
+ * contra un handler. Todas las claves se combinan con AND.
+ *
+ * Tipos disponibles:
+ *   - campamentos / enfrentamientos / stage: umbral minimo numerico (>=)
+ *   - eleccion: verifica que la opcion elegida en un evento coincida
+ *   - flag: el flag indicado debe estar truthy
+ *   - notFlag: el flag indicado debe estar falsy o no existir
  */
 const CONDITION_HANDLERS = {
   campamentos: numericMinimum,
   enfrentamientos: numericMinimum,
-  stage: numericMinimum
+  stage: numericMinimum,
+  flag: (key, flagName, ctx) => !!ctx.flags?.[flagName],
+  notFlag: (key, flagName, ctx) => !ctx.flags?.[flagName],
+  eleccion: (key, map, ctx) =>
+    Object.entries(map ?? {}).every(([eventId, optionId]) =>
+      (ctx.choices?.[eventId] ?? null) === optionId
+    )
 };
 
 /**

@@ -238,6 +238,7 @@ function startStory(story, { loadSave }) {
     state.run.fired = data.fired;
     state.run.choices = data.run.choices ?? {};
     state.run.currentNodeId = data.run.currentNodeId ?? null;
+    state.run.flags = data.run.flags ?? {};
     state.session.playerTeam = data.playerTeam;
     state.session.protagonistSlot = data.protagonistSlot;
     resetTeam();
@@ -405,6 +406,7 @@ function handleVictory() {
       overlay.classList.add('hidden');
       fallen.forEach(i => {
         state.session.playerTeam[i] = -1;
+        state.run.flags[`aliado-${i}-muerto`] = true;
         clearSavedSlot(i);
       });
       advanceStage();

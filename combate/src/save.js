@@ -28,7 +28,8 @@ export function saveGame(storyId, payload) {
       campamentos: payload.run.campamentos,
       fightsSinceCamp: payload.run.fightsSinceCamp,
       choices: payload.run.choices ?? {},
-      currentNodeId: payload.run.currentNodeId ?? null
+      currentNodeId: payload.run.currentNodeId ?? null,
+      flags: payload.run.flags ?? {}
     },
     fired: Array.from(payload.run.fired ?? []),
     team: payload.team
@@ -75,7 +76,8 @@ export function loadGame(storyId) {
         campamentos: data.run.campamentos ?? 0,
         fightsSinceCamp: data.run.fightsSinceCamp ?? 0,
         choices: data.run.choices ?? {},
-        currentNodeId: data.run.currentNodeId ?? null
+        currentNodeId: data.run.currentNodeId ?? null,
+        flags: data.run.flags ?? {}
       },
       fired: Array.isArray(data.fired) ? new Set(data.fired) : new Set(),
       team: data.team ?? {}
