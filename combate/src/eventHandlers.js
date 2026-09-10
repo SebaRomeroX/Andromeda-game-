@@ -173,7 +173,7 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
 
     const card = document.createElement('div');
     card.className = 'infinite-recruit-card';
-    card.style.cssText = 'cursor:pointer;border:2px solid #555;border-radius:8px;padding:0.75rem;text-align:center;background:#1a1a2e;transition:border-color 0.2s;min-width:140px;';
+    card.style.cssText = 'cursor:pointer;border:2px solid #555;border-radius:8px;padding:1rem 1.5rem;text-align:center;background:#1a1a2e;transition:border-color 0.2s;min-width:200px;';
 
     const roleLabel = document.createElement('div');
     roleLabel.style.cssText = 'font-size:0.7rem;color:#aaa;text-transform:uppercase;margin-bottom:0.25rem;';
@@ -182,7 +182,7 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
     const img = document.createElement('img');
     img.src = char.image;
     img.alt = char.name;
-    img.style.cssText = 'width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:0.25rem;display:block;margin-left:auto;margin-right:auto;';
+    img.style.cssText = 'width:80px;height:80px;border-radius:0;object-fit:cover;margin-bottom:0.25rem;display:block;margin-left:auto;margin-right:auto;';
 
     const name = document.createElement('div');
     name.style.cssText = 'font-weight:bold;font-size:0.9rem;';
