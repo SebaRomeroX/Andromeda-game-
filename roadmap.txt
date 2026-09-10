@@ -3,8 +3,6 @@ arround 1hs play run
 UI:
   animaciones(basicas) acciones
   
-  FIX N ARRANGE UI ***
-  
 MECHANIC:
   ataques en area
   critics
