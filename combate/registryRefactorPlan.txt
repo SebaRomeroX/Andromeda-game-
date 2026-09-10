@@ -1,0 +1,73 @@
+Registry Refactor Plan
+=====================
+
+PROBLEM
+-------
+Adding a new event type (e.g., 'tienda', 'cutscene', 'minigame') requires
+coordinated edits in 3+ files:
+
+  1. eventHandlers.js    — write new handler function
+  2. main.js:startCombat — add if/else branch for dispatch
+  3. main.js:validateStoryCast — add structural validation
+  4. gameFlow.js:advanceStage — add side-effect logic (if any)
+
+This is a classic switch-on-type antipattern. The set of recognized event
+types is scattered across multiple files with no single source of truth.
+
+WHEN TO IMPLEMENT
+-----------------
+Do this when you create a second narrative story that introduces a NEW event
+type not yet handled by the engine. The existing 5 types (dialogo, enfrentamiento,
+eleccion, campamento, reclutamiento) are sufficient for Travesia de Sima.
+
+If the next story only reuses existing types with new branching logic, skip this.
+
+WHAT CHANGES
+------------
+Create a single registry object that maps event type strings to handler
+descriptors. Each descriptor bundles the three responsibilities into one place:
+
+  const EVENT_HANDLERS = {
+    dialogo: {
+      validate(event, story) { /* structural checks */ },
+      render(event, ctx)     { /* DOM rendering */ },
+      onAdvance(event, run)  { /* side-effects on stage advance */ }
+    },
+    enfrentamiento: {
+      validate(event, story) { /* enemyTeam checks */ },
+      render(event, ctx)     { /* falls through to combat */ },
+      onAdvance(event, run)  { run.enfrentamientos++; run.fightsSinceCamp++; }
+    },
+    // ... etc
+  };
+
+Files affected:
+
+  src/eventHandlers.js  — export EVENT_HANDLERS registry (consolidates all handlers)
+  src/main.js           — startCombat iterates registry, validateStoryCast iterates registry
+  src/gameFlow.js       — advanceStage calls registry[type].onAdvance instead of if/else
+  src/eventGenerator.js — no change (already generic)
+
+New event types become self-contained: write one object with validate/render/onAdvance,
+register it, done. No other files need editing.
+
+ESTIMATED EFFORT
+----------------
+~2-3 hours. Low risk. The refactor is mechanical — moving existing logic into a
+structured map. No behavioral changes.
+
+BEFORE vs AFTER (example: adding 'tienda' type)
+
+  Before:
+    - Edit eventHandlers.js: function showShopEvent() { ... }
+    - Edit main.js: if (event.type === 'tienda') { showShopEvent(event); return; }
+    - Edit main.js: if (event.type === 'tienda') { /* validate stock */ }
+    - Edit gameFlow.js: if (event.type === 'tienda') { run.tiendasCompradas++; }
+
+  After:
+    - Edit ONE file (eventHandlers.js or wherever handlers live):
+      EVENT_HANDLERS.tienda = {
+        validate(event) { if (!event.stock) throw ... },
+        render(event, ctx) { /* DOM */ },
+        onAdvance(event, run) { run.tiendasCompradas++; }
+      }
