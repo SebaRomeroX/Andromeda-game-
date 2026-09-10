@@ -39,6 +39,9 @@ export function showCampEvent(event, advanceStageCb) {
   const levelupStats = document.getElementById('camp-levelup-stats');
   const titleEl = document.getElementById('camp-title');
 
+  const existingRecruit = overlay.querySelector('.infinite-recruit-options');
+  if (existingRecruit) existingRecruit.remove();
+
   const teamAData = buildTeamAData();
   initState(teamAData, []);
 
