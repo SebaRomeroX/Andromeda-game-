@@ -5,6 +5,7 @@ import characters from '../data/characters.js';
 export function advanceStage() {
   const event = state.session.currentEvent;
   const type = event?.type;
+  const story = state.session.selectedStory;
 
   if (type === 'campamento') {
     state.run.campamentos++;
@@ -15,17 +16,15 @@ export function advanceStage() {
   }
 
   if (event?.id) {
-    state.run.fired.add(event.id);
-    // Auto-flag: victoria en enfrentamiento narrativo
+    if (!story?.infiniteMode) {
+      state.run.fired.add(event.id);
+    }
     if (event.type === 'enfrentamiento' && event.narrativo) {
       state.run.flags[event.id] = true;
     }
-    // Flags explicitos del nodo
     if (event.setFlags) {
       Object.assign(state.run.flags, event.setFlags);
     }
-    // Avanzar posicion en el grafo de historia.
-    // Para elecciones, el handler ya seteo currentNodeId con el next de la opcion elegida.
     if (event.type !== 'eleccion' && event.next) {
       state.run.currentNodeId = event.next;
     }
@@ -34,7 +33,6 @@ export function advanceStage() {
 }
 
 // Determina que pasa al ganar: protagonista cae, aliados caen, victoria limpia
-// Retorna: { result: 'protagonist_fallen' | 'allies_fallen' | 'clean_victory', fallen: [] }
 export function resolveVictory() {
   const fallen = [];
   state.combat.teams.A.members.forEach((m, i) => {
@@ -42,8 +40,9 @@ export function resolveVictory() {
   });
 
   const protagonistSlot = state.session.protagonistSlot;
+  const story = state.session.selectedStory;
 
-  if (fallen.includes(protagonistSlot)) {
+  if (!story?.noProtagonist && fallen.includes(protagonistSlot)) {
     const protagonistName = characters[state.session.selectedStory.protagonist ?? 0].name;
     return { result: 'protagonist_fallen', fallen, protagonistName };
   }

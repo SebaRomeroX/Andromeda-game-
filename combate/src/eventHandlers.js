@@ -3,7 +3,7 @@ import { getLevelStats, ROLE_BY_INDEX } from './models.js';
 import { startSkillUpgrades } from './upgrades.js';
 import { clearGame } from './save.js';
 import characters from '../data/characters.js';
-import { stopMusic } from './music.js';
+import { stopMusic, playChill } from './music.js';
 
 function buildTeamAData() {
   return (state.session.playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
@@ -136,6 +136,92 @@ export function showRecruitEvent(event, advanceStageCb) {
   showOverlay(`✨ <strong>${char.name}</strong> se ha unido al grupo.`, 'Continuar', () => {
     advanceStageCb();
   });
+}
+
+// Muestra evento de reclutamiento para modo infinito (2 opciones)
+export function showInfiniteRecruitEvent(event, advanceStageCb) {
+  const offer = event.recruitOffer ?? state.run.recruitOffer;
+  if (!offer || offer.length < 2) {
+    advanceStageCb();
+    return;
+  }
+
+  const overlay = document.getElementById('camp-overlay');
+  const message = document.getElementById('camp-message');
+  const button = document.getElementById('camp-continue');
+  const levelup = document.getElementById('camp-levelup');
+  const titleEl = document.getElementById('camp-title');
+
+  titleEl.textContent = 'Reclutamiento';
+  message.textContent = 'Elige a un nuevo miembro para tu equipo.';
+  levelup.classList.add('hidden');
+  button.style.display = 'none';
+
+  const existingContent = overlay.querySelector('.infinite-recruit-options');
+  if (existingContent) existingContent.remove();
+
+  const optionsDiv = document.createElement('div');
+  optionsDiv.className = 'infinite-recruit-options';
+  optionsDiv.style.cssText = 'display:flex;gap:1rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;';
+
+  offer.forEach(charIdx => {
+    const char = characters[charIdx];
+    if (!char) return;
+
+    const card = document.createElement('div');
+    card.className = 'infinite-recruit-card';
+    card.style.cssText = 'cursor:pointer;border:2px solid #555;border-radius:8px;padding:0.75rem;text-align:center;background:#1a1a2e;transition:border-color 0.2s;min-width:140px;';
+
+    const roleLabel = document.createElement('div');
+    roleLabel.style.cssText = 'font-size:0.7rem;color:#aaa;text-transform:uppercase;margin-bottom:0.25rem;';
+    roleLabel.textContent = char.role;
+
+    const img = document.createElement('img');
+    img.src = char.image;
+    img.alt = char.name;
+    img.style.cssText = 'width:64px;height:64px;border-radius:50%;object-fit:cover;margin-bottom:0.25rem;display:block;margin-left:auto;margin-right:auto;';
+
+    const name = document.createElement('div');
+    name.style.cssText = 'font-weight:bold;font-size:0.9rem;';
+    name.textContent = char.name;
+
+    const slot = ROLE_BY_INDEX.indexOf(char.role);
+    const occupied = state.session.playerTeam[slot] !== -1;
+
+    if (occupied) {
+      const current = characters[state.session.playerTeam[slot]];
+      const replaceNote = document.createElement('div');
+      replaceNote.style.cssText = 'font-size:0.7rem;color:#e74c3c;margin-top:0.25rem;';
+      replaceNote.textContent = `Reemplazará a ${current?.name ?? 'desconocido'}`;
+      card.appendChild(roleLabel);
+      card.appendChild(img);
+      card.appendChild(name);
+      card.appendChild(replaceNote);
+    } else {
+      card.appendChild(roleLabel);
+      card.appendChild(img);
+      card.appendChild(name);
+    }
+
+    card.addEventListener('mouseenter', () => { card.style.borderColor = '#3498db'; });
+    card.addEventListener('mouseleave', () => { card.style.borderColor = '#555'; });
+
+    card.addEventListener('click', () => {
+      const slotIdx = ROLE_BY_INDEX.indexOf(char.role);
+      state.session.playerTeam[slotIdx] = charIdx;
+      clearSavedSlot(slotIdx);
+      state.run.recruitOffer = null;
+      button.style.display = '';
+      overlay.classList.add('hidden');
+      playChill();
+      advanceStageCb();
+    });
+
+    optionsDiv.appendChild(card);
+  });
+
+  overlay.appendChild(optionsDiv);
+  overlay.classList.remove('hidden');
 }
 
 // Muestra evento de dialogo (secuencia de lineas)

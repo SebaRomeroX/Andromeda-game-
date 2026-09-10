@@ -23,7 +23,8 @@ export const FORMATIONS = [
 const SCALING = {
   enemyOverrunProgress: 0.5,
   minLevelRatio: 0.8,
-  maxLevelRatio: 1.05
+  maxLevelRatio: 1.05,
+  infiniteStageBonus: 0.05
 };
 
 const MAX_TEAM = 4;
@@ -44,9 +45,16 @@ function computeTargetSize(playerMemberCount, progress) {
   return Math.min(MAX_TEAM, Math.max(1, playerMemberCount + overrun));
 }
 
-function computeEnemyLevel(playerAvgLevel, progress) {
+function computeEnemyLevel(playerAvgLevel, progress, stage, infiniteMode) {
   const ratio = SCALING.minLevelRatio + (SCALING.maxLevelRatio - SCALING.minLevelRatio) * progress;
-  return Math.max(1, Math.round(playerAvgLevel * ratio));
+  let level = Math.max(1, Math.round(playerAvgLevel * ratio));
+
+  if (infiniteMode) {
+    const stageBonus = 1 + (stage * SCALING.infiniteStageBonus);
+    level = Math.max(1, Math.round(level * stageBonus));
+  }
+
+  return level;
 }
 
 function pickFormation(candidates, targetSize) {
@@ -69,7 +77,7 @@ export function generateEnemyTeam({ story, stage, playerMemberCount, playerAvgLe
   const formation = pickFormation(candidates, computeTargetSize(playerMemberCount, progress));
   if (!formation) return [null, null, null, null];
 
-  const level = computeEnemyLevel(playerAvgLevel, progress);
+  const level = computeEnemyLevel(playerAvgLevel, progress, stage, story.infiniteMode);
   const team = [null, null, null, null];
   formation.roles.forEach(role => {
     const pool = rolePools[role];

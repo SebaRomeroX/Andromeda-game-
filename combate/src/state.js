@@ -25,7 +25,8 @@ const runState = {
   fired: new Set(),
   choices: {},
   currentNodeId: null,
-  flags: {}
+  flags: {},
+  recruitOffer: null
 };
 
 // ── Estado de sesion (seleccionado al elegir historia) ──
@@ -60,6 +61,7 @@ export function resetRunState() {
   runState.choices = {};
   runState.currentNodeId = null;
   runState.flags = {};
+  runState.recruitOffer = null;
 }
 
 export function resetSessionState() {

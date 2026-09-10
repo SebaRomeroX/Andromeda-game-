@@ -11,7 +11,7 @@ import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
 import { TEAMS } from './constants.js';
 import { advanceStage as advanceStageFlow, resolveVictory } from './gameFlow.js';
-import { showCampEvent, showRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding } from './eventHandlers.js';
+import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding } from './eventHandlers.js';
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
 import { initPause, showPause } from './pause.js';
@@ -246,7 +246,9 @@ function startStory(story, { loadSave }) {
   } else {
     resetRunState();
     state.session.playerTeam = [...story.teamA];
-    state.session.protagonistSlot = ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);
+    state.session.protagonistSlot = story.noProtagonist
+      ? -1
+      : ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);
     resetTeam();
     clearSavedTeamHp();
     clearSavedTeamLevels();
@@ -269,9 +271,16 @@ function renderMap() {
 
   if (state.session.selectedStory.sequential) {
     const header = document.getElementById('map-header');
-    header.textContent = `Etapa ${state.run.stage + 1}`;
+    const story = state.session.selectedStory;
+    if (story.infiniteMode) {
+      const cycle = state.run.campamentos + 1;
+      const members = state.session.playerTeam.filter(idx => idx !== -1).length;
+      header.textContent = `Ciclo ${cycle} · Equipo: ${members}/4`;
+    } else {
+      header.textContent = `Etapa ${state.run.stage + 1}`;
+    }
 
-    state.session.currentEvent = pickNextEvent(state.session.selectedStory, state.run);
+    state.session.currentEvent = pickNextEvent(state.session.selectedStory, state.run, state.session.playerTeam);
     const event = state.session.currentEvent;
     const card = document.createElement('div');
     card.className = 'event-card';
@@ -283,6 +292,27 @@ function renderMap() {
       startCombat(event);
     });
     events.appendChild(card);
+
+    if (story.infiniteMode) {
+      const teamSummary = document.createElement('div');
+      teamSummary.className = 'infinite-team-summary';
+      teamSummary.style.cssText = 'display:flex;gap:0.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;';
+      const roleNames = { tanque: 'Tanque', asesino: 'Asesino', rango: 'Rango', soporte: 'Soporte' };
+      const ROLE_BY = ['tanque', 'asesino', 'rango', 'soporte'];
+      ROLE_BY.forEach((role, i) => {
+        const charIdx = state.session.playerTeam[i];
+        const slot = document.createElement('div');
+        slot.style.cssText = 'border:1px solid #444;border-radius:6px;padding:0.4rem 0.6rem;text-align:center;font-size:0.75rem;min-width:80px;background:#1a1a2e;';
+        if (charIdx !== -1) {
+          const ch = characters[charIdx];
+          slot.innerHTML = `<div style="color:#aaa;font-size:0.6rem;text-transform:uppercase;">${roleNames[role]}</div><div style="font-weight:bold;">${ch.name}</div>`;
+        } else {
+          slot.innerHTML = `<div style="color:#aaa;font-size:0.6rem;text-transform:uppercase;">${roleNames[role]}</div><div style="color:#666;">Vacío</div>`;
+        }
+        teamSummary.appendChild(slot);
+      });
+      events.appendChild(teamSummary);
+    }
   } else {
     const header = document.getElementById('map-header');
     header.textContent = 'Elige un evento';
@@ -314,6 +344,11 @@ function startCombat(event) {
 
   if (event.type === 'reclutamiento') {
     showRecruitEvent(event, advanceStage);
+    return;
+  }
+
+  if (event.type === 'reclutamiento_infinite') {
+    showInfiniteRecruitEvent(event, advanceStage);
     return;
   }
 
@@ -379,8 +414,9 @@ function startCombat(event) {
 
 function handleVictory() {
   const { result, fallen, protagonistName, names } = resolveVictory();
+  const story = state.session.selectedStory;
 
-  if (result === 'protagonist_fallen') {
+  if (result === 'protagonist_fallen' && !story.noProtagonist) {
     const overlay = document.getElementById('camp-overlay');
     const msg = document.getElementById('camp-message');
     const btn = document.getElementById('camp-continue');
@@ -388,7 +424,7 @@ function handleVictory() {
     btn.textContent = 'Reintentar';
     btn.onclick = () => {
       overlay.classList.add('hidden');
-      startStory(state.session.selectedStory, { loadSave: false });
+      startStory(story, { loadSave: false });
     };
     overlay.classList.remove('hidden');
     return;
@@ -401,16 +437,32 @@ function handleVictory() {
     const msg = document.getElementById('camp-message');
     const btn = document.getElementById('camp-continue');
     msg.innerHTML = names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>');
-    btn.textContent = 'Continuar';
-    btn.onclick = () => {
-      overlay.classList.add('hidden');
-      fallen.forEach(i => {
-        state.session.playerTeam[i] = -1;
-        state.run.flags[`aliado-${i}-muerto`] = true;
-        clearSavedSlot(i);
-      });
-      advanceStage();
-    };
+
+    fallen.forEach(i => {
+      state.session.playerTeam[i] = -1;
+      clearSavedSlot(i);
+    });
+
+    const allGone = state.session.playerTeam.every(idx => idx === -1);
+
+    if (allGone) {
+      btn.textContent = 'Volver al menú';
+      btn.onclick = () => {
+        overlay.classList.add('hidden');
+        state.session.selectedStory = null;
+        resetRunState();
+        stopMusic();
+        renderMenu();
+        showScreen('menu');
+      };
+    } else {
+      btn.textContent = 'Continuar';
+      btn.onclick = () => {
+        overlay.classList.add('hidden');
+        advanceStage();
+      };
+    }
+
     overlay.classList.remove('hidden');
     return;
   }

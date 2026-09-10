@@ -58,6 +58,54 @@ function genericFightEvent() {
 }
 
 /**
+ * Selecciona 2 personajes aleatorios de un pool para ofrecer en reclutamiento.
+ * No repite el mismo personaje en la oferta.
+ */
+function pickTwoRandom(pool) {
+  const a = pool[Math.floor(Math.random() * pool.length)];
+  let b;
+  do {
+    b = pool[Math.floor(Math.random() * pool.length)];
+  } while (b === a && pool.length > 1);
+  return [a, b];
+}
+
+/**
+ * Genera un evento de reclutamiento para modo infinito.
+ * Ofrece 2 personajes aleatorios; el jugador elige 1.
+ */
+function infiniteRecruitEvent(story, ctx) {
+  const pool = story.allies ?? [];
+  const [a, b] = pickTwoRandom(pool);
+  ctx.recruitOffer = [a, b];
+  return {
+    id: null,
+    type: 'reclutamiento_infinite',
+    title: 'Reclutamiento',
+    description: 'Elige a un nuevo miembro para tu equipo.',
+    recruitOffer: [a, b]
+  };
+}
+
+/**
+ * Logica de eventos para modo infinito.
+ * Ciclo: reclutar (si hay slot vacio) → 3 combates → campamento → repetir
+ */
+function pickInfiniteEvent(story, ctx, playerTeam) {
+  const hasEmptySlot = playerTeam?.some(idx => idx === -1);
+
+  if (hasEmptySlot) {
+    return infiniteRecruitEvent(story, ctx);
+  }
+
+  if ((ctx.fightsSinceCamp ?? 0) >= (story.campAfterFights ?? DEFAULT_CAMP_AFTER_FIGHTS)) {
+    return campEvent();
+  }
+
+  return genericFightEvent();
+}
+
+/**
  * Busca el siguiente nodo en el grafo de historia.
  *
  * `currentNodeId` siempre apunta al proximo nodo que deberia dispararse
@@ -71,7 +119,6 @@ function findNextNode(story, ctx) {
   const nodes = story.storyNodes;
   if (!nodes) return null;
 
-  // Sin posicion: bootstrap, encontrar el primer nodo elegible
   if (!ctx.currentNodeId) {
     for (const [id, node] of Object.entries(nodes)) {
       if (ctx.fired.has(id)) continue;
@@ -80,7 +127,6 @@ function findNextNode(story, ctx) {
     return null;
   }
 
-  // Validar si el nodo apuntado es elegible
   const candidate = nodes[ctx.currentNodeId];
   if (candidate && !ctx.fired.has(ctx.currentNodeId) && evaluateConditions(candidate.conditions, ctx)) {
     return ctx.currentNodeId;
@@ -91,11 +137,16 @@ function findNextNode(story, ctx) {
 
 /**
  * Genera el siguiente evento segun la prioridad:
- *   1. campamento (tras superar N combates desde el ultimo campamento)
- *   2. siguiente nodo narrativo en el grafo de historia
- *   3. enfrentamiento generico
+ *   1. modo infinito: ciclo automatico
+ *   2. campamento (tras superar N combates desde el ultimo campamento)
+ *   3. siguiente nodo narrativo en el grafo de historia
+ *   4. enfrentamiento generico
  */
-export function pickNextEvent(story, ctx) {
+export function pickNextEvent(story, ctx, playerTeam) {
+  if (story.infiniteMode) {
+    return pickInfiniteEvent(story, ctx, playerTeam);
+  }
+
   const threshold = story.campAfterFights ?? DEFAULT_CAMP_AFTER_FIGHTS;
   if ((ctx.fightsSinceCamp ?? 0) >= threshold) {
     return campEvent();
