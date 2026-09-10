@@ -223,7 +223,8 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
     optionsDiv.appendChild(card);
   });
 
-  overlay.appendChild(optionsDiv);
+  const content = overlay.querySelector('.overlay-content');
+  content.insertBefore(optionsDiv, message);
   overlay.classList.remove('hidden');
 }
 
