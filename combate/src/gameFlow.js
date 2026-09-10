@@ -10,9 +10,14 @@ export function advanceStage() {
   if (type === 'campamento') {
     state.run.campamentos++;
     state.run.fightsSinceCamp = 0;
+    if (story?.infiniteMode) {
+      state.run.needRecruit = true;
+    }
   } else if (type === 'enfrentamiento') {
     state.run.enfrentamientos++;
     state.run.fightsSinceCamp++;
+  } else if (type === 'reclutamiento_infinite') {
+    state.run.needRecruit = false;
   }
 
   if (event?.id) {

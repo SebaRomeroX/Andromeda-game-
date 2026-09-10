@@ -22,6 +22,7 @@ const runState = {
   enfrentamientos: 0,
   campamentos: 0,
   fightsSinceCamp: 0,
+  needRecruit: true,
   fired: new Set(),
   choices: {},
   currentNodeId: null,
@@ -57,6 +58,7 @@ export function resetRunState() {
   runState.enfrentamientos = 0;
   runState.campamentos = 0;
   runState.fightsSinceCamp = 0;
+  runState.needRecruit = true;
   runState.fired.clear();
   runState.choices = {};
   runState.currentNodeId = null;

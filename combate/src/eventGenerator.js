@@ -89,12 +89,10 @@ function infiniteRecruitEvent(story, ctx) {
 
 /**
  * Logica de eventos para modo infinito.
- * Ciclo: reclutar (si hay slot vacio) → 3 combates → campamento → repetir
+ * Ciclo fijo: reclutar → 3 combates → campamento → repetir
  */
 function pickInfiniteEvent(story, ctx, playerTeam) {
-  const hasEmptySlot = playerTeam?.some(idx => idx === -1);
-
-  if (hasEmptySlot) {
+  if (ctx.needRecruit) {
     return infiniteRecruitEvent(story, ctx);
   }
 
