@@ -40,7 +40,10 @@ function buildRolePools(story) {
   return pools;
 }
 
-function computeTargetSize(playerMemberCount, progress) {
+function computeTargetSize(playerMemberCount, progress, campamentos, infiniteMode) {
+  if (infiniteMode) {
+    return Math.min(MAX_TEAM, Math.max(1, 1 + Math.max(0, (campamentos ?? 0) - 1)));
+  }
   const overrun = progress >= SCALING.enemyOverrunProgress ? 1 : 0;
   return Math.min(MAX_TEAM, Math.max(1, playerMemberCount + overrun));
 }
@@ -68,13 +71,13 @@ function pickFormation(candidates, targetSize) {
   return matching[Math.floor(Math.random() * matching.length)];
 }
 
-export function generateEnemyTeam({ story, stage, playerMemberCount, playerAvgLevel }) {
+export function generateEnemyTeam({ story, stage, playerMemberCount, playerAvgLevel, campamentos }) {
   const totalEvents = story.expectedStages ?? (story.events?.length ?? 1);
   const progress = Math.min(1, totalEvents > 0 ? stage / totalEvents : 1);
 
   const rolePools = buildRolePools(story);
   const candidates = FORMATIONS.filter(f => f.roles.every(r => rolePools[r]?.length > 0));
-  const formation = pickFormation(candidates, computeTargetSize(playerMemberCount, progress));
+  const formation = pickFormation(candidates, computeTargetSize(playerMemberCount, progress, campamentos, story.infiniteMode));
   if (!formation) return [null, null, null, null];
 
   const level = computeEnemyLevel(playerAvgLevel, progress, stage, story.infiniteMode);

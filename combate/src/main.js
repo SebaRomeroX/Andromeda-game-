@@ -378,7 +378,8 @@ function startCombat(event) {
       story: state.session.selectedStory,
       stage: state.run.stage,
       playerMemberCount,
-      playerAvgLevel
+      playerAvgLevel,
+      campamentos: state.run.campamentos
     });
     teamBData = generated.map(g => g ? { ...characters[g.index], level: g.level } : null);
   } else {
