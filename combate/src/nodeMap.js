@@ -1,15 +1,14 @@
 /**
  * nodeMap.js — Renderiza un grafo SVG del arbol de nodos de una historia.
  *
- * Muestra todos los nodos como circulos con iconos, conectados por lineas.
+ * Muestra solo nodos de combate narrativo y reclutamiento como circulos
+ * con iconos, conectados por lineas que muestran la ruta.
  * El nodo actual brilla en dorado, los completados se muestran en verde,
  * y las ramas no elegidas se atenuan.
  */
 
 const ICONS = {
-  dialogo: '\u{1F4AC}',
-  enfrentamiento: '\u2694\uFE0F',
-  eleccion: '\u2753',
+  enfrentamiento: '\u{1F608}',
   reclutamiento: '\u{1F91D}'
 };
 
@@ -129,6 +128,44 @@ function truncate(str, max) {
 }
 
 /**
+ * Determina si un nodo debe mostrarse en el mapa.
+ * Solo muestra combate narrativo y reclutamiento.
+ */
+function isNodeVisible(node) {
+  return (node.type === 'enfrentamiento' && node.narrativo)
+      || node.type === 'reclutamiento';
+}
+
+/**
+ * Encuentra el siguiente nodo visible siguiendo la cadena de next/options.
+ * Salta nodos ocultos hasta encontrar uno visible.
+ */
+function findNextVisibleNode(currentId, storyNodes, visited = new Set()) {
+  if (visited.has(currentId)) return null;
+  visited.add(currentId);
+
+  const node = storyNodes[currentId];
+  if (!node) return null;
+
+  if (node.options) {
+    for (const opt of node.options) {
+      const result = findNextVisibleNode(opt.next, storyNodes, new Set(visited));
+      if (result) return result;
+    }
+  }
+
+  if (node.next) {
+    const nextNode = storyNodes[node.next];
+    if (nextNode && isNodeVisible(nextNode)) {
+      return node.next;
+    }
+    return findNextVisibleNode(node.next, storyNodes, visited);
+  }
+
+  return null;
+}
+
+/**
  * Funcion principal: renderiza el mapa de nodos SVG en un contenedor.
  *
  * @param {HTMLElement} container - Elemento DOM donde insertar el SVG
@@ -140,6 +177,18 @@ export function renderNodeMap(container, story, run) {
   if (!storyNodes) return;
 
   const unreachable = getUnreachableIds(storyNodes, run.choices ?? {});
+
+  // Construir conexiones solo entre nodos visibles
+  const visibleConnections = {};
+  for (const [id, node] of Object.entries(storyNodes)) {
+    if (!isNodeVisible(node)) continue;
+
+    const nextVisibleId = findNextVisibleNode(id, storyNodes);
+    if (nextVisibleId) {
+      if (!visibleConnections[id]) visibleConnections[id] = [];
+      visibleConnections[id].push(nextVisibleId);
+    }
+  }
 
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
@@ -177,19 +226,10 @@ export function renderNodeMap(container, story, run) {
   const linesGroup = document.createElementNS(ns, 'g');
   svg.appendChild(linesGroup);
 
-  // ── Dibujar conexiones ──
-  for (const [id, node] of Object.entries(storyNodes)) {
+  // ── Dibujar conexiones entre nodos visibles ──
+  for (const [id, targets] of Object.entries(visibleConnections)) {
     const from = NODE_POSITIONS[id];
     if (!from) continue;
-
-    const targets = [];
-    if (node.options) {
-      for (const opt of node.options) {
-        if (opt.next) targets.push(opt.next);
-      }
-    } else if (node.next) {
-      targets.push(node.next);
-    }
 
     for (const targetId of targets) {
       const to = NODE_POSITIONS[targetId];
@@ -222,6 +262,8 @@ export function renderNodeMap(container, story, run) {
   svg.appendChild(nodesGroup);
 
   for (const [id, node] of Object.entries(storyNodes)) {
+    if (!isNodeVisible(node)) continue;
+
     const pos = NODE_POSITIONS[id];
     if (!pos) continue;
 
