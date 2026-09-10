@@ -15,7 +15,6 @@ import { showCampEvent, showRecruitEvent, showDialogueEvent, showChoiceEvent, sh
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
 import { initPause, showPause } from './pause.js';
-import { renderNodeMap } from './nodeMap.js';
 
 let toastTimer = null;
 function showToast(text) {
@@ -272,12 +271,6 @@ function renderMap() {
     const header = document.getElementById('map-header');
     header.textContent = `Etapa ${state.run.stage + 1}`;
 
-    const graphContainer = document.getElementById('map-graph');
-    graphContainer.innerHTML = '';
-    if (state.session.selectedStory.storyNodes) {
-      renderNodeMap(graphContainer, state.session.selectedStory, state.run);
-    }
-
     state.session.currentEvent = pickNextEvent(state.session.selectedStory, state.run);
     const event = state.session.currentEvent;
     const card = document.createElement('div');
@@ -293,7 +286,6 @@ function renderMap() {
   } else {
     const header = document.getElementById('map-header');
     header.textContent = 'Elige un evento';
-    document.getElementById('map-graph').innerHTML = '';
 
     state.session.selectedStory.events.forEach(event => {
       const card = document.createElement('div');
