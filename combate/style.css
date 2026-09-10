@@ -868,6 +868,19 @@ body {
   color: #a09880;
 }
 
+#map-graph {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 16px;
+  overflow-x: auto;
+}
+
+#map-graph svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 #map-events {
   display: flex;
   flex-direction: column;
