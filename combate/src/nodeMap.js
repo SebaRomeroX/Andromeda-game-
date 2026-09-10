@@ -166,6 +166,26 @@ function findNextVisibleNode(currentId, storyNodes, visited = new Set()) {
 }
 
 /**
+ * Encuentra el primer nodo visible desde un punto de inicio en una rama.
+ * Se detiene si encuentra otro fork (eleccion) para no cruzar ramas.
+ */
+function findFirstVisibleInBranch(startId, storyNodes) {
+  const visited = new Set();
+  let current = startId;
+
+  while (current && !visited.has(current)) {
+    visited.add(current);
+    const node = storyNodes[current];
+    if (!node) return null;
+    if (isNodeVisible(node)) return current;
+    if (node.type === 'eleccion') return null;
+    current = node.next;
+  }
+
+  return null;
+}
+
+/**
  * Funcion principal: renderiza el mapa de nodos SVG en un contenedor.
  *
  * @param {HTMLElement} container - Elemento DOM donde insertar el SVG
@@ -178,15 +198,27 @@ export function renderNodeMap(container, story, run) {
 
   const unreachable = getUnreachableIds(storyNodes, run.choices ?? {});
 
-  // Construir conexiones solo entre nodos visibles
+  // Construir conexiones: nodos visibles + forks/intro ocultos
   const visibleConnections = {};
-  for (const [id, node] of Object.entries(storyNodes)) {
-    if (!isNodeVisible(node)) continue;
+  function addConnection(fromId, toId) {
+    if (!visibleConnections[fromId]) visibleConnections[fromId] = [];
+    visibleConnections[fromId].push(toId);
+  }
 
-    const nextVisibleId = findNextVisibleNode(id, storyNodes);
-    if (nextVisibleId) {
-      if (!visibleConnections[id]) visibleConnections[id] = [];
-      visibleConnections[id].push(nextVisibleId);
+  for (const [id, node] of Object.entries(storyNodes)) {
+    if (!NODE_POSITIONS[id]) continue;
+
+    if (isNodeVisible(node)) {
+      const nextVisibleId = findNextVisibleNode(id, storyNodes);
+      if (nextVisibleId) addConnection(id, nextVisibleId);
+    } else if (node.options) {
+      for (const opt of node.options) {
+        const firstVisible = findFirstVisibleInBranch(opt.next, storyNodes);
+        if (firstVisible) addConnection(id, firstVisible);
+      }
+    } else if (node.next) {
+      const firstVisible = findFirstVisibleInBranch(node.next, storyNodes);
+      if (firstVisible) addConnection(id, firstVisible);
     }
   }
 
