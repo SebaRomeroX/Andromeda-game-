@@ -174,6 +174,10 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
     const slot = document.createElement('div');
     slot.className = 'member-slot recruit-selectable';
 
+    const roleLabel = document.createElement('div');
+    roleLabel.className = 'recruit-role-label';
+    roleLabel.textContent = char.role;
+
     const img = document.createElement('img');
     img.src = char.image;
     img.alt = char.name;
@@ -184,7 +188,7 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
 
     const nameEl = document.createElement('div');
     nameEl.className = 'member-name';
-    nameEl.textContent = `${char.name} · ${char.role}`;
+    nameEl.textContent = char.name;
 
     info.appendChild(nameEl);
 
@@ -198,7 +202,7 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
       info.appendChild(replaceNote);
     }
 
-    slot.append(img, info);
+    slot.append(roleLabel, img, info);
 
     slot.addEventListener('click', () => {
       state.session.playerTeam[teamSlot] = charIdx;
