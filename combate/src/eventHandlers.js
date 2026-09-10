@@ -171,48 +171,38 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
     const char = characters[charIdx];
     if (!char) return;
 
-    const card = document.createElement('div');
-    card.className = 'infinite-recruit-card';
-    card.style.cssText = 'cursor:pointer;border:2px solid #555;border-radius:8px;padding:1rem 1.5rem;text-align:center;background:#1a1a2e;transition:border-color 0.2s;min-width:200px;';
-
-    const roleLabel = document.createElement('div');
-    roleLabel.style.cssText = 'font-size:0.7rem;color:#aaa;text-transform:uppercase;margin-bottom:0.25rem;';
-    roleLabel.textContent = char.role;
+    const slot = document.createElement('div');
+    slot.className = 'member-slot recruit-selectable';
 
     const img = document.createElement('img');
     img.src = char.image;
     img.alt = char.name;
-    img.style.cssText = 'width:80px;height:80px;border-radius:0;object-fit:cover;margin-bottom:0.25rem;display:block;margin-left:auto;margin-right:auto;';
+    img.onerror = () => { img.style.display = 'none'; };
 
-    const name = document.createElement('div');
-    name.style.cssText = 'font-weight:bold;font-size:0.9rem;';
-    name.textContent = char.name;
+    const info = document.createElement('div');
+    info.className = 'member-info';
 
-    const slot = ROLE_BY_INDEX.indexOf(char.role);
-    const occupied = state.session.playerTeam[slot] !== -1;
+    const nameEl = document.createElement('div');
+    nameEl.className = 'member-name';
+    nameEl.textContent = `${char.name} · ${char.role}`;
 
+    info.appendChild(nameEl);
+
+    const teamSlot = ROLE_BY_INDEX.indexOf(char.role);
+    const occupied = state.session.playerTeam[teamSlot] !== -1;
     if (occupied) {
-      const current = characters[state.session.playerTeam[slot]];
+      const current = characters[state.session.playerTeam[teamSlot]];
       const replaceNote = document.createElement('div');
-      replaceNote.style.cssText = 'font-size:0.7rem;color:#e74c3c;margin-top:0.25rem;';
+      replaceNote.style.cssText = 'font-size:0.65rem;color:#e74c3c;margin-top:2px;';
       replaceNote.textContent = `Reemplazará a ${current?.name ?? 'desconocido'}`;
-      card.appendChild(roleLabel);
-      card.appendChild(img);
-      card.appendChild(name);
-      card.appendChild(replaceNote);
-    } else {
-      card.appendChild(roleLabel);
-      card.appendChild(img);
-      card.appendChild(name);
+      info.appendChild(replaceNote);
     }
 
-    card.addEventListener('mouseenter', () => { card.style.borderColor = '#3498db'; });
-    card.addEventListener('mouseleave', () => { card.style.borderColor = '#555'; });
+    slot.append(img, info);
 
-    card.addEventListener('click', () => {
-      const slotIdx = ROLE_BY_INDEX.indexOf(char.role);
-      state.session.playerTeam[slotIdx] = charIdx;
-      clearSavedSlot(slotIdx);
+    slot.addEventListener('click', () => {
+      state.session.playerTeam[teamSlot] = charIdx;
+      clearSavedSlot(teamSlot);
       state.run.recruitOffer = null;
       button.style.display = '';
       overlay.classList.add('hidden');
@@ -220,7 +210,7 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
       advanceStageCb();
     });
 
-    optionsDiv.appendChild(card);
+    optionsDiv.appendChild(slot);
   });
 
   const content = overlay.querySelector('.overlay-content');

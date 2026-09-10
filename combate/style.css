@@ -283,6 +283,20 @@ body {
   box-shadow: 0 0 24px rgba(76, 175, 80, 0.7);
 }
 
+/* recruit selection cards */
+.recruit-selectable {
+  width: 160px;
+  aspect-ratio: 3 / 4;
+  cursor: pointer;
+  border-color: #555;
+}
+
+.recruit-selectable:hover {
+  border-color: #3498db;
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(52, 152, 219, 0.5);
+}
+
 /* resolution indicators for actor and target */
 .member-slot.glow-green {
   border-color: #4caf50;
