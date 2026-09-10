@@ -379,9 +379,11 @@ function startCombat(event) {
       stage: state.run.stage,
       playerMemberCount,
       playerAvgLevel,
-      campamentos: state.run.campamentos
+      campamentos: state.run.campamentos,
+      peakEnemyLevel: state.run.peakEnemyLevel
     });
-    teamBData = generated.map(g => g ? { ...characters[g.index], level: g.level } : null);
+    state.run.peakEnemyLevel = generated.newPeakEnemyLevel;
+    teamBData = generated.team.map(g => g ? { ...characters[g.index], level: g.level } : null);
   } else {
     teamBData = (event.enemyTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
   }
