@@ -83,10 +83,11 @@ const characters = [
     evasion: 2,
     role: "tanque",
     skills: [
-      createSkill({ name: 'Corte demencial', type: 'attack',   power: 35,   precision: 85,     aparicion: 10 }),
-      createSkill({ name: 'Ataque fugaz',    type: 'attack',   power: 18,   precision: 90,     aparicion: 70 }),
-      createSkill({ name: 'Tajo',            type: 'attack',   power: 15,   precision: 85,     aparicion: 50, herida: true  }),
-      createSkill({ name: "Rabia",           type: "buff",     target: "self", stat: "attack", value: 0.10,   duration:6,   precision: 95, aparicion: 50 }),
+      createSkill({ name: 'Corte demencial', type: 'attack',  power: 35,   precision: 85,      aparicion: 10 }),
+      createSkill({ name: 'Ataque fugaz',    type: 'attack',  power: 18,   precision: 90,      aparicion: 70 }),
+      createSkill({ name: 'Tajo',            type: 'attack',  power: 15,   precision: 85,      aparicion: 50, herida: true  }),
+      createSkill({ name: "Rabia",           type: "buff",    target: "self", stat: "attack",  value: 0.10,   duration:6,   precision: 95, aparicion: 50 }),
+      createSkill({ name: "Proteccion",      type: "buff",    target: "self", stat: "defense", value: 10,     duration:4,   precision: 99, aparicion: 50  }),
     ]
   }),
   createCharacter({
