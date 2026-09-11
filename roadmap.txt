@@ -1,5 +1,6 @@
 arround 1hs play run
 
+
 UI:
   animaciones(basicas) acciones
   
@@ -9,8 +10,15 @@ MECHANIC:
 
 NARRATIVE:
   mas dialogos *
+  integrate dialogs in events *
+  
   map routes visualization *
   eleccion dialogos
 
 
+-----------------
 
+more skills for every char
+skills pool
+special skills
+upgrading skill logic

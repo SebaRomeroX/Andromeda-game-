@@ -1,0 +1,24 @@
+
+TANK
+  atq /stun
+  def
+  buf atq/def/prc
+  debuf atq/def/prc
+
+
+ASESINO
+  atq /sgr
+  buf atq/prc/evc
+  debuf all
+
+
+RANGO
+  ataq /sgr
+  buf atq/prc/evc
+  debuf prc/evc
+
+SUPORT
+  atq /stun
+  heal
+  buf all
+  debuf all
