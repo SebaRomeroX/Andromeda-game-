@@ -235,6 +235,7 @@ function startStory(story, { loadSave }) {
     state.run.enfrentamientos = data.run.enfrentamientos;
     state.run.campamentos = data.run.campamentos;
     state.run.fightsSinceCamp = data.run.fightsSinceCamp;
+    state.run.needRecruit = data.run.needRecruit ?? true;
     state.run.fired = data.fired;
     state.run.choices = data.run.choices ?? {};
     state.run.currentNodeId = data.run.currentNodeId ?? null;
