@@ -20,13 +20,6 @@ export const FORMATIONS = [
   { roles: ['tanque', 'asesino', 'rango', 'soporte'] },
 ];
 
-const SCALING = {
-  enemyOverrunProgress: 0.5,
-  minLevelRatio: 0.8,
-  maxLevelRatio: 1.05,
-  infiniteCampBonus: 0.1
-};
-
 const MAX_TEAM = 4;
 
 function buildRolePools(story) {
@@ -40,24 +33,16 @@ function buildRolePools(story) {
   return pools;
 }
 
-function computeTargetSize(playerMemberCount, progress, campamentos, infiniteMode) {
-  if (infiniteMode) {
-    return Math.min(MAX_TEAM, Math.max(1, 1 + Math.max(0, (campamentos ?? 0) - 1)));
-  }
-  const overrun = progress >= SCALING.enemyOverrunProgress ? 1 : 0;
-  return Math.min(MAX_TEAM, Math.max(1, playerMemberCount + overrun));
+function computeTargetSize(playerMemberCount) {
+  return Math.min(MAX_TEAM, Math.max(1, playerMemberCount));
 }
 
-function computeEnemyLevel(playerAvgLevel, progress, stage, infiniteMode, peakEnemyLevel, campamentos) {
-  const ratio = SCALING.minLevelRatio + (SCALING.maxLevelRatio - SCALING.minLevelRatio) * progress;
-  let level = Math.max(1, Math.round(playerAvgLevel * ratio));
-
-  if (infiniteMode) {
-    const floor = Math.max(playerAvgLevel, peakEnemyLevel ?? 0);
-    const campBonus = 1 + (campamentos ?? 0) * SCALING.infiniteCampBonus;
-    level = Math.max(1, Math.round(floor * campBonus));
-  }
-
+function computeEnemyLevel(playerAvgLevel, playerMemberCount, enemyMemberCount, peakEnemyLevel) {
+  let level = Math.ceil(playerAvgLevel);
+  const memberDiff = playerMemberCount - enemyMemberCount;
+  level += memberDiff;
+  level = Math.max(1, level);
+  level = Math.max(peakEnemyLevel ?? 0, level);
   return level;
 }
 
@@ -72,16 +57,27 @@ function pickFormation(candidates, targetSize) {
   return matching[Math.floor(Math.random() * matching.length)];
 }
 
-export function generateEnemyTeam({ story, stage, playerMemberCount, playerAvgLevel, campamentos, peakEnemyLevel }) {
-  const totalEvents = story.expectedStages ?? (story.events?.length ?? 1);
-  const progress = Math.min(1, totalEvents > 0 ? stage / totalEvents : 1);
+export function generateEnemyTeam({ story, playerMemberCount, playerAvgLevel, peakEnemyLevel, enemyTeamOverride }) {
+  const enemyMemberCount = enemyTeamOverride
+    ? enemyTeamOverride.filter(idx => idx >= 0).length
+    : computeTargetSize(playerMemberCount);
+
+  const level = computeEnemyLevel(playerAvgLevel, playerMemberCount, enemyMemberCount, peakEnemyLevel);
+
+  if (enemyTeamOverride) {
+    const team = [null, null, null, null];
+    enemyTeamOverride.forEach((idx, i) => {
+      if (idx >= 0) team[i] = { index: idx, level };
+    });
+    const newPeakEnemyLevel = Math.max(peakEnemyLevel ?? 0, level);
+    return { team, newPeakEnemyLevel };
+  }
 
   const rolePools = buildRolePools(story);
   const candidates = FORMATIONS.filter(f => f.roles.every(r => rolePools[r]?.length > 0));
-  const formation = pickFormation(candidates, computeTargetSize(playerMemberCount, progress, campamentos, story.infiniteMode));
+  const formation = pickFormation(candidates, enemyMemberCount);
   if (!formation) return { team: [null, null, null, null], newPeakEnemyLevel: peakEnemyLevel ?? 0 };
 
-  const level = computeEnemyLevel(playerAvgLevel, progress, stage, story.infiniteMode, peakEnemyLevel, campamentos);
   const team = [null, null, null, null];
   formation.roles.forEach(role => {
     const pool = rolePools[role];

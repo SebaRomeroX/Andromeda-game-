@@ -368,7 +368,7 @@ function startCombat(event) {
   const teamAData = buildTeamAData();
 
   let teamBData;
-  if (event.type === 'enfrentamiento' && !event.narrativo) {
+  if (event.type === 'enfrentamiento') {
     const memberLevels = state.combat.teams.A.members.filter(Boolean).map(m => m.level ?? 1);
     const playerMemberCount = teamAData.filter(Boolean).length;
     const playerAvgLevel = memberLevels.length > 0
@@ -376,14 +376,17 @@ function startCombat(event) {
       : 1;
     const generated = generateEnemyTeam({
       story: state.session.selectedStory,
-      stage: state.run.stage,
       playerMemberCount,
       playerAvgLevel,
-      campamentos: state.run.campamentos,
-      peakEnemyLevel: state.run.peakEnemyLevel
+      peakEnemyLevel: state.run.peakEnemyLevel,
+      enemyTeamOverride: event.enemyTeam
     });
     state.run.peakEnemyLevel = generated.newPeakEnemyLevel;
-    teamBData = generated.team.map(g => g ? { ...characters[g.index], level: g.level } : null);
+    teamBData = generated.team.map((g, i) => {
+      if (!g) return null;
+      const idx = event.enemyTeam ? event.enemyTeam[i] : g.index;
+      return { ...characters[idx], level: g.level };
+    });
   } else {
     teamBData = (event.enemyTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
   }
