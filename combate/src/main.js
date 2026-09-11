@@ -426,6 +426,10 @@ function handleVictory() {
     const overlay = document.getElementById('camp-overlay');
     const msg = document.getElementById('camp-message');
     const btn = document.getElementById('camp-continue');
+    const titleEl = document.getElementById('camp-title');
+    titleEl.textContent = '';
+    const staleRecruit = overlay.querySelector('.infinite-recruit-options');
+    if (staleRecruit) staleRecruit.remove();
     msg.innerHTML = `💀 <strong>${protagonistName}</strong> ha caído en batalla.<br>La historia termina aquí.`;
     btn.textContent = 'Reintentar';
     btn.onclick = () => {
@@ -442,6 +446,10 @@ function handleVictory() {
     const overlay = document.getElementById('camp-overlay');
     const msg = document.getElementById('camp-message');
     const btn = document.getElementById('camp-continue');
+    const titleEl = document.getElementById('camp-title');
+    titleEl.textContent = '';
+    const staleRecruit = overlay.querySelector('.infinite-recruit-options');
+    if (staleRecruit) staleRecruit.remove();
     msg.innerHTML = names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>');
 
     fallen.forEach(i => {

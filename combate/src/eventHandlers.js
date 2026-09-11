@@ -209,6 +209,7 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
       clearSavedSlot(teamSlot);
       state.run.recruitOffer = null;
       button.style.display = '';
+      optionsDiv.remove();
       overlay.classList.add('hidden');
       playChill();
       advanceStageCb();
@@ -230,6 +231,7 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
     rejectBtn.addEventListener('click', () => {
       state.run.recruitOffer = null;
       button.style.display = '';
+      optionsDiv.remove();
       overlay.classList.add('hidden');
       playChill();
       advanceStageCb();
