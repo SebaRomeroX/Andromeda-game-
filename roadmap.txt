@@ -18,7 +18,8 @@ NARRATIVE:
 
 -----------------
 
-more skills for every char
-skills pool
-special skills
-upgrading skill logic
+upgrading buff
+limit or marks for upgrade
+learn skills
+
+specila skills 
