@@ -18,8 +18,8 @@ NARRATIVE:
 
 -----------------
 
-upgrading buff
-limit or marks for upgrade
-learn skills
+upgrading buff (duration)
+skill grade (basic +3)
+learn skills (maybe only specials)
 
 specila skills 

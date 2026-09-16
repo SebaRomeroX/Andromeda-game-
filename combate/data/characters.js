@@ -276,6 +276,32 @@ const characters = [
       createSkill({ name: "Pisar pie",        type: "buff",    target: "enemy",  duration:7,       stat: "evasion", value: 0,      precision: 99, aparicion: 20 }),
     ]
   }),
+  createCharacter({
+    name: "Xall",
+    image: "assets/images/xall.jpg",
+    hp: 100,
+    evasion: 5,
+    role: "asesino",
+    skills: [
+      createSkill({ name: "Estocada",    type: "attack",  power: 12,       precision: 90,     aparicion: 70   }),
+      createSkill({ name: "Proteccion",  type: "buff",    target: "ally",  stat: "defense",   value: 7,       precision: 99, aparicion: 70  }),
+      createSkill({ name: "Bomba humo",  type: "buff",    target: "enemy", stat: "precision", value: 0.9,     precision: 99, aparicion: 70 }),
+      createSkill({ name: "Derribar",    type: "attack",  power: 22,       precision: 90,     aparicion: 30,  stun: true }),
+    ]
+  }),
+  createCharacter({
+    name: "Veraldin",
+    image: "assets/images/veraldin.jpg",
+    hp: 70,
+    evasion: 7,
+    role: "rango",
+    skills: [
+      createSkill({ name: "Lamarada",      type: "attack",  power: 12,   precision: 90, aparicion: 70, herida: true}),
+      createSkill({ name: "Fuego abisal",  type: "attack",  power: 15,   precision: 90, aparicion: 70  }),
+      createSkill({ name: "Panacea",       type: "cura",    power: 4,    precision: 99, aparicion: 70  }),
+      createSkill({ name: "Intensidad",    type: "buff",    target: "self",  stat: "attack",  value: 0.10,   precision: 99, aparicion: 30 }),
+    ]
+  }),
 ];
 
 export default characters;
