@@ -97,7 +97,7 @@ export function getSavedTeamLevels() {
 }
 
 export function saveTeamSkills() {
-  savedTeamSkills = combatState.teams.A.members.map(m => m ? m.skills.map(s => s.level ?? 1) : null);
+  savedTeamSkills = combatState.teams.A.members.map(m => m ? m.skills.map(s => ({ level: s.level ?? 1, duration: s.duration })) : null);
 }
 
 export function getSavedTeamSkills() {
@@ -164,10 +164,16 @@ function createMember(charData, initialHp, level, skillLevels) {
     hp: stats.hp,
     evasion: stats.evasion,
     currentHp: initialHp != null ? Math.min(initialHp, stats.hp) : stats.hp,
-    skills: charData.skills.map((s, i) => ({
-      ...s,
-      level: skillLevels ? (skillLevels[i] ?? 1) : (s.level ?? 1)
-    })),
+    skills: charData.skills.map((s, i) => {
+      const saved = skillLevels?.[i];
+      const savedLevel = typeof saved === 'object' ? saved.level : (typeof saved === 'number' ? saved : null);
+      const savedDuration = typeof saved === 'object' ? saved.duration : undefined;
+      return {
+        ...s,
+        level: savedLevel ?? (s.level ?? 1),
+        ...(savedDuration !== undefined ? { duration: savedDuration } : {})
+      };
+    }),
     defense: 0,
     stunned: false,
     stunTurns: 0,
