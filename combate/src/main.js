@@ -1,4 +1,4 @@
-import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, saveTeamLevels, allDead, resetTeam, clearSavedSlot, exportTeamSave, importTeamSave, resetRunState, resetSessionState } from './state.js';
+import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, clearSavedTeamLearnableSkills, clearSavedTeamLearnedSkills, saveTeamLevels, allDead, resetTeam, clearSavedSlot, exportTeamSave, importTeamSave, resetRunState, resetSessionState } from './state.js';
 import { ROLE_BY_INDEX } from './models.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
@@ -255,6 +255,8 @@ function startStory(story, { loadSave }) {
     clearSavedTeamHp();
     clearSavedTeamLevels();
     clearSavedTeamSkills();
+    clearSavedTeamLearnableSkills();
+    clearSavedTeamLearnedSkills();
     clearGame(story.id);
   }
 

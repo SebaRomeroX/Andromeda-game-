@@ -6,7 +6,7 @@
  */
 
 import { upgradeSkill } from './models.js';
-import { saveTeamSkills, saveTeamLearnableSkills } from './state.js';
+import { saveTeamSkills, saveTeamLearnableSkills, saveTeamLearnedSkills } from './state.js';
 import { formatSkillStats } from './formatters.js';
 
 // ── Upgrade overlay ──
@@ -151,6 +151,7 @@ export function startSkillUpgrades(members, onComplete) {
     if (!member) {
       saveTeamSkills();
       saveTeamLearnableSkills();
+      saveTeamLearnedSkills();
       onComplete();
       return;
     }

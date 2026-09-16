@@ -80,6 +80,7 @@ let savedTeamHp = null;
 let savedLevels = null;
 let savedTeamSkills = null;
 let savedLearnableSkills = null;
+let savedLearnedSkills = null;
 
 export function saveTeamState() {
   savedTeamHp = combatState.teams.A.members.map(m => m ? m.currentHp : null);
@@ -112,8 +113,20 @@ export function saveTeamLearnableSkills() {
   });
 }
 
+export function saveTeamLearnedSkills() {
+  savedLearnedSkills = combatState.teams.A.members.map(m => {
+    if (!m) return null;
+    const baseCount = m._baseSkillCount ?? m.skills.length;
+    return m.skills.slice(baseCount).map(s => ({ ...s }));
+  });
+}
+
 export function getSavedTeamLearnableSkills() {
   return savedLearnableSkills;
+}
+
+export function getSavedTeamLearnedSkills() {
+  return savedLearnedSkills;
 }
 
 export function restoreTeamHp() {
@@ -139,12 +152,17 @@ export function clearSavedTeamLearnableSkills() {
   savedLearnableSkills = null;
 }
 
+export function clearSavedTeamLearnedSkills() {
+  savedLearnedSkills = null;
+}
+
 export function exportTeamSave() {
   return {
     hp: savedTeamHp,
     levels: savedLevels,
     skills: savedTeamSkills,
-    learnableSkills: savedLearnableSkills
+    learnableSkills: savedLearnableSkills,
+    learnedSkills: savedLearnedSkills
   };
 }
 
@@ -153,6 +171,7 @@ export function importTeamSave(data = {}) {
   savedLevels = Array.isArray(data.levels) ? data.levels : null;
   savedTeamSkills = Array.isArray(data.skills) ? data.skills : null;
   savedLearnableSkills = Array.isArray(data.learnableSkills) ? data.learnableSkills : null;
+  savedLearnedSkills = Array.isArray(data.learnedSkills) ? data.learnedSkills : null;
 }
 
 export function clearSavedSlot(index) {
@@ -160,6 +179,7 @@ export function clearSavedSlot(index) {
   if (savedLevels) savedLevels[index] = null;
   if (savedTeamSkills) savedTeamSkills[index] = null;
   if (savedLearnableSkills) savedLearnableSkills[index] = null;
+  if (savedLearnedSkills) savedLearnedSkills[index] = null;
 }
 
 // ── Init / helpers ──
@@ -173,27 +193,30 @@ function validateRoles(teamKey, data) {
   });
 }
 
-function createMember(charData, initialHp, level, skillLevels, savedLearnable) {
+function createMember(charData, initialHp, level, skillLevels, savedLearnable, savedLearned) {
   if (!charData) return null;
   const finalLevel = level ?? charData.level ?? 1;
   const stats = getLevelStats({ ...charData, level: finalLevel });
   const learnableSkills = (savedLearnable ?? charData.learnableSkills ?? []).map(s => ({ ...s }));
+  const baseSkills = charData.skills.map((s, i) => {
+    const saved = skillLevels?.[i];
+    const savedLevel = typeof saved === 'object' ? saved.level : (typeof saved === 'number' ? saved : null);
+    const savedDuration = typeof saved === 'object' ? saved.duration : undefined;
+    return {
+      ...s,
+      level: savedLevel ?? (s.level ?? 1),
+      ...(savedDuration !== undefined ? { duration: savedDuration } : {})
+    };
+  });
+  const learnedSkills = (savedLearned ?? []).map(s => ({ ...s }));
   return {
     ...charData,
     level: finalLevel,
     hp: stats.hp,
     evasion: stats.evasion,
     currentHp: initialHp != null ? Math.min(initialHp, stats.hp) : stats.hp,
-    skills: charData.skills.map((s, i) => {
-      const saved = skillLevels?.[i];
-      const savedLevel = typeof saved === 'object' ? saved.level : (typeof saved === 'number' ? saved : null);
-      const savedDuration = typeof saved === 'object' ? saved.duration : undefined;
-      return {
-        ...s,
-        level: savedLevel ?? (s.level ?? 1),
-        ...(savedDuration !== undefined ? { duration: savedDuration } : {})
-      };
-    }),
+    skills: [...baseSkills, ...learnedSkills],
+    _baseSkillCount: baseSkills.length,
     learnableSkills,
     defense: 0,
     stunned: false,
@@ -212,7 +235,8 @@ export function initState(teamAData, teamBData) {
     const savedLevel = savedLevels ? savedLevels[i] : null;
     const savedSkills = savedTeamSkills ? savedTeamSkills[i] : null;
     const savedLearnable = savedLearnableSkills ? savedLearnableSkills[i] : null;
-    return createMember(charData, saved, savedLevel, savedSkills, savedLearnable);
+    const savedLearned = savedLearnedSkills ? savedLearnedSkills[i] : null;
+    return createMember(charData, saved, savedLevel, savedSkills, savedLearnable, savedLearned);
   });
   combatState.teams.B.members = teamBData.map(charData => createMember(charData));
   while (combatState.teams.A.members.length < 4) combatState.teams.A.members.push(null);
