@@ -1322,6 +1322,30 @@ body {
   cursor: not-allowed;
 }
 
+#learn-confirm {
+  padding: 12px 40px;
+  border: 2px solid #8a7a4a;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #3a2a1a, #2a1a0a);
+  color: #f0e0a0;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#learn-confirm:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a4a2a, #4a3a1a);
+  border-color: #c0a85a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(200, 160, 50, 0.3);
+}
+
+#learn-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* Save toast */
 .story-card-actions {
   display: flex;

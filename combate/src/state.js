@@ -109,7 +109,7 @@ export function getSavedTeamSkills() {
 export function saveTeamLearnableSkills() {
   savedLearnableSkills = combatState.teams.A.members.map(m => {
     if (!m) return null;
-    return (m.learnableSkills ?? []).map(s => ({ name: s.name, type: s.type }));
+    return (m.learnableSkills ?? []).map(s => ({ ...s }));
   });
 }
 
