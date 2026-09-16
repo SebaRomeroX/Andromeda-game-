@@ -203,6 +203,9 @@ export function getLevelStats(char) {
  */
 export function upgradeSkill(skill) {
   skill.level = (skill.level ?? 1) + 1;
+  if (skill.type === SKILL_TYPES.BUFF) {
+    skill.duration = Math.min(10, (skill.duration ?? 3) + 1);
+  }
   return skill;
 }
 
@@ -223,6 +226,7 @@ export function getSkillScaledStats(skill) {
     power,
     precision: skill.precision,
     value: skill.value,
+    duration: skill.duration,
     level
   };
 }

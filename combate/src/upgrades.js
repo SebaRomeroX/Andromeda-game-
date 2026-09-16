@@ -8,7 +8,6 @@
 
 import { upgradeSkill } from './models.js';
 import { saveTeamSkills } from './state.js';
-import { SKILL_TYPES } from './constants.js';
 import { formatSkillStats } from './formatters.js';
 
 const overlay = () => document.getElementById('upgrade-overlay');
@@ -31,7 +30,7 @@ function showUpgradeFor(member, onDone) {
     confirmBtn().disabled = selectedIndex === null;
   };
 
-  const upgradeable = member.skills.filter(s => s.type !== SKILL_TYPES.BUFF);
+  const upgradeable = member.skills;
   upgradeable.forEach((skill, i) => {
     const btn = document.createElement('button');
     btn.className = 'skill-btn';

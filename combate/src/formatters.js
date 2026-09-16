@@ -57,7 +57,7 @@ export function formatSkillStats(skill) {
       const pct = (Math.abs(skill.value) * 100).toFixed(0);
       val = skill.value >= 1 ? '100%' : `${pct}%`;
     }
-    return `✨ (${emoji} ${val} ${arrow})`;
+    return `✨ (${emoji} ${val} ${arrow} · ${skill.duration ?? 3}t)`;
   }
   return '';
 }
