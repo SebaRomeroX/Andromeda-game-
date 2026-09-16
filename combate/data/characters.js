@@ -13,7 +13,7 @@ import { createCharacter, createSkill } from '../src/models.js';
 // createSkill({ name: "Romper defenza",     type: "buff",    target: "enemy", stat: "defense",   value: -1,    precision: 99, aparicion: 20 }),
 // createSkill({ name: "Intimidacion",       type: "buff",    target: "enemy", stat: "precision", value: 0.9,   precision: 99, aparicion: 30 }),
 // createSkill({ name: "Concentracion",      type: "buff",    target: "ally",  stat: "precision", value: 1,     precision: 99, aparicion: 30 }),
-// createSkill({ name: "Pies ligeros",       type: "buff",    target: "ally",  stat: "evasion",   value: 20,   precision: 99, aparicion: 30 }),
+// createSkill({ name: "Pies ligeros",       type: "buff",    target: "ally",  stat: "evasion",   value: 20,    precision: 99, aparicion: 30 }),
 // createSkill({ name: "Inmovilizar",        type: "buff",    target: "enemy", stat: "evasion",   value: 0,     precision: 99, aparicion: 30 }),
 
 const characters = [
@@ -36,7 +36,12 @@ const characters = [
       // ESPECIALES
       createSkill({ name: "Lanze Potenciado",   type: "attack",  power: 70,    precision: 70,    aparicion: 5 }),
       createSkill({ name: "Salto brutal",       type: "attack",  power: 22,    precision: 99,    aparicion: 5,  stun: true }),
-      createSkill({ name: "Proteccion Divina",  type: "buff",    target: "ally",  stat: "defense",   value: 20,    precision: 99, aparicion: 5  }),
+      createSkill({ name: "Devastador",         type: "attack",  power: 12,    precision: 85,    aparicion: 15,
+        levelBonuses: { 2: { power: 5 }, 3: { power: 8 }, 4: { stun: true } }
+      }),
+      createSkill({ name: "Proteccion Divina",  type: "buff",    target: "ally",  stat: "defense",   value: 20,    precision: 99, aparicion: 5,
+        levelBonuses: { 2: { value: 15 }, 3: { scope: 'all' }, 4: { duration: 8 } }
+      }),
     ],
     learnableSkills: []
   }),

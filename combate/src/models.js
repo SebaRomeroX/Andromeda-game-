@@ -100,6 +100,40 @@ export const ATTACK_ROUTES = {
  */
 
 /**
+ * ## levelBonuses — Escalado personalizado por habilidad
+ *
+ * Cada habilidad puede definir `levelBonuses`, un objeto donde las claves
+ * son los niveles (2, 3, 4...) y los valores son los cambios incrementales
+ * que se acumulan al subir de nivel.
+ *
+ * Propiedades mejorables por tipo:
+ *
+ * | Tipo     | power | precision | stun | herida | value | duration | scope |
+ * |----------|-------|-----------|------|--------|-------|----------|-------|
+ * | attack   | ✅    | ✅        | ✅   | ✅     | —     | —        | —     |
+ * | defense  | ✅    | —         | —    | —      | —     | —        | —     |
+ * | cura     | ✅    | —         | —    | —      | —     | —        | —     |
+ * | buff     | —     | —         | —    | —      | ✅    | ✅       | ✅    |
+ *
+ * Los bonuses se suman incrementalmente nivel a nivel.
+ * Si una habilidad tiene levelBonuses, reemplaza el escalado por defecto (+5 power/nivel).
+ *
+ * Ejemplo attack — "Devastador":
+ *   levelBonuses: {
+ *     2: { power: 5 },        // +5 daño en nivel 2
+ *     3: { power: 8 },        // +8 daño más en nivel 3 (total +13)
+ *     4: { stun: true }       // gana efecto stun en nivel 4
+ *   }
+ *
+ * Ejemplo buff — "Proteccion Divina":
+ *   levelBonuses: {
+ *     2: { value: 15 },       // +15 defensa en nivel 2
+ *     3: { scope: 'all' },    // pasa a afectar a todo el equipo
+ *     4: { duration: 8 }      // dura 8 turnos en nivel 4
+ *   }
+ */
+
+/**
  * Personaje (Character)
  *
  * @typedef {Object} Character
@@ -128,13 +162,15 @@ export const ATTACK_ROUTES = {
  * @param {BuffStat} [opts.stat]    - Solo buff
  * @param {number} [opts.value]     - Solo buff
  * @param {number} [opts.level=1]   - Nivel de la habilidad
+ * @param {Object} [opts.levelBonuses] - Cambios incrementales por nivel (reemplaza escalado por defecto)
  * @returns {Skill}
  */
-export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, scope, stat, value, duration = 3, level = 1 }) {
+export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, scope, stat, value, duration = 3, level = 1, levelBonuses }) {
   if (!name) throw new Error('createSkill: name es requerido');
   if (!type) throw new Error('createSkill: type es requerido');
 
   const base = { name, type, precision, aparicion, level };
+  if (levelBonuses) base.levelBonuses = levelBonuses;
 
   switch (type) {
     case SKILL_TYPES.ATTACK:
@@ -195,16 +231,17 @@ export function getLevelStats(char) {
 }
 
 /**
- * Sube de nivel una habilidad.
+ * Sube de nivel una habilidad (máximo nivel 4).
  *
  * El escalado de los stats según el nivel se define en `getSkillScaledStats`.
+ * Si la habilidad tiene `levelBonuses`, esos cambios reemplazan el escalado por defecto.
  *
  * @param {Skill} skill
  * @returns {Skill}
  */
 export function upgradeSkill(skill) {
-  skill.level = (skill.level ?? 1) + 1;
-  if (skill.type === SKILL_TYPES.BUFF) {
+  skill.level = Math.min(4, (skill.level ?? 1) + 1);
+  if (skill.type === SKILL_TYPES.BUFF && !skill.levelBonuses) {
     skill.duration = Math.min(10, (skill.duration ?? 3) + 1);
   }
   return skill;
@@ -213,14 +250,43 @@ export function upgradeSkill(skill) {
 /**
  * Retorna los stats efectivos de una habilidad según su nivel.
  *
- * Escalado actual: el power de attack/cura/defense aumenta +5 por cada nivel
- * por encima de 1. precision y value quedan iguales.
+ * Si la habilidad tiene `levelBonuses`, acumula los cambios incrementales
+ * nivel a nivel. Si no, aplica el escalado por defecto:
+ * attack/cura/defense → +5 power por nivel.
  *
  * @param {Skill} skill
- * @returns {{ power?: number, precision: number, value?: number, level: number }}
+ * @returns {{ power?: number, precision: number, value?: number, stun?: boolean, herida?: boolean, scope?: string, duration?: number, level: number }}
  */
 export function getSkillScaledStats(skill) {
   const level = skill.level ?? 1;
+
+  if (skill.levelBonuses && Object.keys(skill.levelBonuses).length > 0) {
+    const result = {
+      power: skill.power,
+      precision: skill.precision,
+      value: skill.value,
+      stun: skill.stun,
+      herida: skill.herida,
+      scope: skill.scope,
+      duration: skill.duration,
+      level
+    };
+
+    for (let lv = 2; lv <= level; lv++) {
+      const bonus = skill.levelBonuses[lv];
+      if (!bonus) continue;
+      result.power     = (result.power ?? 0) + (bonus.power ?? 0);
+      result.precision = (result.precision ?? 0) + (bonus.precision ?? 0);
+      result.value     = (result.value ?? 0) + (bonus.value ?? 0);
+      if (bonus.stun !== undefined)     result.stun = bonus.stun;
+      if (bonus.herida !== undefined)   result.herida = bonus.herida;
+      if (bonus.scope !== undefined)    result.scope = bonus.scope;
+      if (bonus.duration !== undefined) result.duration = bonus.duration;
+    }
+
+    return result;
+  }
+
   const hasPower = skill.type === SKILL_TYPES.ATTACK || skill.type === SKILL_TYPES.CURA || skill.type === SKILL_TYPES.DEFENSE;
   const power = hasPower ? skill.power + (level - 1) * 5 : skill.power;
   return {
