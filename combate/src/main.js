@@ -9,6 +9,7 @@ import stories from '../data/stories/index.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
 import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
+import { isDev } from './env.js';
 import { TEAMS } from './constants.js';
 import { advanceStage as advanceStageFlow, resolveVictory } from './gameFlow.js';
 import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding } from './eventHandlers.js';
@@ -485,16 +486,20 @@ function handleVictory() {
   advanceStage();
 }
 
-window.__andromedaSaveDebug = debugSave;
+if (isDev()) {
+  window.__andromedaSaveDebug = debugSave;
 
-setupDevPanel(stories, (story, payload) => {
-  const ok = saveGame(story.id, payload);
-  if (!ok) {
-    showToast('⚠️ No se pudo guardar el salto (almacenamiento local)');
-    return;
-  }
-  startStory(story, { loadSave: true });
-});
+  setupDevPanel(stories, (story, payload) => {
+    const ok = saveGame(story.id, payload);
+    if (!ok) {
+      showToast('⚠️ No se pudo guardar el salto (almacenamiento local)');
+      return;
+    }
+    startStory(story, { loadSave: true });
+  });
+} else {
+  document.getElementById('dev-panel')?.remove();
+}
 
 renderMenu();
 showScreen('menu');
