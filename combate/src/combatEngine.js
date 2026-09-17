@@ -61,6 +61,10 @@ export function computeEffect(actor, target, skill, { precision, evasion, atkMul
     return { type: "evade" };
   }
 
+  if (skill.customEffect) {
+    return skill.customEffect(actor, target, skill, { precision, evasion, atkMult, defBuffs, hasDefDebuff });
+  }
+
   const defSkill = target.defense;
   const defBuffsVal = defBuffs ?? 0;
   const def = hasDefDebuff ? Math.round((defSkill + defBuffsVal) / 2) : defSkill + defBuffsVal;

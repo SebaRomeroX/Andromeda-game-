@@ -86,6 +86,8 @@ export function skillTypeLabel(type) {
 }
 
 export function describeSkill(skill) {
+  if (skill.description) return skill.description;
+
   const scaled = getSkillScaledStats(skill);
   if (skill.type === SKILL_TYPES.ATTACK) {
     let text = `Inflige ${scaled.power} pts de daño`;

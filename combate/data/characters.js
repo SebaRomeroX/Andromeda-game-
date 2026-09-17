@@ -1,6 +1,6 @@
 /// <reference path="../src/models.js" />
 
-import { createCharacter, createSkill } from '../src/models.js';
+import { createCharacter, createSkill, getSkillScaledStats } from '../src/models.js';
 
 // createSkill({ name: "Estocada",           type: "attack",  power: 20,   precision: 90,    aparicion: 70 }),
 // createSkill({ name: "Corte grave",        type: "attack",  power: 14,   precision: 90,    aparicion: 70,  herida: true }),
@@ -310,7 +310,37 @@ const characters = [
       createSkill({ name: "Estocada",    type: "attack",  power: 12,       precision: 90,     aparicion: 70   }),
       createSkill({ name: "Proteccion",  type: "buff",    target: "ally",  stat: "defense",   value: 7,       precision: 99, apparicion: 70  }),
       createSkill({ name: "Bomba humo",  type: "buff",    target: "enemy", stat: "precision", value: 0.9,     precision: 99, apparicion: 70 }),
-      createSkill({ name: "Derribar",    type: "attack",  power: 22,       precision: 90,     aparicion: 30,  stun: true }),
+      createSkill({ name: "Derribar",    type: "attack",  power: 15,       precision: 85,     aparicion: 40,  
+        levelBonuses: { 2: { power: 7, stun: true }, 3: { power: 7, precision: 5 }, 4: { power: 8 } }
+       }),
+      createSkill({
+        name: "Ejecutor",
+        type: "attack",
+        precision: 80,
+        aparicion: 15,
+        description: "Causa mas daño cuando menor sea la vida actual del enemigo",
+        customEffect: (actor, target, skill, ctx) => {
+          const hpPercent = target.currentHp / target.hp;
+          const rawDmg = Math.round(65 - 60 * hpPercent);
+          const defSkill = target.defense;
+          const defBuffsVal = ctx.defBuffs ?? 0;
+          const def = ctx.hasDefDebuff
+            ? Math.round((defSkill + defBuffsVal) / 2)
+            : defSkill + defBuffsVal;
+          const finalDmg = Math.max(0, rawDmg - def);
+          return {
+            type: "attack", rawDmg, finalDmg, def,
+            defBuffs: ctx.defBuffs ?? 0,
+            atkMult: ctx.atkMult ?? 1,
+            stun: false, wound: false
+          };
+        },
+        levelBonuses: {
+          2: { precision: 5 },
+          3: { precision: 5 },
+          4: { precision: 5 }
+        }
+      }),
     ],
     learnableSkills: [
       createSkill({ name: "Debilitar",      type: "buff",    target: "enemy", stat: "attack",   value: -0.20,  precision: 99, aparicion: 50 }),

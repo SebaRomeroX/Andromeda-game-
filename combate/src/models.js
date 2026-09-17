@@ -74,6 +74,8 @@ export const ATTACK_ROUTES = {
  * @property {BuffStat} [stat] - Estadística a modificar (solo buff)
  * @property {number} [value] - Magnitud del buff (solo buff)
  * @property {number} [level=1] - Nivel de la habilidad (mejorable en el campamento)
+ * @property {string} [description] - Descripción de la habilidad (para habilidades especiales)
+ * @property {Function} [customEffect] - Función de efecto personalizado que reemplaza el cálculo por defecto
  */
 
 /**
@@ -163,14 +165,18 @@ export const ATTACK_ROUTES = {
  * @param {number} [opts.value]     - Solo buff
  * @param {number} [opts.level=1]   - Nivel de la habilidad
  * @param {Object} [opts.levelBonuses] - Cambios incrementales por nivel (reemplaza escalado por defecto)
+ * @param {string} [opts.description] - Descripción de la habilidad (para habilidades especiales)
+ * @param {Function} [opts.customEffect] - Función de efecto personalizado (actor, target, skill, ctx) => outcome
  * @returns {Skill}
  */
-export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, scope, stat, value, duration = 3, level = 1, levelBonuses }) {
+export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, scope, stat, value, duration = 3, level = 1, levelBonuses, description, customEffect }) {
   if (!name) throw new Error('createSkill: name es requerido');
   if (!type) throw new Error('createSkill: type es requerido');
 
   const base = { name, type, precision, aparicion, level };
   if (levelBonuses) base.levelBonuses = levelBonuses;
+  if (description) base.description = description;
+  if (customEffect) base.customEffect = customEffect;
 
   switch (type) {
     case SKILL_TYPES.ATTACK:
