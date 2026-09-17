@@ -321,7 +321,7 @@ const characters = [
         description: "Causa mas daño cuando menor sea la vida actual del enemigo",
         customEffect: (actor, target, skill, ctx) => {
           const hpPercent = target.currentHp / target.hp;
-          const rawDmg = Math.round(65 - 60 * hpPercent);
+          const rawDmg = Math.round(5 + 45 * Math.pow((1 - hpPercent) / 0.75, 2.8));
           const defSkill = target.defense;
           const defBuffsVal = ctx.defBuffs ?? 0;
           const def = ctx.hasDefDebuff
