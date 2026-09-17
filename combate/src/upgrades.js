@@ -30,7 +30,17 @@ function showUpgradeFor(member, onDone) {
     confirmBtn().disabled = selectedIndex === null;
   };
 
-  member.skills.forEach((skill, i) => {
+  const upgradeable = member.skills
+    .map((skill, i) => ({ skill, i }))
+    .filter(({ skill }) => (skill.level ?? 1) < 4);
+
+  if (upgradeable.length === 0) {
+    overlay().classList.add('hidden');
+    onDone();
+    return;
+  }
+
+  upgradeable.forEach(({ skill, i }) => {
     const btn = document.createElement('button');
     btn.className = 'skill-btn';
     btn.innerHTML = `
