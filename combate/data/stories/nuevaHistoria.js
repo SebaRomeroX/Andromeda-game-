@@ -1,8 +1,8 @@
 
 const nuevaHistoria = {
   id: 'nueva-historia',
-  title: 'Nueva historia',
-  description: 'Otro comienzo',
+  title: 'En desarrollo',
+  description: 'Historia actualmente incompleta',
   sequential: true,
   noProtagonist: true,
   allies: [19, 20],
