@@ -23,7 +23,7 @@ export function formatAction(skill) {
   const scaled = getSkillScaledStats(skill);
   if (skill.type === SKILL_TYPES.ATTACK) {
     const icon = scaled.stun ? '⚡' : '🗡️';
-    return `${icon} (${scaled.power})`;
+    return skill.customEffect ? `${icon} (var)` : `${icon} (${scaled.power})`;
   }
   if (skill.type === SKILL_TYPES.CURA) return `💚 (${scaled.power})`;
   if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ (${scaled.power})`;
@@ -40,7 +40,8 @@ export function formatSkillStats(skill) {
     let effects = '';
     if (scaled.stun) effects += '⚡';
     if (scaled.herida) effects += '🩸';
-    return `⚔️${effects ? ' ' + effects : ''} ${scaled.power}`;
+    const powerText = skill.customEffect ? 'var' : scaled.power;
+    return `⚔️${effects ? ' ' + effects : ''} ${powerText}`;
   }
   if (skill.type === SKILL_TYPES.CURA) return `💚 ${scaled.power}`;
   if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ ${scaled.power}`;
@@ -64,6 +65,7 @@ export function formatSkillStats(skill) {
 
 export function powerLabel(skill) {
   if (skill.type === SKILL_TYPES.BUFF) return skill.value;
+  if (skill.customEffect) return 'var';
   return getSkillScaledStats(skill).power;
 }
 
