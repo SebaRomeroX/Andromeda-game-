@@ -25,25 +25,44 @@ const characters = [
     role: "asesino",
     skills: [
       // createSkill({ name: "EXCALIBUR",          type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
-      createSkill({ name: "Estocada",           type: "attack",  power: 20,   precision: 90,    aparicion: 70 }),
-      createSkill({ name: "Corte grave",        type: "attack",  power: 14,   precision: 90,    aparicion: 70,  herida: true }),
-      createSkill({ name: "Golpe de escudo",    type: "attack",  power: 8,    precision: 95,    aparicion: 20,  stun: true   }),
-      createSkill({ name: "Vendaje",            type: "cura",    power: 4,    precision: 99,    aparicion: 20   }),
-      createSkill({ name: "Postura Defensiva",  type: "defense", power: 15,   precision: 99,    aparicion: 40   }),
-      createSkill({ name: "Furia de batalla",   type: "buff",    target: "ally",  scope:'all',  duration:4,   stat: "attack",     value: 0.10,   precision: 99, aparicion: 40 }),
-      createSkill({ name: "Proteccion",         type: "buff",    target: "self",  stat: "defense",   value: 10,    precision: 99, aparicion: 50  }),
-      createSkill({ name: "Romper defenza",     type: "buff",    target: "enemy", stat: "defense",   value: -1,    precision: 99, aparicion: 20  }),
-      // ESPECIALES
-      createSkill({ name: "Lanze Potenciado",   type: "attack",  power: 70,    precision: 70,    aparicion: 5 }),
-      createSkill({ name: "Salto brutal",       type: "attack",  power: 22,    precision: 99,    aparicion: 5,  stun: true }),
-      createSkill({ name: "Devastador",         type: "attack",  power: 12,    precision: 85,    aparicion: 15,
-        levelBonuses: { 2: { power: 5 }, 3: { power: 8 }, 4: { stun: true } }
+      createSkill({ name: "Estocada",           type: "attack",  power: 14,   precision: 85,    aparicion: 70,
+        levelBonuses: { 2: { power: 7, precision: 2 }, 3: { power: 7, precision: 2 }, 4: { power: 8, precision: 1 }}
       }),
-      createSkill({ name: "Proteccion Divina",  type: "buff",    target: "ally",  stat: "defense",   value: 20,    precision: 99, aparicion: 5,
-        levelBonuses: { 2: { value: 15 }, 3: { scope: 'all' }, 4: { duration: 8 } }
+      createSkill({ name: "Golpe de escudo",    type: "attack",  power: 8,    precision: 95,    aparicion: 20, stun: true   }),
+      createSkill({ name: "Vendaje",            type: "cura",    power: 4,    precision: 99,    aparicion: 20  }),
+      createSkill({ name: "Proteccion",         type: "buff",    target: "self",  stat: "defense",   value: 10,    precision: 99,  aparicion: 50,
+        levelBonuses: { 2: { value: 2, duration: 1 }, 3: { value: 2, duration: 1 }, 4: { value: 3, duration: 2 }}
+      }),
+      createSkill({
+        name: "Ejecutor",  type: "attack",  precision: 85,  aparicion: 10,
+        description: "Causa mas daño cuando menor sea la vida actual del enemigo",
+        customEffect: (actor, target, skill, ctx) => {
+          const hpPercent = target.currentHp / target.hp;
+          const rawDmg = Math.round(5 + 45 * Math.pow((1 - hpPercent) / 0.75, 2.8));
+          const defSkill = target.defense;
+          const defBuffsVal = ctx.defBuffs ?? 0;
+          const def = ctx.hasDefDebuff
+            ? Math.round((defSkill + defBuffsVal) / 2)
+            : defSkill + defBuffsVal;
+          const finalDmg = Math.max(0, rawDmg - def);
+          return {
+            type: "attack", rawDmg, finalDmg, def,
+            defBuffs: ctx.defBuffs ?? 0,
+            atkMult: ctx.atkMult ?? 1,
+            stun: false, wound: false
+          };
+        },
+        levelBonuses: { 2: { precision: 2 }, 3: { precision: 2 }, 4: { precision: 1 }}
       }),
     ],
-    learnableSkills: []
+    learnableSkills: [
+      createSkill({ name: "Corte grave",        type: "attack",  power: 14,   precision: 90,    aparicion: 70,   herida: true }),
+      createSkill({ name: "Salto brutal",       type: "attack",  power: 22,   precision: 99,    aparicion: 5,    stun: true   }),
+      createSkill({ name: "Postura Defensiva",  type: "defense", power: 15,   precision: 99,    aparicion: 40    }),
+      createSkill({ name: "Furia de batalla",   type: "buff",    target: "ally",  scope:'all',  duration:4,      stat: "attack",  value: 0.10,   precision: 99, aparicion: 40 }),
+      createSkill({ name: "Proteccion Divina",  type: "buff",    target: "ally",  stat: "defense",   value: 20,  scope: 'all',    precision: 99, aparicion: 5,  }),
+      createSkill({ name: "Romper defenza",     type: "buff",    target: "enemy", stat: "defense",   value: -1,  precision: 99,   aparicion: 20  }),
+    ]
   }),
   createCharacter({
     name: "La druida",
@@ -307,40 +326,12 @@ const characters = [
     evasion: 5,
     role: "asesino",
     skills: [
-      // createSkill({ name: "Estocada",    type: "attack",  power: 12,       precision: 90,     aparicion: 70   }),
       createSkill({ name: "Proteccion",  type: "buff",    target: "ally",  stat: "defense",   value: 7,       precision: 99, apparicion: 70  }),
-      // createSkill({ name: "Bomba humo",  type: "buff",    target: "enemy", stat: "precision", value: 0.9,     precision: 99, apparicion: 70 }),
-      createSkill({ name: "Derribar",    type: "attack",  power: 15,       precision: 85,     aparicion: 40,
-        levelBonuses: { 2: { power: 7, stun: true }, 3: { power: 7, precision: 5 }, 4: { power: 8 } }
+      createSkill({ name: "Derribar",    type: "attack",  power: 12,       precision: 85,     aparicion: 40,
+        levelBonuses: { 2: { power: 7, stun: true }, 3: { power: 5, precision: 5 }, 4: { power: 5 } }
        }),
-      createSkill({
-        name: "Ejecutor",
-        type: "attack",
-        precision: 85,
-        aparicion: 20,
-        description: "Causa mas daño cuando menor sea la vida actual del enemigo",
-        customEffect: (actor, target, skill, ctx) => {
-          const hpPercent = target.currentHp / target.hp;
-          const rawDmg = Math.round(5 + 45 * Math.pow((1 - hpPercent) / 0.75, 2.8));
-          const defSkill = target.defense;
-          const defBuffsVal = ctx.defBuffs ?? 0;
-          const def = ctx.hasDefDebuff
-            ? Math.round((defSkill + defBuffsVal) / 2)
-            : defSkill + defBuffsVal;
-          const finalDmg = Math.max(0, rawDmg - def);
-          return {
-            type: "attack", rawDmg, finalDmg, def,
-            defBuffs: ctx.defBuffs ?? 0,
-            atkMult: ctx.atkMult ?? 1,
-            stun: false, wound: false
-          };
-        },
-        levelBonuses: {
-          2: { precision: 2 },
-          3: { precision: 2 },
-          4: { precision: 1 }
-        }
-      }),
+      // createSkill({ name: "Estocada",    type: "attack",  power: 12,       precision: 90,     aparicion: 70   }),
+      // createSkill({ name: "Bomba humo",  type: "buff",    target: "enemy", stat: "precision", value: 0.9,     precision: 99, apparicion: 70 }),
     ],
     learnableSkills: [
       // createSkill({ name: "Debilitar",      type: "buff",    target: "enemy", stat: "attack",   value: -0.20,  precision: 99, aparicion: 50 }),
@@ -356,8 +347,8 @@ const characters = [
     role: "rango",
     skills: [
       createSkill({ name: "Lamarada",      type: "attack",  power: 12,   precision: 90, aparicion: 70, herida: true}),
+      createSkill({ name: "Panacea",       type: "cura",    power: 4,    precision: 99, aparicion: 70  }),
       // createSkill({ name: "Fuego abisal",  type: "attack",  power: 15,   precision: 90, apparicion: 70  }),
-      createSkill({ name: "Panacea",       type: "cura",    power: 4,    precision: 99, apparicion: 70  }),
       // createSkill({ name: "Intensidad",    type: "buff",    target: "self",  stat: "attack",  value: 0.10,   precision: 99, apparicion: 30 }),
     ],
     learnableSkills: [
