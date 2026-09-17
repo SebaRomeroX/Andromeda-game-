@@ -74,8 +74,8 @@ export function computeEffect(actor, target, skill, { precision, evasion, atkMul
     def,
     defBuffs: defBuffs ?? 0,
     atkMult: atkMult ?? 1,
-    stun: skill.stun && finalDmg > 0,
-    wound: skill.herida && finalDmg > 0
+    stun: scaled.stun && finalDmg > 0,
+    wound: scaled.herida && finalDmg > 0
   };
 }
 

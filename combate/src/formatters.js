@@ -22,7 +22,7 @@ export function buffEmoji(stat) {
 export function formatAction(skill) {
   const scaled = getSkillScaledStats(skill);
   if (skill.type === SKILL_TYPES.ATTACK) {
-    const icon = skill.stun ? '⚡' : '🗡️';
+    const icon = scaled.stun ? '⚡' : '🗡️';
     return `${icon} (${scaled.power})`;
   }
   if (skill.type === SKILL_TYPES.CURA) return `💚 (${scaled.power})`;
@@ -38,8 +38,8 @@ export function formatSkillStats(skill) {
   const scaled = getSkillScaledStats(skill);
   if (skill.type === SKILL_TYPES.ATTACK) {
     let effects = '';
-    if (skill.stun) effects += '⚡';
-    if (skill.herida) effects += '🩸';
+    if (scaled.stun) effects += '⚡';
+    if (scaled.herida) effects += '🩸';
     return `⚔️${effects ? ' ' + effects : ''} ${scaled.power}`;
   }
   if (skill.type === SKILL_TYPES.CURA) return `💚 ${scaled.power}`;
@@ -91,8 +91,8 @@ export function describeSkill(skill) {
     let text = `Inflige ${scaled.power} pts de daño`;
     text += `<br>${scaled.precision}% de posibilidad de exito`;
     const effects = [];
-    if (skill.stun) effects.push('"stun" (dura un turno)');
-    if (skill.herida) effects.push('"sangrado" (hasta ser curado)');
+    if (scaled.stun) effects.push('"stun" (dura un turno)');
+    if (scaled.herida) effects.push('"sangrado" (hasta ser curado)');
     if (effects.length) {
       text += `<br>Si impacta, causa efecto ${effects.join(' y ')}`;
     }
