@@ -300,6 +300,8 @@ export function getSkillScaledStats(skill) {
     precision: skill.precision,
     value: skill.value,
     duration: skill.duration,
+    stun: skill.stun,
+    herida: skill.herida,
     level
   };
 }
