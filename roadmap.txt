@@ -5,7 +5,6 @@ UI:
   animaciones(basicas) acciones
   
 MECHANIC:
-  ataques en area
   critics
 
 NARRATIVE:
@@ -18,8 +17,10 @@ NARRATIVE:
 
 -----------------
 
-upgrading buff (duration)
-skill grade (basic +3)
-learn skills (maybe only specials)
+aparicion/ apparicion
+precision:99 / type:'precision'
 
-specila skills 
+skill button (modified stats showing)
+
+test Sima new set
+
