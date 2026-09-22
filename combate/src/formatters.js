@@ -1,5 +1,55 @@
 import { getSkillScaledStats } from './models.js';
 import { SKILL_TYPES, BUFF_STATS } from './constants.js';
+import { getMultiplier, getPrecision } from './buffs.js';
+
+/**
+ * Resuelve los valores mostrables de una habilidad, aplicando los buffs
+ * activos del personaje que la usa si se provee un contexto.
+ *
+ * - power: solo las habilidades de ataque se multiplican por el buff de ataque
+ *   (igual que en combatEngine.computeEffect).
+ * - precision: aplica a todos los tipos (igual que en combat.resolveAction).
+ *
+ * @param {Object} skill
+ * @param {{teamKey: string, memberIndex: number}} [actorCtx] - contexto del actor
+ * @returns {{scaled: Object, power: number|string, precision: number,
+ *            powerClass: string, precisionClass: string}}
+ */
+export function resolveSkillDisplay(skill, actorCtx) {
+  const scaled = getSkillScaledStats(skill);
+  const result = {
+    scaled,
+    power: scaled.power,
+    precision: scaled.precision,
+    powerClass: '',
+    precisionClass: ''
+  };
+  if (!actorCtx || actorCtx.teamKey == null || actorCtx.memberIndex == null) return result;
+  const { teamKey, memberIndex } = actorCtx;
+
+  if (skill.type === SKILL_TYPES.ATTACK && !skill.customEffect && scaled.power != null) {
+    const atkMult = getMultiplier(teamKey, memberIndex, BUFF_STATS.ATTACK);
+    const current = Math.round(scaled.power * atkMult);
+    if (current !== scaled.power) {
+      result.power = current;
+      result.powerClass = current > scaled.power ? 'stat-up' : 'stat-down';
+    }
+  }
+
+  if (scaled.precision != null) {
+    const current = getPrecision(teamKey, memberIndex, scaled.precision);
+    if (current !== scaled.precision) {
+      result.precision = current;
+      result.precisionClass = current > scaled.precision ? 'stat-up' : 'stat-down';
+    }
+  }
+
+  return result;
+}
+
+function wrapStat(value, cls) {
+  return cls ? `<span class="${cls}">${value}</span>` : `${value}`;
+}
 
 const BUFF_EMOJI_MAP = {
   [BUFF_STATS.ATTACK]: '⚔️',
@@ -19,14 +69,14 @@ export function buffEmoji(stat) {
   return BUFF_EMOJI_MAP[stat] ?? '⚔️';
 }
 
-export function formatAction(skill) {
-  const scaled = getSkillScaledStats(skill);
+export function formatAction(skill, actorCtx) {
+  const { scaled, power, powerClass } = resolveSkillDisplay(skill, actorCtx);
   if (skill.type === SKILL_TYPES.ATTACK) {
     const icon = scaled.stun ? '⚡' : '🗡️';
-    return skill.customEffect ? `${icon} (variable)` : `${icon} (${scaled.power})`;
+    return skill.customEffect ? `${icon} (variable)` : `${icon} (${wrapStat(power, powerClass)})`;
   }
-  if (skill.type === SKILL_TYPES.CURA) return `💚 (${scaled.power})`;
-  if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ (${scaled.power})`;
+  if (skill.type === SKILL_TYPES.CURA) return `💚 (${wrapStat(power, powerClass)})`;
+  if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ (${wrapStat(power, powerClass)})`;
   if (skill.type === SKILL_TYPES.BUFF) {
     const sign = skill.value > 0 ? '+' : '-';
     return `✨ (${buffEmoji(skill.stat)}${sign})`;
@@ -34,17 +84,17 @@ export function formatAction(skill) {
   return '';
 }
 
-export function formatSkillStats(skill) {
-  const scaled = getSkillScaledStats(skill);
+export function formatSkillStats(skill, actorCtx) {
+  const { scaled, power, powerClass } = resolveSkillDisplay(skill, actorCtx);
   if (skill.type === SKILL_TYPES.ATTACK) {
     let effects = '';
     if (scaled.stun) effects += '⚡';
     if (scaled.herida) effects += '🩸';
-    const powerText = skill.customEffect ? 'variable' : scaled.power;
+    const powerText = skill.customEffect ? 'variable' : wrapStat(power, powerClass);
     return `⚔️${effects ? ' ' + effects : ''} ${powerText}`;
   }
-  if (skill.type === SKILL_TYPES.CURA) return `💚 ${scaled.power}`;
-  if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ ${scaled.power}`;
+  if (skill.type === SKILL_TYPES.CURA) return `💚 ${wrapStat(power, powerClass)}`;
+  if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ ${wrapStat(power, powerClass)}`;
   if (skill.type === SKILL_TYPES.BUFF) {
     const emoji = buffEmoji(skill.stat);
     const isDebuff = skill.target === 'enemy';
@@ -87,13 +137,13 @@ export function skillTypeLabel(type) {
   return TYPE_LABELS[type] ?? type;
 }
 
-export function describeSkill(skill) {
+export function describeSkill(skill, actorCtx) {
   if (skill.description) return skill.description;
 
-  const scaled = getSkillScaledStats(skill);
+  const { scaled, power, precision, powerClass, precisionClass } = resolveSkillDisplay(skill, actorCtx);
   if (skill.type === SKILL_TYPES.ATTACK) {
-    let text = `Inflige ${scaled.power} pts de daño`;
-    text += `<br>${scaled.precision}% de posibilidad de exito`;
+    let text = `Inflige ${wrapStat(power, powerClass)} pts de daño`;
+    text += `<br>${wrapStat(precision, precisionClass)}% de posibilidad de exito`;
     const effects = [];
     if (scaled.stun) effects.push('"stun" (dura un turno)');
     if (scaled.herida) effects.push('"sangrado" (hasta ser curado)');
@@ -103,17 +153,16 @@ export function describeSkill(skill) {
     return text;
   }
   if (skill.type === SKILL_TYPES.CURA) {
-    let text = `Restaura ${scaled.power} pts de vida a un aliado`;
-    text += `<br>${scaled.precision}% de exito`;
+    let text = `Restaura ${wrapStat(power, powerClass)} pts de vida a un aliado`;
+    text += `<br>${wrapStat(precision, precisionClass)}% de exito`;
     text += '<br>Anula efecto "sangrado"';
     return text;
   }
   if (skill.type === SKILL_TYPES.DEFENSE) {
-    return `Reduce el daño recibido en ${scaled.power} pts<br>Dura solo este turno`;
+    return `Reduce el daño recibido en ${wrapStat(power, powerClass)} pts<br>Dura solo este turno`;
   }
   if (skill.type === SKILL_TYPES.BUFF) {
     const duration = skill.duration ?? 3;
-    const precision = scaled.precision;
     if (skill.stat === BUFF_STATS.DEFENSE) {
       let text = '';
       if (skill.value > 0) {
@@ -126,7 +175,7 @@ export function describeSkill(skill) {
         text = 'Reduce la defenza rival a la mitad';
       }
       text += `<br>Dura ${duration} turno${duration > 1 ? 's' : ''}`;
-      text += `<br>${precision}% de exito`;
+      text += `<br>${wrapStat(precision, precisionClass)}% de exito`;
       return text;
     }
     if (skill.stat === BUFF_STATS.ATTACK) {
@@ -145,7 +194,7 @@ export function describeSkill(skill) {
         text = `${direction} el ataque de un aliado ${pct}%`;
       }
       text += `<br>Dura ${duration} turno${duration > 1 ? 's' : ''}`;
-      text += `<br>${precision}% de exito`;
+      text += `<br>${wrapStat(precision, precisionClass)}% de exito`;
       return text;
     }
     if (skill.stat === BUFF_STATS.PRECISION) {
@@ -164,7 +213,7 @@ export function describeSkill(skill) {
         text = `${direction} al ${pct}% la precision de un aliado`;
       }
       text += `<br>Dura ${duration} turno${duration > 1 ? 's' : ''}`;
-      text += `<br>${precision}% de exito`;
+      text += `<br>${wrapStat(precision, precisionClass)}% de exito`;
       return text;
     }
     if (skill.stat === BUFF_STATS.EVASION) {
@@ -183,7 +232,7 @@ export function describeSkill(skill) {
         text = `${direction} la evasion de un aliado ${val}%`;
       }
       text += `<br>Dura ${duration} turno${duration > 1 ? 's' : ''}`;
-      text += `<br>${precision}% de exito`;
+      text += `<br>${wrapStat(precision, precisionClass)}% de exito`;
       return text;
     }
     const statName = STAT_LABELS[skill.stat] ?? skill.stat;

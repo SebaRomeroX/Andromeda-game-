@@ -206,6 +206,17 @@ body {
   font-weight: bold;
 }
 
+/* valores de habilidad alterados por buffs (verde = buff, rojo = debuff) */
+.stat-up {
+  color: #4caf50;
+  font-weight: 700;
+}
+
+.stat-down {
+  color: #f44336;
+  font-weight: 700;
+}
+
 /* empty slot */
 .member-slot.empty {
   opacity: 0.6;

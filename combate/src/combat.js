@@ -352,7 +352,7 @@ function playerSelectSkills() {
         renderTargets(computeTargets(skill, i, aliveA, aliveB));
         return;
       }
-    });
+    }, { teamKey: TEAMS.A, memberIndex: i });
     return;
   }
 

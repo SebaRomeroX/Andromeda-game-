@@ -8,7 +8,7 @@ export function renderPendingActions() {
   document.querySelectorAll('.member-action').forEach(el => { el.textContent = ""; });
   state.combat.pendingActions.forEach(a => {
     const el = $(`action-${a.team}-${a.actorIndex}`);
-    if (el) el.textContent = formatAction(a.skill);
+    if (el) el.innerHTML = formatAction(a.skill, { teamKey: a.team, memberIndex: a.actorIndex });
   });
 }
 
@@ -337,13 +337,13 @@ function positionPopupAbove(skillEl) {
   el.style.top = `${top}px`;
 }
 
-function setPopupContent(skill) {
+function setPopupContent(skill, actorCtx) {
   const el = popupEl();
   if (!el) return;
   clearTimeout(hideTimer);
-  const statsLine = formatSkillStats(skill);
+  const statsLine = formatSkillStats(skill, actorCtx);
   const typeBadge = skillTypeLabel(skill.type);
-  const desc = describeSkill(skill);
+  const desc = describeSkill(skill, actorCtx);
   el.innerHTML = `
     <div class="skill-popup-header">
       <span class="skill-popup-name">${skill.name}</span>
@@ -355,8 +355,8 @@ function setPopupContent(skill) {
   popupVisible = true;
 }
 
-function showSkillPopup(skill, x, y) {
-  setPopupContent(skill);
+function showSkillPopup(skill, x, y, actorCtx) {
+  setPopupContent(skill, actorCtx);
   requestAnimationFrame(() => positionPopup(x, y));
 }
 
@@ -372,7 +372,7 @@ function cancelHide() {
   clearTimeout(hideTimer);
 }
 
-export function renderActions(skills, onChoose) {
+export function renderActions(skills, onChoose, actorCtx) {
   const container = $("actions");
   container.innerHTML = "";
   const isDesktop = !document.documentElement.classList.contains('mobile');
@@ -382,8 +382,8 @@ export function renderActions(skills, onChoose) {
 
     if (isDesktop) {
       const typeBadge = skillTypeLabel(skill.type);
-      const statsLine = formatSkillStats(skill);
-      const desc = describeSkill(skill);
+      const statsLine = formatSkillStats(skill, actorCtx);
+      const desc = describeSkill(skill, actorCtx);
       btn.innerHTML = `
         <div class="skill-popup-header">
           <span class="skill-popup-name">${skill.name}</span>
@@ -394,7 +394,7 @@ export function renderActions(skills, onChoose) {
       `;
     } else {
       let html = `<div class="skill-name">${skill.name}</div>`;
-      html += `<div class="skill-stats">${formatSkillStats(skill)}</div>`;
+      html += `<div class="skill-stats">${formatSkillStats(skill, actorCtx)}</div>`;
       btn.innerHTML = html;
     }
 
@@ -408,7 +408,7 @@ export function renderActions(skills, onChoose) {
     if (!isDesktop) {
       btn.addEventListener('mouseenter', (e) => {
         if (touchActive) return;
-        showSkillPopup(skill, e.clientX, e.clientY);
+        showSkillPopup(skill, e.clientX, e.clientY, actorCtx);
       });
       btn.addEventListener('mousemove', (e) => {
         if (touchActive) return;
@@ -419,7 +419,7 @@ export function renderActions(skills, onChoose) {
       btn.addEventListener('touchstart', () => {
         touchActive = true;
         clearTimeout(hideTimer);
-        setPopupContent(skill);
+        setPopupContent(skill, actorCtx);
         requestAnimationFrame(() => positionPopupAbove(btn));
       }, { passive: true });
       btn.addEventListener('touchend', () => {
