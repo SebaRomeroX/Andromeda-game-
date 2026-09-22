@@ -7,13 +7,37 @@
 
 import { upgradeSkill } from './models.js';
 import { saveTeamSkills, saveTeamLearnableSkills, saveTeamLearnedSkills } from './state.js';
-import { formatSkillStats } from './formatters.js';
+import { formatSkillStats, describeSkill, describeUpgrade, skillTypeLabel } from './formatters.js';
 
 // ── Upgrade overlay ──
 const overlay = () => document.getElementById('upgrade-overlay');
 const title = () => document.getElementById('upgrade-title');
 const grid = () => document.getElementById('upgrade-grid');
 const confirmBtn = () => document.getElementById('upgrade-confirm');
+
+/**
+ * HTML de una tarjeta de habilidad (compartida entre los menús de
+ * mejora y aprendizaje del campamento).
+ *
+ * @param {Object} skill
+ * @param {{ levelLabel?: boolean, preview?: boolean }} [opts]
+ *   - levelLabel: muestra ` · LvX` junto al nombre
+ *   - preview: añade la línea con los cambios del siguiente nivel
+ * @returns {string}
+ */
+function skillCardHtml(skill, { levelLabel = false, preview = false } = {}) {
+  const name = levelLabel ? `${skill.name} · Lv${skill.level ?? 1}` : skill.name;
+  const previewLine = preview ? describeUpgrade(skill) : '';
+  return `
+    <div class="skill-popup-header">
+      <span class="skill-popup-name">${name}</span>
+      <span class="skill-popup-type">${skillTypeLabel(skill.type)}</span>
+    </div>
+    <div class="skill-popup-stats">${formatSkillStats(skill)}</div>
+    <div class="skill-popup-desc">${describeSkill(skill)}</div>
+    ${previewLine ? `<div class="skill-upgrade-preview">${previewLine}</div>` : ''}
+  `;
+}
 
 function showUpgradeFor(member, onDone) {
   title().textContent = `Elige una habilidad de ${member.name} para mejorarla`;
@@ -43,10 +67,7 @@ function showUpgradeFor(member, onDone) {
   upgradeable.forEach(({ skill, i }) => {
     const btn = document.createElement('button');
     btn.className = 'skill-btn';
-    btn.innerHTML = `
-      <div class="skill-name">${skill.name} · Lv${skill.level ?? 1}</div>
-      <div class="skill-stats">${formatSkillStats(skill)}</div>
-    `;
+    btn.innerHTML = skillCardHtml(skill, { levelLabel: true, preview: true });
     btn.onclick = () => {
       if (selectedIndex === null) {
         selectedIndex = i;
@@ -114,10 +135,7 @@ function showLearnFor(member, onDone) {
   options.forEach((skill, i) => {
     const btn = document.createElement('button');
     btn.className = 'skill-btn';
-    btn.innerHTML = `
-      <div class="skill-name">${skill.name}</div>
-      <div class="skill-stats">${formatSkillStats(skill)}</div>
-    `;
+    btn.innerHTML = skillCardHtml(skill);
     btn.onclick = () => {
       if (selectedIndex === null) {
         selectedIndex = i;

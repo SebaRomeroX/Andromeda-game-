@@ -1294,7 +1294,7 @@ body {
 
 /* Skill upgrade overlay */
 .upgrade-content {
-  max-width: 620px;
+  max-width: 840px;
 }
 
 #upgrade-title {
@@ -1304,9 +1304,22 @@ body {
 
 .skill-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 10px;
   margin-bottom: 24px;
+}
+
+.upgrade-content .skill-btn {
+  text-align: left;
+  padding: 8px 10px;
+}
+
+.skill-upgrade-preview {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(240, 208, 96, 0.25);
+  font-size: 0.75rem;
+  color: #f0d060;
 }
 
 #upgrade-confirm {

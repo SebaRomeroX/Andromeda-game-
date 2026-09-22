@@ -254,6 +254,22 @@ export function upgradeSkill(skill) {
 }
 
 /**
+ * Devuelve una copia de la habilidad tal como quedaría tras `upgradeSkill`,
+ * sin mutar el original. Sirve para previsualizar la mejora en el menú
+ * del campamento.
+ *
+ * @param {Skill} skill
+ * @returns {Skill} copia con el siguiente nivel aplicado
+ */
+export function simulateUpgrade(skill) {
+  const next = { ...skill, level: Math.min(4, (skill.level ?? 1) + 1) };
+  if (next.type === SKILL_TYPES.BUFF && !next.levelBonuses) {
+    next.duration = Math.min(10, (next.duration ?? 3) + 1);
+  }
+  return next;
+}
+
+/**
  * Retorna los stats efectivos de una habilidad según su nivel.
  *
  * Si la habilidad tiene `levelBonuses`, acumula los cambios incrementales

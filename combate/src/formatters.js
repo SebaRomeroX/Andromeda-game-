@@ -1,4 +1,4 @@
-import { getSkillScaledStats } from './models.js';
+import { getSkillScaledStats, simulateUpgrade } from './models.js';
 import { SKILL_TYPES, BUFF_STATS } from './constants.js';
 import { getMultiplier, getPrecision } from './buffs.js';
 
@@ -246,6 +246,64 @@ export function describeSkill(skill, actorCtx) {
     return text;
   }
   return '';
+}
+
+/**
+ * Texto compacto de un valor de buff para la vista previa de mejora.
+ *
+ * @param {Object} skill
+ * @param {number} value
+ * @returns {string}
+ */
+function buffValueText(skill, value) {
+  const sign = value < 0 ? '-' : '+';
+  const abs = Math.abs(value);
+  if (skill.stat === BUFF_STATS.DEFENSE) return value < 0 ? '½' : `+${value}`;
+  if (skill.stat === BUFF_STATS.EVASION) return value === 0 ? '0' : `${sign}${abs}`;
+  return abs >= 1 ? `${sign}100%` : `${sign}${Math.round(abs * 100)}%`;
+}
+
+/**
+ * Describe la mejora que aplicaría el siguiente nivel de una habilidad,
+ * mostrando solo los valores que cambian. Ej: `daño 15 → 20 · duración 3 → 4t`.
+ * Devuelve cadena vacía si no hay cambios.
+ *
+ * @param {Object} skill
+ * @returns {string} HTML compacto (sin prefijo)
+ */
+export function describeUpgrade(skill) {
+  const current = getSkillScaledStats(skill);
+  const next = getSkillScaledStats(simulateUpgrade(skill));
+  const parts = [];
+
+  const powerWord = skill.type === SKILL_TYPES.ATTACK ? 'daño'
+    : skill.type === SKILL_TYPES.CURA ? 'cura'
+    : skill.type === SKILL_TYPES.DEFENSE ? 'defensa'
+    : null;
+
+  if (powerWord && !skill.customEffect && current.power !== next.power) {
+    parts.push(`${powerWord} ${current.power} → ${next.power}`);
+  }
+  if (current.precision !== next.precision) {
+    parts.push(`precisión ${current.precision} → ${next.precision}`);
+  }
+  if (skill.type === SKILL_TYPES.BUFF) {
+    if (current.value !== next.value) {
+      const label = skill.stat === BUFF_STATS.DEFENSE ? 'defensa' : 'valor';
+      parts.push(`${label} ${buffValueText(skill, current.value)} → ${buffValueText(skill, next.value)}`);
+    }
+    if ((current.duration ?? 3) !== (next.duration ?? 3)) {
+      parts.push(`duración ${current.duration ?? 3} → ${next.duration ?? 3}t`);
+    }
+    if (current.scope && next.scope && current.scope !== next.scope) {
+      const word = v => (v === 'all' ? 'todos' : 'uno');
+      parts.push(`alcance: ${word(current.scope)} → ${word(next.scope)}`);
+    }
+  }
+  if (current.stun !== next.stun) parts.push(next.stun ? 'gana ⚡' : 'pierde ⚡');
+  if (current.herida !== next.herida) parts.push(next.herida ? 'gana 🩸' : 'pierde 🩸');
+
+  return parts.join(' · ');
 }
 
 export function formatBuffHtml(buff) {
