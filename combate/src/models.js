@@ -118,6 +118,9 @@ export const ATTACK_ROUTES = {
  * | buff     | —     | —         | —    | —      | ✅    | ✅       | ✅    |
  *
  * Los bonuses se suman incrementalmente nivel a nivel.
+ * `power`, `precision`, `value` y `duration` son acumulativos (+N por nivel,
+ * `duration` con tope de 10); `stun`, `herida` y `scope` son absolutos
+ * (se ganan o se pierden al llegar al nivel indicado).
  * Si una habilidad tiene levelBonuses, reemplaza el escalado por defecto (+5 power/nivel).
  *
  * Ejemplo attack — "Devastador":
@@ -131,7 +134,7 @@ export const ATTACK_ROUTES = {
  *   levelBonuses: {
  *     2: { value: 15 },       // +15 defensa en nivel 2
  *     3: { scope: 'all' },    // pasa a afectar a todo el equipo
- *     4: { duration: 8 }      // dura 8 turnos en nivel 4
+ *     4: { duration: 2 }      // +2 turnos de duración en nivel 4
  *   }
  */
 
@@ -303,7 +306,7 @@ export function getSkillScaledStats(skill) {
       if (bonus.stun !== undefined)     result.stun = bonus.stun;
       if (bonus.herida !== undefined)   result.herida = bonus.herida;
       if (bonus.scope !== undefined)    result.scope = bonus.scope;
-      if (bonus.duration !== undefined) result.duration = bonus.duration;
+      if (bonus.duration !== undefined) result.duration = Math.min(10, (result.duration ?? 3) + bonus.duration);
     }
 
     return result;

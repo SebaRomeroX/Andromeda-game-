@@ -108,7 +108,7 @@ export function formatSkillStats(skill, actorCtx) {
       const pct = (Math.abs(skill.value) * 100).toFixed(0);
       val = skill.value >= 1 ? '100%' : `${pct}%`;
     }
-    return `✨ (${emoji} ${val} ${arrow} · ${skill.duration ?? 3}t)`;
+    return `✨ (${emoji} ${val} ${arrow} · ${scaled.duration ?? 3}t)`;
   }
   return '';
 }
@@ -162,7 +162,7 @@ export function describeSkill(skill, actorCtx) {
     return `Reduce el daño recibido en ${wrapStat(power, powerClass)} pts<br>Dura solo este turno`;
   }
   if (skill.type === SKILL_TYPES.BUFF) {
-    const duration = skill.duration ?? 3;
+    const duration = scaled.duration ?? skill.duration ?? 3;
     if (skill.stat === BUFF_STATS.DEFENSE) {
       let text = '';
       if (skill.value > 0) {
