@@ -48,8 +48,8 @@ function showUpgradeFor(member, onDone) {
   let selectedIndex = null;
 
   const render = () => {
-    grid().querySelectorAll('.skill-btn').forEach((btn, i) => {
-      btn.classList.toggle('selected', i === selectedIndex);
+    grid().querySelectorAll('.skill-btn').forEach((btn) => {
+      btn.classList.toggle('selected', Number(btn.dataset.skillIndex) === selectedIndex);
     });
     confirmBtn().disabled = selectedIndex === null;
   };
@@ -67,6 +67,7 @@ function showUpgradeFor(member, onDone) {
   upgradeable.forEach(({ skill, i }) => {
     const btn = document.createElement('button');
     btn.className = 'skill-btn';
+    btn.dataset.skillIndex = i;
     btn.innerHTML = skillCardHtml(skill, { levelLabel: true, preview: true });
     btn.onclick = () => {
       if (selectedIndex === null) {
