@@ -73,13 +73,14 @@ const characters = [
     skills: [
       createSkill({ name: "Bolpe de baculo",        type: "attack",  power: 6,   precision: 90,    aparicion: 50  }),
       createSkill({ name: "Medicina druidica",      type: "cura",    power: 8,   precision: 99,    aparicion: 50  }),
-      createSkill({ name: "Magia curativa",         type: "cura",    power: 4,   precision: 99,    aparicion: 70  }),
       createSkill({ name: "Disminucion",            type: "buff",    target: "enemy", stat: "attack",    value: -0.2,  precision: 99, aparicion: 30 }),
-      createSkill({ name: "Confundir",              type: "buff",    target: "enemy", stat: "precision", value: 0.10,  scope:'all',   precision: 99, aparicion: 30 }),
       createSkill({ name: "Hechizo de proteccion",  type: "buff",    target: "ally",  stat: "defense",   value: 6,     precision: 99, aparicion: 30 }),
-      createSkill({ name: "Viento a favor",         type: "buff",    target: "ally",  duration:5,   stat: "evasion",   value: 20,     precision: 99, aparicion: 30 }),
     ],
-    learnableSkills: []
+    learnableSkills: [
+      createSkill({ name: "Magia curativa",         type: "cura",    power: 4,   precision: 99,    aparicion: 70  }),
+      createSkill({ name: "Viento a favor",         type: "buff",    target: "ally",  duration:5,   stat: "evasion",   value: 20,     precision: 99, aparicion: 30 }),
+      createSkill({ name: "Confundir",              type: "buff",    target: "enemy", stat: "precision", value: 0.10,  scope:'all',   precision: 99, aparicion: 30 }),
+    ]
   }),
   createCharacter({
     name: "Urbol",
@@ -88,14 +89,15 @@ const characters = [
     evasion: 3,
     role: "tanque",
     skills: [
-      createSkill({ name: "Abatida",            type: "attack",  power: 10,  precision: 90,    aparicion: 70 }),
       createSkill({ name: "Corte",              type: "attack",  power: 6,   precision: 90,    aparicion: 70 }),
       createSkill({ name: "Postura Defensiva",  type: "defense", power: 15,  precision: 99,    aparicion: 40   }),
       createSkill({ name: "Rugido",             type: "buff",    target: "enemy",  stat: "attack",    value: -0.2,  precision: 99, aparicion: 20 }),
-      createSkill({ name: "Cubrir",             type: "buff",    target: "ally",   stat: "defense",   value: 6,     precision: 99, aparicion: 50 }),
       createSkill({ name: "Intimidacion",       type: "buff",    target: "enemy",  stat: "precision", value: 0.3,   precision: 99, aparicion: 30 }),
     ],
-    learnableSkills: []
+    learnableSkills: [
+      createSkill({ name: "Abatida",            type: "attack",  power: 10,  precision: 90,    aparicion: 70 }),
+      createSkill({ name: "Cubrir",             type: "buff",    target: "ally",   stat: "defense",   value: 6,     precision: 99, aparicion: 50 }),
+    ]
   }),
   createCharacter({
     name: "Sacerdotiza oscura",
@@ -191,14 +193,15 @@ const characters = [
     evasion: 7,
     role: "soporte",
     skills: [
-      createSkill({ name: "Disparo aguijon",    type: "attack",  power: 8,   precision: 90,    aparicion: 80 }),
       createSkill({ name: "Picadura venonosa",  type: "attack",  power: 4,   precision: 90,    aparicion: 50,  herida: true }),
-      createSkill({ name: "Bomba de telaraña",  type: "attack",  power: 4,   precision: 95,    aparicion: 40,  stun: true }),
       createSkill({ name: "Vendaje aracnido",   type: "cura",    power: 4,   precision: 99,    aparicion: 50   }),
       createSkill({ name: "Veneno",             type: "buff",    target: "ally",   scope:'all',    duration:4,   stat: "attack",   value: 0.10,   precision: 99, aparicion: 40 }),
       createSkill({ name: "Telarañas",          type: "buff",    target: "enemy",  duration:5,     scope:'all',  stat: "evasion",  value: 0,      precision: 99, aparicion: 30 }),      
     ],
-    learnableSkills: []
+    learnableSkills: [
+      createSkill({ name: "Disparo aguijon",    type: "attack",  power: 8,   precision: 90,    aparicion: 80 }),
+      createSkill({ name: "Bomba de telaraña",  type: "attack",  power: 4,   precision: 95,    aparicion: 40,  stun: true }),
+    ]
   }),
   createCharacter({
     name: "Lancero",
@@ -312,12 +315,13 @@ const characters = [
     role: "tanque",
     skills: [
       createSkill({ name: "Manotazo",         type: "attack",  power: 20,  precision: 85,    aparicion: 20   }),
-      createSkill({ name: "Cabezazo",         type: "attack",  power: 16,  stun:true,        precision: 85,  apparicion: 20   }),
       createSkill({ name: "Ser una piedra",   type: "defense", power: 22,  precision: 99,    aparicion: 40   }),
       createSkill({ name: "Como roca",        type: "buff",    target: "ally",   stat: "defense",  value: 12,       precision: 99, apparicion: 50  }),
       createSkill({ name: "Pisar pie",        type: "buff",    target: "enemy",  duration:7,       stat: "evasion", value: 0,      precision: 99, apparicion: 20 }),
     ],
-    learnableSkills: []
+    learnableSkills: [
+      createSkill({ name: "Cabezazo",         type: "attack",  power: 16,  stun:true,        precision: 85,  apparicion: 20   }),
+    ]
   }),
   createCharacter({
     name: "Xall",
