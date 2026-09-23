@@ -26,32 +26,33 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outc
   }
 
   if (outcome.type === SKILL_TYPES.BUFF) {
+    const buffValue = outcome.value ?? skill.value;
     applyBuff(targetTeam, targetIndex, {
       id: skillNameToId(skill.name),
       name: skill.name,
       stat: skill.stat,
-      value: skill.value,
+      value: buffValue,
       duration: outcome.duration ?? 3
     });
-    const sign = skill.value > 0 ? '+' : '-';
-    const emoji = skill.value > 0 ? '🔥' : '💀';
-    const verb = skill.value > 0 ? 'aumenta' : 'reduce';
+    const sign = buffValue > 0 ? '+' : '-';
+    const emoji = buffValue > 0 ? '🔥' : '💀';
+    const verb = buffValue > 0 ? 'aumenta' : 'reduce';
     if (skill.stat === BUFF_STATS.DEFENSE) {
-      log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: ${verb} defensa en ${sign}${skill.value}`);
+      log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: ${verb} defensa en ${sign}${buffValue}`);
     } else if (skill.stat === BUFF_STATS.PRECISION) {
-      if (skill.value >= 1) {
+      if (buffValue >= 1) {
         log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: precision aumentada al 100%`);
       } else {
         log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: precision reducida`);
       }
     } else if (skill.stat === BUFF_STATS.EVASION) {
-      if (skill.value > 0) {
-        log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: evasión aumentada en +${skill.value}`);
+      if (buffValue > 0) {
+        log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: evasión aumentada en +${buffValue}`);
       } else {
         log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: evasión reducida a 0`);
       }
     } else {
-      const pct = (Math.abs(skill.value) * 100).toFixed(0);
+      const pct = (Math.abs(buffValue) * 100).toFixed(0);
       log(`${emoji} ${actor.name} usa ${skill.name} en ${target.name}: ${verb} ${skill.stat} en ${sign}${pct}%`);
     }
     return;

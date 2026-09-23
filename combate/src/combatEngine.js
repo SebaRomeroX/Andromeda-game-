@@ -45,7 +45,7 @@ export function computeEffect(actor, target, skill, { precision, evasion, atkMul
 
   if (skill.type === SKILL_TYPES.BUFF) {
     if (!hit) return { type: "miss" };
-    return { type: SKILL_TYPES.BUFF, duration: scaled.duration };
+    return { type: SKILL_TYPES.BUFF, duration: scaled.duration, value: scaled.value };
   }
 
   if (skill.type === SKILL_TYPES.DEFENSE) {

@@ -78,7 +78,7 @@ export function formatAction(skill, actorCtx) {
   if (skill.type === SKILL_TYPES.CURA) return `💚 (${wrapStat(power, powerClass)})`;
   if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ (${wrapStat(power, powerClass)})`;
   if (skill.type === SKILL_TYPES.BUFF) {
-    const sign = skill.value > 0 ? '+' : '-';
+    const sign = scaled.value > 0 ? '+' : '-';
     return `✨ (${buffEmoji(skill.stat)}${sign})`;
   }
   return '';
@@ -98,15 +98,15 @@ export function formatSkillStats(skill, actorCtx) {
   if (skill.type === SKILL_TYPES.BUFF) {
     const emoji = buffEmoji(skill.stat);
     const isDebuff = skill.target === 'enemy';
-    const arrow = isDebuff ? '↓' : skill.value > 0 ? '↑' : '—';
+    const arrow = isDebuff ? '↓' : scaled.value > 0 ? '↑' : '—';
     let val = '';
     if (skill.stat === BUFF_STATS.DEFENSE) {
-      val = skill.value < 0 ? '½' : `${skill.value}`;
+      val = scaled.value < 0 ? '½' : `${scaled.value}`;
     } else if (skill.stat === BUFF_STATS.PRECISION || skill.stat === BUFF_STATS.EVASION) {
       val = '';
     } else {
-      const pct = (Math.abs(skill.value) * 100).toFixed(0);
-      val = skill.value >= 1 ? '100%' : `${pct}%`;
+      const pct = (Math.abs(scaled.value) * 100).toFixed(0);
+      val = scaled.value >= 1 ? '100%' : `${pct}%`;
     }
     return `✨ (${emoji} ${val} ${arrow} · ${scaled.duration ?? 3}t)`;
   }
@@ -114,7 +114,7 @@ export function formatSkillStats(skill, actorCtx) {
 }
 
 export function powerLabel(skill) {
-  if (skill.type === SKILL_TYPES.BUFF) return skill.value;
+  if (skill.type === SKILL_TYPES.BUFF) return getSkillScaledStats(skill).value;
   if (skill.customEffect) return 'variable';
   return getSkillScaledStats(skill).power;
 }
@@ -165,11 +165,11 @@ export function describeSkill(skill, actorCtx) {
     const duration = scaled.duration ?? skill.duration ?? 3;
     if (skill.stat === BUFF_STATS.DEFENSE) {
       let text = '';
-      if (skill.value > 0) {
+      if (scaled.value > 0) {
         if (skill.target === 'self') {
-          text = `Aumenta la propia defenza ${skill.value} pts`;
+          text = `Aumenta la propia defenza ${scaled.value} pts`;
         } else {
-          text = `Aumenta la defenza de un aliado ${skill.value} pts`;
+          text = `Aumenta la defenza de un aliado ${scaled.value} pts`;
         }
       } else {
         text = 'Reduce la defenza rival a la mitad';
@@ -179,8 +179,8 @@ export function describeSkill(skill, actorCtx) {
       return text;
     }
     if (skill.stat === BUFF_STATS.ATTACK) {
-      const direction = skill.value > 0 ? 'Aumenta' : 'Reduce';
-      const pct = (Math.abs(skill.value) * 100).toFixed(0);
+      const direction = scaled.value > 0 ? 'Aumenta' : 'Reduce';
+      const pct = (Math.abs(scaled.value) * 100).toFixed(0);
       let text = '';
       if (skill.target === 'self') {
         text = `${direction} el ataque propio ${pct}%`;
@@ -198,8 +198,8 @@ export function describeSkill(skill, actorCtx) {
       return text;
     }
     if (skill.stat === BUFF_STATS.PRECISION) {
-      const direction = skill.value > 0 ? 'Aumenta' : 'Reduce';
-      const pct = skill.value >= 1 ? 100 : (Math.abs(skill.value) * 100).toFixed(0);
+      const direction = scaled.value > 0 ? 'Aumenta' : 'Reduce';
+      const pct = scaled.value >= 1 ? 100 : (Math.abs(scaled.value) * 100).toFixed(0);
       let text = '';
       if (skill.target === 'self') {
         text = `${direction} al ${pct}% la precision propia`;
@@ -217,8 +217,8 @@ export function describeSkill(skill, actorCtx) {
       return text;
     }
     if (skill.stat === BUFF_STATS.EVASION) {
-      const direction = skill.value > 0 ? 'Aumenta' : 'Reduce';
-      const val = Math.abs(skill.value);
+      const direction = scaled.value > 0 ? 'Aumenta' : 'Reduce';
+      const val = Math.abs(scaled.value);
       let text = '';
       if (skill.target === 'self') {
         text = `${direction} la evasion propia ${val}%`;
@@ -236,7 +236,7 @@ export function describeSkill(skill, actorCtx) {
       return text;
     }
     const statName = STAT_LABELS[skill.stat] ?? skill.stat;
-    const direction = skill.value > 0 ? 'Aumenta' : 'Reduce';
+    const direction = scaled.value > 0 ? 'Aumenta' : 'Reduce';
     const targetText = skill.target === 'self' ? 'su'
       : skill.target === 'ally' ? 'el de un aliado'
       : 'el del enemigo';
