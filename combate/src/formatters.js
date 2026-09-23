@@ -138,9 +138,17 @@ export function skillTypeLabel(type) {
 }
 
 export function describeSkill(skill, actorCtx) {
-  if (skill.description) return skill.description;
-
   const { scaled, power, precision, powerClass, precisionClass } = resolveSkillDisplay(skill, actorCtx);
+
+  if (skill.description) {
+    let text = skill.description;
+    if (skill.type === SKILL_TYPES.ATTACK) {
+      text += `<br>${wrapStat(precision, precisionClass)}% de posibilidad de exito`;
+    } else if (skill.type === SKILL_TYPES.CURA || skill.type === SKILL_TYPES.BUFF) {
+      text += `<br>${wrapStat(precision, precisionClass)}% de exito`;
+    }
+    return text;
+  }
   if (skill.type === SKILL_TYPES.ATTACK) {
     let text = `Inflige ${wrapStat(power, powerClass)} pts de daño`;
     text += `<br>${wrapStat(precision, precisionClass)}% de posibilidad de exito`;
