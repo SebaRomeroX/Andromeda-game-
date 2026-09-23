@@ -348,15 +348,11 @@ export function showEnding(event, selectedStory, resetRunStateCb) {
 
   const eventsEl = document.getElementById('map-events');
   eventsEl.innerHTML = `
-    <div class="event-card">
-      <div class="event-card-title">${event.title}</div>
-      <div class="event-card-desc">${event.description}</div>
-    </div>
     <p style="color:#ccc; text-align:center; padding:1rem;">La historia ha llegado a su fin.</p>
   `;
 
-  const menuArea = document.getElementById('map-menu-area');
-  menuArea.innerHTML = '';
+  const menuArea = document.createElement('div');
+  menuArea.id = 'map-menu-area';
   const menuBtn = document.createElement('button');
   menuBtn.className = 'map-menu-btn';
   menuBtn.textContent = 'Volver al Menú';
@@ -367,4 +363,5 @@ export function showEnding(event, selectedStory, resetRunStateCb) {
     showScreen('menu');
   });
   menuArea.appendChild(menuBtn);
+  eventsEl.appendChild(menuArea);
 }
