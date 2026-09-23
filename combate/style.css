@@ -1295,6 +1295,17 @@ body {
 /* Skill upgrade overlay */
 .upgrade-content {
   max-width: 840px;
+  max-height: 90vh;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Ancho definitivo: evita que el modal se encoja al tamaño intrínseco del
+   grid (auto-fill con espacio indefinido => 1 sola columna) */
+#upgrade-overlay .overlay-content {
+  width: min(840px, calc(100vw - 32px));
 }
 
 #upgrade-title {
@@ -1304,9 +1315,40 @@ body {
 
 .skill-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-content: start;
   margin-bottom: 24px;
+  padding: 4px 6px 4px 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #5a5a8a transparent;
+}
+
+/* Con el ancho fijo del modal, 200px por tarjeta da 3 col en escritorio,
+   2 en tablet y 1 en móvil */
+#upgrade-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.skill-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.skill-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.skill-grid::-webkit-scrollbar-thumb {
+  background: #5a5a8a;
+  border-radius: 4px;
+}
+
+.skill-grid::-webkit-scrollbar-thumb:hover {
+  background: #8a8aca;
 }
 
 .upgrade-content .skill-btn {
@@ -1844,5 +1886,12 @@ html.mobile #log-overlay #log {
     height: auto;
     margin-top: 16px;
     min-height: 140px;
+  }
+}
+
+/* ── Pantallas estrechas: más ancho útil en el modal de mejora ── */
+@media (max-width: 600px) {
+  .upgrade-content {
+    padding: 16px 14px;
   }
 }
