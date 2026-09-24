@@ -31,7 +31,8 @@ export function saveGame(storyId, payload) {
       choices: payload.run.choices ?? {},
       currentNodeId: payload.run.currentNodeId ?? null,
       flags: payload.run.flags ?? {},
-      peakEnemyLevel: payload.run.peakEnemyLevel ?? 0
+      peakEnemyLevel: payload.run.peakEnemyLevel ?? 0,
+      orbes: payload.run.orbes ?? 0
     },
     fired: Array.from(payload.run.fired ?? []),
     team: payload.team
@@ -81,7 +82,8 @@ export function loadGame(storyId) {
         choices: data.run.choices ?? {},
         currentNodeId: data.run.currentNodeId ?? null,
         flags: data.run.flags ?? {},
-        peakEnemyLevel: data.run.peakEnemyLevel ?? 0
+        peakEnemyLevel: data.run.peakEnemyLevel ?? 0,
+        orbes: data.run.orbes ?? 0
       },
       fired: Array.isArray(data.fired) ? new Set(data.fired) : new Set(),
       team: data.team ?? {}

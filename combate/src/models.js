@@ -147,7 +147,7 @@ export const ATTACK_ROUTES = {
  * @property {number} hp - Puntos de vida máximos
  * @property {number} evasion - Evasión base (0-100)
  * @property {Skill[]} skills - Habilidades del personaje
- * @property {Skill[]} learnableSkills - Habilidades que puede aprender en campamentos
+ * @property {Skill[]} learnableSkills - Habilidades que puede aprender en campamentos (cuesta 1 orbe azul cada una)
  * @property {Role} role - Rol que determina su posición en el equipo
  * @property {number} [level=1] - Nivel del personaje (sube en los campamentos)
  */

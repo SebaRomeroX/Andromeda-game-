@@ -1,12 +1,13 @@
 /**
  * @file Mejora y aprendizaje de habilidades en el campamento
  * @description Tras sanar y subir de nivel, cada superviviente de equipo A
- * mejora una de sus habilidades. Si tiene habilidades aprendibles, también
- * puede aprender una nueva.
+ * mejora una de sus habilidades (gratis) y puede aprender una nueva
+ * pagando 1 orbe azul (mente), u omitir. Se ofrecen 3 opciones al azar y
+ * cada personaje puede aprender como maximo 1 habilidad por campamento.
  */
 
 import { upgradeSkill } from './models.js';
-import { saveTeamSkills, saveTeamLearnableSkills, saveTeamLearnedSkills } from './state.js';
+import state, { saveTeamSkills, saveTeamLearnableSkills, saveTeamLearnedSkills } from './state.js';
 import { formatSkillStats, describeSkill, describeUpgrade, skillTypeLabel } from './formatters.js';
 
 // ── Upgrade overlay ──
@@ -99,6 +100,9 @@ const learnOverlay = () => document.getElementById('learn-overlay');
 const learnTitle = () => document.getElementById('learn-title');
 const learnGrid = () => document.getElementById('learn-grid');
 const learnConfirm = () => document.getElementById('learn-confirm');
+const learnSkip = () => document.getElementById('learn-skip');
+
+const ORB_COST = 1;
 
 function pickRandom(array, count) {
   const copy = array.slice();
@@ -118,11 +122,27 @@ function showLearnFor(member, onDone) {
     return;
   }
 
-  const options = pickRandom(pool, 2);
-  learnTitle().textContent = `${member.name} aprende una nueva habilidad`;
+  const orbes = state.run.orbes ?? 0;
   learnGrid().innerHTML = '';
   learnConfirm().disabled = true;
   learnConfirm().textContent = 'Confirmar';
+  learnSkip().textContent = 'Omitir';
+
+  // Sin orbes disponibles: solo se puede pasar
+  if (orbes < ORB_COST) {
+    learnTitle().textContent = 'No tienes orbes disponibles';
+    learnConfirm().style.display = 'none';
+    learnSkip().textContent = 'Continuar';
+    learnSkip().onclick = () => {
+      learnOverlay().classList.add('hidden');
+      onDone();
+    };
+    learnOverlay().classList.remove('hidden');
+    return;
+  }
+
+  const options = pickRandom(pool, 3);
+  learnTitle().textContent = `${member.name} aprende una nueva habilidad · 🔵 Orbes: ${orbes}`;
 
   let selectedIndex = null;
 
@@ -150,11 +170,18 @@ function showLearnFor(member, onDone) {
     learnGrid().appendChild(btn);
   });
 
+  learnConfirm().style.display = '';
+  learnSkip().onclick = () => {
+    learnOverlay().classList.add('hidden');
+    onDone();
+  };
+
   learnOverlay().classList.remove('hidden');
 
   learnConfirm().onclick = () => {
     if (selectedIndex === null) return;
     const chosen = options[selectedIndex];
+    state.run.orbes = (state.run.orbes ?? 0) - ORB_COST;
     member.skills.push({ ...chosen, level: 1 });
     const poolIdx = pool.findIndex(s => s.name === chosen.name);
     if (poolIdx !== -1) pool.splice(poolIdx, 1);

@@ -28,7 +28,8 @@ const runState = {
   currentNodeId: null,
   flags: {},
   recruitOffer: null,
-  peakEnemyLevel: 0
+  peakEnemyLevel: 0,
+  orbes: 0
 };
 
 // ── Estado de sesion (seleccionado al elegir historia) ──
@@ -66,6 +67,7 @@ export function resetRunState() {
   runState.flags = {};
   runState.recruitOffer = null;
   runState.peakEnemyLevel = 0;
+  runState.orbes = 0;
 }
 
 export function resetSessionState() {

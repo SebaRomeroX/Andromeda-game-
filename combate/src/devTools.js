@@ -3,7 +3,7 @@ import { pickNextEvent } from './eventGenerator.js';
 import characters from '../data/characters.js';
 
 function initialRun() {
-  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null, flags: {} };
+  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null, flags: {}, orbes: 0 };
 }
 
 function applyEvent(ev, run, roster, choices = {}) {
@@ -13,6 +13,10 @@ function applyEvent(ev, run, roster, choices = {}) {
   } else if (ev.type === 'enfrentamiento') {
     run.enfrentamientos++;
     run.fightsSinceCamp++;
+    // Recompensa de orbes: reward explícito o 1 por defecto
+    const reward = ev.reward;
+    const gained = typeof reward === 'number' ? reward : (reward?.orbs ?? 1);
+    run.orbes = (run.orbes ?? 0) + gained;
   } else if (ev.type === 'reclutamiento') {
     const char = characters[ev.character];
     const slot = ROLE_BY_INDEX.indexOf(char?.role);

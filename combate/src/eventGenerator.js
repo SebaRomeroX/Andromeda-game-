@@ -139,6 +139,10 @@ function findNextNode(story, ctx) {
  *   2. campamento (tras superar N combates desde el ultimo campamento)
  *   3. siguiente nodo narrativo en el grafo de historia
  *   4. enfrentamiento generico
+ *
+ * Recompensa de orbes: todo combate ganado otorga orbes azules (mente).
+ * Un nodo `enfrentamiento` puede definir `reward: { orbs: 3 }` (o `reward: 3`
+ * como atajo); si no define nada, la recompensa por defecto es 1 orbe.
  */
 export function pickNextEvent(story, ctx, playerTeam) {
   if (story.infiniteMode) {

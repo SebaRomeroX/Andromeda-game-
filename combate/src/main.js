@@ -126,6 +126,10 @@ function validateStoryCast(story) {
       return;
     }
 
+    if (event.reward != null && event.type !== 'enfrentamiento') {
+      warn(`Evento ${i + 1}: tiene "reward" pero no es un enfrentamiento; se ignorará.`);
+    }
+
     if (event.type !== 'enfrentamiento' || !event.enemyTeam) return;
 
     const allowed = event.narrativo ? new Set([...generic, ...narrative]) : generic;
@@ -241,6 +245,7 @@ function startStory(story, { loadSave }) {
     state.run.choices = data.run.choices ?? {};
     state.run.currentNodeId = data.run.currentNodeId ?? null;
     state.run.flags = data.run.flags ?? {};
+    state.run.orbes = data.run.orbes ?? 0;
     state.session.playerTeam = data.playerTeam;
     state.session.protagonistSlot = data.protagonistSlot;
     resetTeam();
@@ -279,9 +284,9 @@ function renderMap() {
     if (story.infiniteMode) {
       const cycle = state.run.campamentos + 1;
       const members = state.session.playerTeam.filter(idx => idx !== -1).length;
-      header.textContent = `Ciclo ${cycle} · Equipo: ${members}/4`;
+      header.textContent = `Ciclo ${cycle} · Equipo: ${members}/4 · 🔵 Orbes: ${state.run.orbes ?? 0}`;
     } else {
-      header.textContent = `Etapa ${state.run.stage + 1}`;
+      header.textContent = `Etapa ${state.run.stage + 1} · 🔵 Orbes: ${state.run.orbes ?? 0}`;
     }
 
     state.session.currentEvent = pickNextEvent(state.session.selectedStory, state.run, state.session.playerTeam);
@@ -446,6 +451,14 @@ function handleVictory() {
 
   saveTeamState();
 
+  // ── Recompensa de orbes azules (mente) ──
+  const reward = state.session.currentEvent?.reward;
+  const gainedOrbs = typeof reward === 'number' ? reward : (reward?.orbs ?? 1);
+  state.run.orbes = (state.run.orbes ?? 0) + gainedOrbs;
+  const orbText = `🔵 +${gainedOrbs} ${gainedOrbs === 1 ? 'Orbe de la mente' : 'Orbes de la mente'}`;
+  showToast(orbText);
+  log(orbText);
+
   if (result === 'allies_fallen') {
     const overlay = document.getElementById('camp-overlay');
     const msg = document.getElementById('camp-message');
@@ -454,7 +467,7 @@ function handleVictory() {
     titleEl.textContent = '';
     const staleRecruit = overlay.querySelector('.infinite-recruit-options');
     if (staleRecruit) staleRecruit.remove();
-    msg.innerHTML = names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>');
+    msg.innerHTML = names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>') + `<br><span style="color:#5ea8ff;">${orbText}</span>`;
 
     fallen.forEach(i => {
       state.session.playerTeam[i] = -1;

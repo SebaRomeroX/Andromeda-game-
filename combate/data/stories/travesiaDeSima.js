@@ -167,6 +167,7 @@ const travesiaDeSima = {
       title: 'Ruinas',
       description: 'Por fin el objetivo a la vista.',
       enemyTeam: [16, 8, 14, 3],
+      reward: { orbs: 2 },
       conditions: { campamentos: 5 },
       next: 'dialogo-final-bosque'
     },
@@ -194,6 +195,7 @@ const travesiaDeSima = {
       title: 'Enfrentamiento final',
       description: 'Entre los escombros del santuario, Narada te espera.',
       enemyTeam: [4, 12, 17, 6],
+      reward: { orbs: 3 },
       conditions: { campamentos: 5 },
       next: 'conclusion-bosque'
     },
@@ -336,6 +338,7 @@ const travesiaDeSima = {
       title: 'Enfrentamiento final',
       description: 'Entre los escombros del santuario, Narada te espera.',
       enemyTeam: [4, 5, 17, 3],
+      reward: { orbs: 3 },
       conditions: { campamentos: 5 },
       next: 'conclusion-cueva'
     },
@@ -437,6 +440,7 @@ const travesiaDeSima = {
       title: 'Ruinas',
       description: 'Por fin el objetivo a la vista.',
       enemyTeam: [16, 8, -1, -1],
+      reward: { orbs: 2 },
       conditions: { campamentos: 4 },
       next: 'dialogo-narada-escape'
     },
@@ -478,6 +482,7 @@ const travesiaDeSima = {
       title: 'Enfrentamiento final',
       description: 'Entre los escombros del santuario, Narada te espera.',
       enemyTeam: [4, 5, 14, 6],
+      reward: { orbs: 3 },
       conditions: { campamentos: 5 },
       next: 'conclusion-directo'
     },
