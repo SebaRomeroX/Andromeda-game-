@@ -460,16 +460,4 @@ if (popup) {
   popup.addEventListener('mouseleave', () => hideSkillPopup());
 }
 
-/**
- * Pantalla de fin de combate en `#restart-area`.
- * @param {boolean} won - victoria del equipo A
- * @param {Function} onEnd - callback al pulsar el boton
- */
-export function showRestart(won, onEnd) {
-  const div = $("restart-area");
-  const text = won ? 'Continuar' : 'Reintentar';
-  div.innerHTML = `<button id="restart-btn">${text}</button>`;
-  document.getElementById('restart-btn').onclick = () => {
-    if (onEnd) onEnd();
-  };
-}
+

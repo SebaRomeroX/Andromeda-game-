@@ -9,18 +9,28 @@ function buildTeamAData() {
   return (state.session.playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
 }
 
-function showOverlay(message, buttonText, onClick) {
+/**
+ * Modal generico (#camp-overlay): titulo opcional + mensaje + un boton.
+ * Lo usan victoria/derrota de combate, bajas de aliados y avisos de reclutamiento.
+ */
+export function showEndModal({ title = '', message, buttonText, onClick }) {
   const overlay = document.getElementById('camp-overlay');
   const msg = document.getElementById('camp-message');
   const btn = document.getElementById('camp-continue');
   const levelup = document.getElementById('camp-levelup');
-  const title = document.getElementById('camp-title');
+  const titleEl = document.getElementById('camp-title');
+  const staleRecruit = overlay.querySelector('.infinite-recruit-options');
+  if (staleRecruit) staleRecruit.remove();
+  titleEl.textContent = title;
   msg.innerHTML = message;
   btn.textContent = buttonText;
   btn.onclick = () => { overlay.classList.add('hidden'); if (onClick) onClick(); };
   levelup.classList.add('hidden');
-  title.textContent = '';
   overlay.classList.remove('hidden');
+}
+
+function showOverlay(message, buttonText, onClick) {
+  showEndModal({ message, buttonText, onClick });
 }
 
 function showScreen(name) {

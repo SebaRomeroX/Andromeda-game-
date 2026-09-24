@@ -1,13 +1,13 @@
 import state, { aliveMembers, allDead, getGameEndCallback } from './state.js';
 import { SKILL_TYPES, TEAMS, TURN_PHASES, BUFF_STATS } from './constants.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion, hasNegativeBuff } from './buffs.js';
-import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, showRestart, renderPendingActions, clearMemberAction, showCombatMessage } from './renderer.js';
+import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, renderPendingActions, clearMemberAction, showCombatMessage } from './renderer.js';
 import { log } from './log.js';
 import { actionLabel, powerLabel } from './formatters.js';
 import { pickWeighted, computeEffect, computeTargets, getAttackTargets, sortActions, planEnemyActions, skillNameToId } from './combatEngine.js';
 import { playSound, stopMusic } from './music.js';
 import { resolveVictory, getEventOrbs } from './gameFlow.js';
-import { showToast } from './toast.js';
+import { showEndModal } from './eventHandlers.js';
 
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
   const actor = state.combat.teams[actorTeam].members[actorIndex];
@@ -137,28 +137,54 @@ function enemySelectSkills() {
 }
 
 function checkGameOver() {
+  if (state.combat.gameOver) return true;
+
   if (allDead(TEAMS.A)) {
     state.combat.gameOver = true;
     log(`☠️ ¡El EQUIPO A ha sido derrotado! El EQUIPO B gana.`);
     stopMusic();
     setTimeout(() => playSound('defeat'), 300);
-    showRestart(false, getGameEndCallback());
+    showEndModal({
+      title: 'Derrota',
+      message: '☠️ El EQUIPO A ha sido derrotado.',
+      buttonText: 'Reintentar',
+      onClick: getGameEndCallback()
+    });
     return true;
   }
+
   if (allDead(TEAMS.B)) {
     state.combat.gameOver = true;
     log(`🏆 ¡El EQUIPO B ha sido derrotado! El EQUIPO A gana.`);
     stopMusic();
     setTimeout(() => playSound('achievement'), 300);
-    // Badge "orbe ganado" (mismo toast que "Partida Guardada")
-    const { result } = resolveVictory();
-    if (result !== 'protagonist_fallen') {
-      const orbs = getEventOrbs(state.session.currentEvent);
-      showToast(`🔵 ${orbs === 1 ? 'Orbe ganado' : `${orbs} Orbes ganados`}`);
+
+    const { result, fallen, names } = resolveVictory();
+
+    // Protagonista caido: sin modal de victoria; handleVictory() muestra
+    // directamente el modal de caida (sin recompensa de orbes).
+    if (result === 'protagonist_fallen') {
+      getGameEndCallback()();
+      return true;
     }
-    showRestart(true, getGameEndCallback());
+
+    // Un solo modal: victoria + (bajas si las hay) + orbe ganado
+    const orbs = getEventOrbs(state.session.currentEvent);
+    const orbLine = `<span style="color:#5ea8ff;">🔵 ${orbs === 1 ? 'Orbe ganado' : `${orbs} Orbes ganados`}</span>`;
+    const fallenLines = result === 'allies_fallen'
+      ? names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>') + '<br>'
+      : '';
+    const allGone = state.session.playerTeam.every((idx, i) => idx === -1 || fallen.includes(i));
+
+    showEndModal({
+      title: 'Ganaste el combate',
+      message: fallenLines + orbLine,
+      buttonText: allGone ? 'Volver al menú' : 'Continuar',
+      onClick: getGameEndCallback()
+    });
     return true;
   }
+
   return false;
 }
 

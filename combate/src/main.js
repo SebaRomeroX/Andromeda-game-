@@ -12,7 +12,7 @@ import { setupDevPanel } from './devTools.js';
 import { isDev } from './env.js';
 import { TEAMS } from './constants.js';
 import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs } from './gameFlow.js';
-import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding } from './eventHandlers.js';
+import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding, showEndModal } from './eventHandlers.js';
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
 import { initPause, showPause } from './pause.js';
@@ -404,7 +404,6 @@ function startCombat(event) {
   renderBuffs();
   clearTargets();
   renderActions([], () => {});
-  document.getElementById('restart-area').innerHTML = '';
   clearLog();
 
   const aNames = teamAData.filter(Boolean).map(c => c.name).join(', ');
@@ -415,47 +414,30 @@ function startCombat(event) {
 }
 
 function handleVictory() {
-  const { result, fallen, protagonistName, names } = resolveVictory();
+  const { result, fallen, protagonistName } = resolveVictory();
   const story = state.session.selectedStory;
 
   if (result === 'protagonist_fallen' && !story.noProtagonist) {
-    const overlay = document.getElementById('camp-overlay');
-    const msg = document.getElementById('camp-message');
-    const btn = document.getElementById('camp-continue');
-    const titleEl = document.getElementById('camp-title');
-    titleEl.textContent = '';
-    const staleRecruit = overlay.querySelector('.infinite-recruit-options');
-    if (staleRecruit) staleRecruit.remove();
-    msg.innerHTML = `💀 <strong>${protagonistName}</strong> ha caído en batalla.<br>La historia termina aquí.`;
-    btn.textContent = 'Reintentar';
-    btn.onclick = () => {
-      overlay.classList.add('hidden');
-      startStory(story, { loadSave: false });
-    };
-    overlay.classList.remove('hidden');
+    showEndModal({
+      message: `💀 <strong>${protagonistName}</strong> ha caído en batalla.<br>La historia termina aquí.`,
+      buttonText: 'Reintentar',
+      onClick: () => startStory(story, { loadSave: false })
+    });
     return;
   }
 
   saveTeamState();
 
   // ── Recompensa de orbes azules (mente) ──
-  // El importe ya se muestra en la pantalla de combate junto a Continuar;
-  // aqui solo se otorga (al pulsar Continuar) y se registra en el log.
+  // El importe ya se muestra en el modal de victoria; aqui solo se otorga
+  // (al pulsar Continuar) y se registra en el log.
   const gainedOrbs = getEventOrbs(state.session.currentEvent);
   state.run.orbes = (state.run.orbes ?? 0) + gainedOrbs;
   const orbText = `🔵 +${gainedOrbs} ${gainedOrbs === 1 ? 'Orbe de la mente' : 'Orbes de la mente'}`;
   log(orbText);
 
   if (result === 'allies_fallen') {
-    const overlay = document.getElementById('camp-overlay');
-    const msg = document.getElementById('camp-message');
-    const btn = document.getElementById('camp-continue');
-    const titleEl = document.getElementById('camp-title');
-    titleEl.textContent = '';
-    const staleRecruit = overlay.querySelector('.infinite-recruit-options');
-    if (staleRecruit) staleRecruit.remove();
-    msg.innerHTML = names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>') + `<br><span style="color:#5ea8ff;">${orbText}</span>`;
-
+    // Las bajas ya se mostraron en el modal de victoria; aqui solo se aplican
     fallen.forEach(i => {
       state.session.playerTeam[i] = -1;
       clearSavedSlot(i);
@@ -464,25 +446,13 @@ function handleVictory() {
     const allGone = state.session.playerTeam.every(idx => idx === -1);
 
     if (allGone) {
-      btn.textContent = 'Volver al menú';
-      btn.onclick = () => {
-        overlay.classList.add('hidden');
-        state.session.selectedStory = null;
-        resetRunState();
-        stopMusic();
-        renderMenu();
-        showScreen('menu');
-      };
-    } else {
-      btn.textContent = 'Continuar';
-      btn.onclick = () => {
-        overlay.classList.add('hidden');
-        advanceStage();
-      };
+      state.session.selectedStory = null;
+      resetRunState();
+      stopMusic();
+      renderMenu();
+      showScreen('menu');
+      return;
     }
-
-    overlay.classList.remove('hidden');
-    return;
   }
 
   advanceStage();
