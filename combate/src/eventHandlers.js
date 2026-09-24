@@ -1,6 +1,6 @@
-import state, { initState, saveTeamLevels, restoreTeamHp, clearSavedSlot } from './state.js';
-import { getLevelStats, ROLE_BY_INDEX } from './models.js';
-import { startSkillUpgrades, startLearnPhase } from './upgrades.js';
+import state, { initState, restoreTeamHp, clearSavedSlot } from './state.js';
+import { ROLE_BY_INDEX } from './models.js';
+import { startLevelUpPhase, startSkillUpgrades, startLearnPhase } from './upgrades.js';
 import { clearGame } from './save.js';
 import characters from '../data/characters.js';
 import { stopMusic, playChill } from './music.js';
@@ -44,9 +44,6 @@ export function showCampEvent(event, advanceStageCb) {
   const overlay = document.getElementById('camp-overlay');
   const message = document.getElementById('camp-message');
   const button = document.getElementById('camp-continue');
-  const levelupEl = document.getElementById('camp-levelup');
-  const levelupImg = document.getElementById('camp-levelup-img');
-  const levelupStats = document.getElementById('camp-levelup-stats');
   const titleEl = document.getElementById('camp-title');
 
   const existingRecruit = overlay.querySelector('.infinite-recruit-options');
@@ -57,79 +54,29 @@ export function showCampEvent(event, advanceStageCb) {
 
   message.innerHTML = event.description;
   button.textContent = 'Descansar';
-  levelupEl.classList.add('hidden');
   titleEl.textContent = '';
   overlay.classList.remove('hidden');
 
   button.onclick = () => {
-    const leveledMembers = [];
-    state.combat.teams.A.members.forEach(m => {
-      if (m && m.currentHp > 0) {
-        const oldLevel = m.level;
-        const oldHp = m.hp;
-        const oldEvasion = m.evasion;
-        m.level++;
-        const st = getLevelStats(m);
-        m.hp = st.hp;
-        m.evasion = st.evasion;
-        leveledMembers.push({ member: m, oldLevel, oldHp, oldEvasion });
-      }
-    });
-    saveTeamLevels();
+    // Descansar cura a todo el equipo (gratuito). Los niveles ya no son
+    // automáticos: se gastan en la fase de nivelación (orbes verdes).
     restoreTeamHp();
 
-    if (leveledMembers.length === 0) {
-      overlay.classList.add('hidden');
+    const alive = state.combat.teams.A.members.filter(m => m && m.currentHp > 0);
+    overlay.classList.add('hidden');
+
+    if (alive.length === 0) {
       advanceStageCb();
       return;
     }
 
-    let idx = 0;
-
-    function showLevelUp() {
-      const { member, oldLevel, oldHp, oldEvasion } = leveledMembers[idx];
-      message.textContent = '';
-      titleEl.textContent = `${member.name} sube de nivel`;
-      levelupImg.src = member.image;
-      levelupImg.alt = member.name;
-      levelupStats.innerHTML = `
-        <div class="stat-row">
-          <span class="stat-label">Nivel:</span>
-          <span class="stat-new">${member.level}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Salud:</span>
-          <span class="stat-old">${oldHp}</span>
-          <span class="stat-arrow">\u2192</span>
-          <span class="stat-new">${member.hp}</span>
-          <span class="stat-up">(+${member.hp - oldHp})</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Evasion:</span>
-          <span class="stat-old">${oldEvasion}</span>
-          <span class="stat-arrow">\u2192</span>
-          <span class="stat-new">${member.evasion}</span>
-          <span class="stat-up">(+${member.evasion - oldEvasion})</span>
-        </div>
-      `;
-      levelupEl.classList.remove('hidden');
-      button.textContent = 'Continuar';
-      button.onclick = () => {
-        levelupEl.classList.add('hidden');
-        idx++;
-        if (idx < leveledMembers.length) {
-          showLevelUp();
-        } else {
-          // Última tarjeta: fase única de mejoras (1 orbe rojo c/u) y,
-          // a continuación, fase única de aprendizaje (1 orbe azul c/u)
-          overlay.classList.add('hidden');
-          const leveled = leveledMembers.map((l) => l.member);
-          startSkillUpgrades(leveled, () => startLearnPhase(leveled, advanceStageCb));
-        }
-      };
-    }
-
-    showLevelUp();
+    // Tres fases del campamento, en orden:
+    //  1) Nivelación (1 orbe verde por nivel)
+    //  2) Mejora de habilidades (1 orbe rojo por mejora)
+    //  3) Aprendizaje de habilidades nuevas (1 orbe azul por habilidad)
+    startLevelUpPhase(alive, () =>
+      startSkillUpgrades(alive, () =>
+        startLearnPhase(alive, advanceStageCb)));
   };
 }
 

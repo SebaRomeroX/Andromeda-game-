@@ -1346,7 +1346,7 @@ body {
   color: #f0d060;
 }
 
-#upgrade-confirm {
+#levelup-confirm, #upgrade-confirm, #learn-confirm {
   padding: 12px 40px;
   border: 2px solid #8a7a4a;
   border-radius: 10px;
@@ -1358,30 +1358,8 @@ body {
   transition: all 0.2s;
 }
 
-#upgrade-confirm:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5a4a2a, #4a3a1a);
-  border-color: #c0a85a;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(200, 160, 50, 0.3);
-}
-
-#upgrade-confirm:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-#learn-confirm {
-  padding: 12px 40px;
-  border: 2px solid #8a7a4a;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #3a2a1a, #2a1a0a);
-  color: #f0e0a0;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
+#levelup-confirm:hover:not(:disabled),
+#upgrade-confirm:hover:not(:disabled),
 #learn-confirm:hover:not(:disabled) {
   background: linear-gradient(135deg, #5a4a2a, #4a3a1a);
   border-color: #c0a85a;
@@ -1389,13 +1367,16 @@ body {
   box-shadow: 0 4px 20px rgba(200, 160, 50, 0.3);
 }
 
+#levelup-confirm:disabled,
+#upgrade-confirm:disabled,
 #learn-confirm:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* Learn overlay: acciones (Confirmar / Omitir) */
-#learn-overlay .overlay-content {
+/* Overlays de fases del campamento: acciones (Confirmar / Omitir) */
+#learn-overlay .overlay-content,
+#levelup-overlay .overlay-content {
   width: min(840px, calc(100vw - 32px));
 }
 
@@ -1406,7 +1387,8 @@ body {
   align-items: center;
 }
 
-#upgrade-skip {
+/* Fases del campamento: botón secundario (Omitir / Cancelar) */
+#levelup-skip, #upgrade-skip, #learn-skip {
   padding: 12px 32px;
   border: 2px solid #4a5a8a;
   border-radius: 10px;
@@ -1418,30 +1400,23 @@ body {
   transition: all 0.2s;
 }
 
-#upgrade-skip:hover {
-  background: linear-gradient(135deg, #2a3a5a, #1a2a4a);
-  border-color: #6a8aca;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(94, 168, 255, 0.25);
-}
-
-#learn-skip {
-  padding: 12px 32px;
-  border: 2px solid #4a5a8a;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #1a2a3a, #0a1a2a);
-  color: #a0c0f0;
-  font-size: 1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
+#levelup-skip:hover,
+#upgrade-skip:hover,
 #learn-skip:hover {
   background: linear-gradient(135deg, #2a3a5a, #1a2a4a);
   border-color: #6a8aca;
   transform: translateY(-2px);
   box-shadow: 0 4px 20px rgba(94, 168, 255, 0.25);
+}
+
+/* Fase de nivelación: la vista de comparación sustituye a la rejilla */
+#levelup-grid.hidden {
+  display: none;
+}
+
+#levelup-preview {
+  justify-content: center;
+  margin-bottom: 24px;
 }
 
 /* Learn phase: tarjeta de miembro en la rejilla de selección */

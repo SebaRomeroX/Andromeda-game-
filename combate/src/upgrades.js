@@ -1,26 +1,30 @@
 /**
- * @file Mejora y aprendizaje de habilidades en el campamento
- * @description Tras sanar y subir de nivel, cada superviviente de equipo A
- * puede mejorar una de sus habilidades (1 orbe rojo por mejora). Ambas
- * fases comparten la misma logica: rejilla de seleccion de miembros y,
- * al elegir uno, la vista de habilidades con Confirmar/Cancelar.
- *
- * El aprendizaje de habilidades nuevas (1 orbe azul c/u) ocurre en una
- * fase final con rejilla de seleccion de miembros: se elige personaje, se
- * elige entre 3 habilidades al azar y se confirma o cancela. Cada
- * personaje aprende como maximo 1 habilidad por campamento. Lo mismo
- * aplica a las mejoras: maximo 1 mejora por personaje por campamento.
+ * @file Fases del campamento: nivelación, mejora y aprendizaje
+ * @description Tras descansar (curación gratuita), el campamento encadena
+ * tres fases con la misma logica: rejilla de seleccion de miembros y, al
+ * elegir uno, la vista correspondiente con Confirmar/Cancelar. Cada fase
+ * cuesta 1 orbe por accion y admite como maximo 1 accion por personaje
+ * por campamento:
+ *  - Nivelación: 1 orbe verde (cuerpo) por nivel de personaje.
+ *  - Mejora de habilidades: 1 orbe rojo (poder) por mejora.
+ *  - Aprendizaje: 1 orbe azul (mente) por habilidad nueva; se ofrecen 3
+ *    habilidades al azar del personaje elegido.
  */
 
-import { upgradeSkill } from './models.js';
-import state, { saveTeamSkills, saveTeamLearnableSkills, saveTeamLearnedSkills } from './state.js';
+import { upgradeSkill, getNextLevelStats } from './models.js';
+import state, { saveTeamSkills, saveTeamLearnableSkills, saveTeamLearnedSkills, saveTeamLevels, restoreTeamHp } from './state.js';
 import { formatSkillStats, describeSkill, describeUpgrade, skillTypeLabel } from './formatters.js';
 import { orbDotHtml, ORB_META } from './gameFlow.js';
 
-// Punto con brillo del orbe de la mente, para los titulos del campamento.
+// Punto con brillo del orbe de la mente (azul): aprendizaje.
 const MIND_DOT = orbDotHtml(ORB_META.find(m => m.key === 'mind').color);
-// Punto con brillo del orbe de poder (rojo), para las mejoras de habilidad.
+// Punto con brillo del orbe de poder (rojo): mejoras de habilidad.
 const POWER_DOT = orbDotHtml(ORB_META.find(m => m.key === 'power').color);
+// Punto con brillo del orbe de cuerpo (verde): subidas de nivel.
+const BODY_DOT = orbDotHtml(ORB_META.find(m => m.key === 'body').color);
+
+// Coste de cada accion del campamento (1 orbe por nivel/mejora/aprendizaje)
+const ORB_COST = 1;
 
 // ── Upgrade overlay ──
 const overlay = () => document.getElementById('upgrade-overlay');
@@ -53,14 +57,22 @@ function skillCardHtml(skill, { levelLabel = false, preview = false } = {}) {
   `;
 }
 
+// ── Level-up overlay ──
+const lvlOverlay = () => document.getElementById('levelup-overlay');
+const lvlTitle = () => document.getElementById('levelup-title');
+const lvlGrid = () => document.getElementById('levelup-grid');
+const lvlPreview = () => document.getElementById('levelup-preview');
+const lvlPreviewImg = () => document.getElementById('levelup-preview-img');
+const lvlPreviewStats = () => document.getElementById('levelup-preview-stats');
+const lvlConfirm = () => document.getElementById('levelup-confirm');
+const lvlSkip = () => document.getElementById('levelup-skip');
+
 // ── Learn overlay ──
 const learnOverlay = () => document.getElementById('learn-overlay');
 const learnTitle = () => document.getElementById('learn-title');
 const learnGrid = () => document.getElementById('learn-grid');
 const learnConfirm = () => document.getElementById('learn-confirm');
 const learnSkip = () => document.getElementById('learn-skip');
-
-const ORB_COST = 1;
 
 function pickRandom(array, count) {
   const copy = array.slice();
@@ -74,6 +86,156 @@ function pickRandom(array, count) {
 }
 
 const hasLearnable = (m) => (m.learnableSkills?.length ?? 0) > 0;
+
+/**
+ * Fase unica de nivelación del campamento (la primera de las tres).
+ * Cuesta 1 orbe verde (cuerpo) por nivel y cada personaje puede subir
+ * como maximo 1 nivel por campamento.
+ *
+ * Estados:
+ *  - A: no hay supervivientes vivos → termina la fase
+ *  - B: hay personajes pero 0 orbes de cuerpo → "No tienes orbes disponibles"
+ *  - C: rejilla de miembros (elegibles clicables, resto deshabilitados)
+ *       → al elegir, vista de comparación de stats (Nivel/Salud/Evasion
+ *       de la antigua a la nueva) con Confirmar/Cancelar.
+ *       A diferencia de las otras fases, cancelar NO fija al miembro: el
+ *       bloqueo ocurre al confirmar, porque cancelar no gasta nada.
+ *
+ * Tras confirmar, si quedan orbes y miembros elegibles se vuelve a la
+ * rejilla; si no, la fase termina. "Omitir" termina la fase en cualquier
+ * momento desde la rejilla.
+ *
+ * @param {Object[]} members - Supervivientes vivos al descansar
+ * @param {Function} onComplete - Se llama al terminar la fase
+ */
+export function startLevelUpPhase(members, onComplete) {
+  const picked = new Set();
+
+  const finish = () => {
+    lvlOverlay().classList.add('hidden');
+    onComplete();
+  };
+
+  const showMessage = (text, buttonText, onClick) => {
+    lvlGrid().innerHTML = '';
+    lvlGrid().classList.remove('hidden');
+    lvlPreview().classList.add('hidden');
+    lvlTitle().textContent = text;
+    lvlConfirm().style.display = 'none';
+    lvlSkip().textContent = buttonText;
+    lvlSkip().onclick = onClick;
+    lvlOverlay().classList.remove('hidden');
+  };
+
+  // Estado A: no hay supervivientes vivos que puedan subir de nivel
+  if (members.length === 0) {
+    finish();
+    return;
+  }
+
+  // Estado B: sin orbes de cuerpo (verdes) disponibles
+  if ((state.run.orbes?.body ?? 0) < ORB_COST) {
+    showMessage('No tienes orbes disponibles', 'Continuar', finish);
+    return;
+  }
+
+  // Estado C: rejilla de selección de miembros
+  function showMemberGrid() {
+    const orbes = state.run.orbes?.body ?? 0;
+    const eligible = (m) => !picked.has(m);
+
+    // Sin orbes o sin elegibles: termina la fase
+    if (orbes < ORB_COST || !members.some(eligible)) {
+      finish();
+      return;
+    }
+
+    lvlTitle().innerHTML = `Puedes usar orbes verdes para subir de nivel a tus personajes · ${BODY_DOT}Orbes: ${orbes}`;
+    lvlGrid().classList.remove('hidden');
+    lvlGrid().innerHTML = '';
+    lvlPreview().classList.add('hidden');
+    lvlConfirm().style.display = 'none';
+    lvlSkip().textContent = 'Omitir';
+    lvlSkip().onclick = finish;
+
+    members.forEach((member) => {
+      const canPick = eligible(member);
+      const card = document.createElement('button');
+      card.className = 'learn-member-card';
+      card.disabled = !canPick;
+      card.innerHTML = `
+        <img src="${member.image ?? ''}" alt="${member.name}">
+        <div class="learn-member-name">${member.name}</div>
+      `;
+      if (canPick) card.onclick = () => showPreview(member);
+      lvlGrid().appendChild(card);
+    });
+
+    lvlOverlay().classList.remove('hidden');
+  }
+
+  // Vista de comparación: lo que gana el miembro al subir de nivel.
+  // No gasta ni fija nada hasta confirmar.
+  function showPreview(member) {
+    const oldLevel = member.level;
+    const oldHp = member.hp;
+    const oldEvasion = member.evasion;
+    const next = getNextLevelStats(member);
+
+    lvlGrid().classList.add('hidden');
+    lvlPreview().classList.remove('hidden');
+    lvlTitle().textContent = `${member.name} sube de nivel`;
+    lvlPreviewImg().src = member.image ?? '';
+    lvlPreviewImg().alt = member.name;
+    lvlPreviewStats().innerHTML = `
+      <div class="stat-row">
+        <span class="stat-label">Nivel:</span>
+        <span class="stat-old">${oldLevel}</span>
+        <span class="stat-arrow">→</span>
+        <span class="stat-new">${oldLevel + 1}</span>
+        <span class="stat-up">(+1)</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Salud:</span>
+        <span class="stat-old">${oldHp}</span>
+        <span class="stat-arrow">→</span>
+        <span class="stat-new">${next.hp}</span>
+        <span class="stat-up">(+${next.hp - oldHp})</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Evasion:</span>
+        <span class="stat-old">${oldEvasion}</span>
+        <span class="stat-arrow">→</span>
+        <span class="stat-new">${next.evasion}</span>
+        <span class="stat-up">(+${next.evasion - oldEvasion})</span>
+      </div>
+    `;
+    lvlConfirm().style.display = '';
+    lvlConfirm().textContent = 'Confirmar';
+    lvlConfirm().disabled = false;
+    lvlSkip().textContent = 'Cancelar';
+    lvlSkip().onclick = showMemberGrid;
+
+    lvlConfirm().onclick = () => {
+      if ((state.run.orbes?.body ?? 0) < ORB_COST) return;
+      state.run.orbes = { ...state.run.orbes, body: (state.run.orbes?.body ?? 0) - ORB_COST };
+      member.level = oldLevel + 1;
+      member.hp = next.hp;
+      member.evasion = next.evasion;
+      // Bloqueo: 1 nivel por personaje por campamento
+      picked.add(member);
+      saveTeamLevels();
+      // Sube la vida máxima del miembro al nuevo valor
+      restoreTeamHp();
+      // Vuelve a la rejilla (o termina si ya no queda nada que hacer)
+      showMemberGrid();
+    };
+
+    lvlOverlay().classList.remove('hidden');
+  }
+
+  showMemberGrid();
+}
 
 /**
  * Fase unica de aprendizaje del campamento (una vez, tras las mejoras).

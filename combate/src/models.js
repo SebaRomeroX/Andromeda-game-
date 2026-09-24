@@ -217,12 +217,6 @@ export function createCharacter({ name, image, hp = 100, evasion = 5, skills = [
   return { name, image, hp, evasion, skills, learnableSkills, role, level };
 }
 
-/**
- * Calcula los stats efectivos de un personaje según su nivel.
- *
- * @param {Character} char
- * @returns {{ hp: number, evasion: number }}
- */
 const ROLE_LEVEL_SCALING = {
   tanque: { hp: 15, evasion: 0 },
   asesino: { hp: 8, evasion: 1 },
@@ -230,12 +224,37 @@ const ROLE_LEVEL_SCALING = {
   soporte: { hp: 4, evasion: 1 }
 };
 
+/**
+ * Calcula los stats efectivos de un personaje según su nivel.
+ *
+ * @param {Character} char
+ * @returns {{ hp: number, evasion: number }}
+ */
 export function getLevelStats(char) {
   const scale = ROLE_LEVEL_SCALING[char.role] ?? { hp: 0, evasion: 0 };
   const levels = Math.max(0, (char.level ?? 1) - 1);
   return {
     hp: char.hp + levels * scale.hp,
     evasion: char.evasion + levels * scale.evasion
+  };
+}
+
+/**
+ * Stats que tendrá el personaje al subir 1 nivel.
+ *
+ * A diferencia de `getLevelStats` (que parte del hp/evasion BASE del
+ * personaje a nivel 1), esta función parte de un miembro ya escalado a
+ * su nivel actual y le añade un solo escalado. Sirve para previsualizar
+ * y aplicar subidas de nivel en el campamento.
+ *
+ * @param {{ role: string, hp: number, evasion: number }} char
+ * @returns {{ hp: number, evasion: number }}
+ */
+export function getNextLevelStats(char) {
+  const scale = ROLE_LEVEL_SCALING[char.role] ?? { hp: 0, evasion: 0 };
+  return {
+    hp: (char.hp ?? 0) + scale.hp,
+    evasion: (char.evasion ?? 0) + scale.evasion
   };
 }
 
