@@ -68,37 +68,50 @@ export function getEventOrbs(event) {
   };
 }
 
-// ── Display de orbes (iconos, colores y etiquetas por tipo) ──
+// ── Display de orbes (colores y etiquetas por tipo) ──
 export const ORB_META = [
-  { key: 'mind', icon: '🔵', color: '#5ea8ff', label: 'mente' },
-  { key: 'power', icon: '🔴', color: '#ff5c5c', label: 'poder' },
-  { key: 'body', icon: '💚', color: '#5cd65c', label: 'cuerpo' },
-  { key: 'wealth', icon: '🟡', color: '#ffd700', label: 'riqueza' }
+  { key: 'mind', color: '#5ea8ff', label: 'mente' },
+  { key: 'power', color: '#ff5c5c', label: 'poder' },
+  { key: 'body', color: '#5cd65c', label: 'cuerpo' },
+  { key: 'wealth', color: '#ffd700', label: 'riqueza' }
 ];
 
-// Totales siempre con los 4 tipos: "🔵 3 · 🔴 1 · 💚 2 · 🟡 0"
-export function formatOrbTotals(orbes) {
+// Punto de color con brillo: icono comun de los orbes en toda la UI.
+export function orbDotHtml(color) {
+  return `<span style="display:inline-block;width:.65em;height:.65em;border-radius:50%;background:${color};box-shadow:0 0 6px ${color};margin-right:.45em;vertical-align:middle;"></span>`;
+}
+
+// Totales siempre con los 4 tipos (HTML, cabecera del mapa):
+// "<punto>3 · <punto>1 · <punto>2 · <punto>0"
+export function formatOrbTotalsHtml(orbes) {
   return ORB_META
-    .map(m => `${m.icon} ${orbes?.[m.key] ?? 0}`)
+    .map(m => `${orbDotHtml(m.color)}${orbes?.[m.key] ?? 0}`)
     .join(' · ');
 }
 
-// Ganancia en texto plano (log), solo tipos > 0:
-// "🔵 +1 · 🔴 +1 · 💚 +1 · 🟡 +1"
-export function formatOrbGainText(gained) {
+// Ganancia en HTML en una sola linea (log de batalla), solo tipos > 0:
+// "<punto>+1 · <punto>+1 ..."
+export function formatOrbGainInlineHtml(gained) {
   return ORB_META
     .filter(m => (gained?.[m.key] ?? 0) > 0)
-    .map(m => `${m.icon} +${gained[m.key]}`)
+    .map(m => `${orbDotHtml(m.color)}+${gained[m.key]}`)
     .join(' · ');
 }
 
-// Ganancia en HTML coloreado (modal de victoria), solo tipos > 0:
-// '<span style="color:#5ea8ff">🔵 +1</span> ...'
+// Ganancia en HTML (modal de victoria): una linea por tipo de orbe,
+// cada una con su punto de color con brillo; solo tipos > 0. Ej:
+// '<punto mente>1 orbe de mente<br>...'
+// Si no hay ninguna ganancia: "ninguna".
 export function formatOrbGainHtml(gained) {
-  return ORB_META
+  const items = ORB_META
     .filter(m => (gained?.[m.key] ?? 0) > 0)
-    .map(m => `<span style="color:${m.color}">${m.icon} +${gained[m.key]}</span>`)
-    .join(' ');
+    .map(m => {
+      const n = gained[m.key];
+      return `${orbDotHtml(m.color)}${n} ${n === 1 ? 'orbe' : 'orbes'} de ${m.label}`;
+    });
+
+  if (items.length === 0) return '<span style="color:#888;">ninguna</span>';
+  return items.join('<br>');
 }
 
 // Determina que pasa al ganar: protagonista cae, aliados caen, victoria limpia

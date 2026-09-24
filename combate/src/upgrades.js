@@ -11,6 +11,10 @@
 import { upgradeSkill } from './models.js';
 import state, { saveTeamSkills, saveTeamLearnableSkills, saveTeamLearnedSkills } from './state.js';
 import { formatSkillStats, describeSkill, describeUpgrade, skillTypeLabel } from './formatters.js';
+import { orbDotHtml, ORB_META } from './gameFlow.js';
+
+// Punto con brillo del orbe de la mente, para los titulos del campamento.
+const MIND_DOT = orbDotHtml(ORB_META.find(m => m.key === 'mind').color);
 
 // ── Upgrade overlay ──
 const overlay = () => document.getElementById('upgrade-overlay');
@@ -178,7 +182,7 @@ export function startLearnPhase(members, onComplete) {
       return;
     }
 
-    learnTitle().textContent = `Puedes usar orbes azules para que uno de tus personajes aprenda una nueva habilidad · 🔵 Orbes: ${orbes}`;
+    learnTitle().innerHTML = `Puedes usar orbes azules para que uno de tus personajes aprenda una nueva habilidad · ${MIND_DOT}Orbes: ${orbes}`;
     learnGrid().innerHTML = '';
     learnConfirm().style.display = 'none';
     learnSkip().textContent = 'Omitir';
@@ -213,7 +217,7 @@ export function startLearnPhase(members, onComplete) {
 
     const options = pickRandom(pool, 3);
     learnGrid().innerHTML = '';
-    learnTitle().textContent = `${member.name} aprende una nueva habilidad · 🔵 Orbes: ${state.run.orbes?.mind ?? 0}`;
+    learnTitle().innerHTML = `${member.name} aprende una nueva habilidad · ${MIND_DOT}Orbes: ${state.run.orbes?.mind ?? 0}`;
     learnConfirm().style.display = '';
     learnConfirm().textContent = 'Confirmar';
     learnConfirm().disabled = true;

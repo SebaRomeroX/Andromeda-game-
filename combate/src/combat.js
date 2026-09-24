@@ -168,10 +168,9 @@ function checkGameOver() {
       return true;
     }
 
-    // Un solo modal: victoria + (bajas si las hay) + orbes ganados
+    // Un solo modal: victoria + (bajas si las hay) + recompensa de orbes
     const orbs = getEventOrbs(state.session.currentEvent);
-    const orbLine = formatOrbGainHtml(orbs)
-      || '<span style="color:#888;">Sin orbes ganados</span>';
+    const orbLine = `<strong>Recompensa:</strong><br>${formatOrbGainHtml(orbs)}`;
     const fallenLines = result === 'allies_fallen'
       ? names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>') + '<br>'
       : '';

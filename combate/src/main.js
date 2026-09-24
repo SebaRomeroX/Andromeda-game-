@@ -2,7 +2,7 @@ import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, cle
 import { ROLE_BY_INDEX } from './models.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
-import { log, clearLog, openLog, closeLog } from './log.js';
+import { log, logHtml, clearLog, openLog, closeLog } from './log.js';
 import { saveGame, loadGame, clearGame, debugSave } from './save.js';
 import characters from '../data/characters.js';
 import stories from '../data/stories/index.js';
@@ -11,7 +11,7 @@ import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
 import { isDev } from './env.js';
 import { TEAMS } from './constants.js';
-import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs, formatOrbTotals, formatOrbGainText, emptyOrbs, ORB_META } from './gameFlow.js';
+import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs, formatOrbTotalsHtml, formatOrbGainInlineHtml, emptyOrbs, ORB_META } from './gameFlow.js';
 import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding, showEndModal } from './eventHandlers.js';
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
@@ -271,9 +271,9 @@ function renderMap() {
     if (story.infiniteMode) {
       const cycle = state.run.campamentos + 1;
       const members = state.session.playerTeam.filter(idx => idx !== -1).length;
-      header.textContent = `Ciclo ${cycle} · Equipo: ${members}/4 · Orbes: ${formatOrbTotals(state.run.orbes)}`;
+      header.innerHTML = `Ciclo ${cycle} · Equipo: ${members}/4 · Orbes: ${formatOrbTotalsHtml(state.run.orbes)}`;
     } else {
-      header.textContent = `Etapa ${state.run.stage + 1} · Orbes: ${formatOrbTotals(state.run.orbes)}`;
+      header.innerHTML = `Etapa ${state.run.stage + 1} · Orbes: ${formatOrbTotalsHtml(state.run.orbes)}`;
     }
 
     state.session.currentEvent = pickNextEvent(state.session.selectedStory, state.run, state.session.playerTeam);
@@ -436,8 +436,8 @@ function handleVictory() {
   ORB_META.forEach(({ key }) => {
     orbes[key] = (orbes[key] ?? 0) + (gainedOrbs[key] ?? 0);
   });
-  const gainText = formatOrbGainText(gainedOrbs);
-  if (gainText) log(`${gainText} — Orbes ganados`);
+  const gainText = formatOrbGainInlineHtml(gainedOrbs);
+  if (gainText) logHtml(`${gainText} — Orbes ganados`);
 
   if (result === 'allies_fallen') {
     // Las bajas ya se mostraron en el modal de victoria; aqui solo se aplican
