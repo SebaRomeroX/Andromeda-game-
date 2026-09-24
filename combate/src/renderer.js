@@ -472,7 +472,7 @@ export function showRestart(won, onEnd, orbs = 0) {
     div.innerHTML = `<button id="restart-btn">Reintentar</button>`;
   } else {
     const orbMsg = orbs > 0
-      ? `<div class="victory-orbs">🔵 ${orbs === 1 ? 'Orbe ganado' : `${orbs} Orbes ganados`}</div>`
+      ? `<span class="victory-orbs">🔵 ${orbs === 1 ? 'Orbe ganado' : `${orbs} Orbes ganados`}</span>`
       : '';
     div.innerHTML = `${orbMsg}<button id="restart-btn">Continuar</button>`;
   }
