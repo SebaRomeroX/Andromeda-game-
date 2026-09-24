@@ -98,8 +98,9 @@ const hasLearnable = (m) => (m.learnableSkills?.length ?? 0) > 0;
  *  - C: rejilla de miembros (elegibles clicables, resto deshabilitados)
  *       → al elegir, vista de comparación de stats (Nivel/Salud/Evasion
  *       de la antigua a la nueva) con Confirmar/Cancelar.
- *       A diferencia de las otras fases, cancelar NO fija al miembro: el
- *       bloqueo ocurre al confirmar, porque cancelar no gasta nada.
+ *       Bloqueo estricto: elegir a un miembro lo fija para el resto del
+ *       campamento aunque se cancele o no suba de nivel (solo confirmar
+ *       gasta el orbe).
  *
  * Tras confirmar, si quedan orbes y miembros elegibles se vuelve a la
  * rejilla; si no, la fase termina. "Omitir" termina la fase en cualquier
@@ -175,8 +176,10 @@ export function startLevelUpPhase(members, onComplete) {
   }
 
   // Vista de comparación: lo que gana el miembro al subir de nivel.
-  // No gasta ni fija nada hasta confirmar.
+  // Bloqueo estricto: al elegir al miembro queda fijado para el resto
+  // del campamento, da igual si finalmente sube de nivel o cancela.
   function showPreview(member) {
+    picked.add(member);
     const oldLevel = member.level;
     const oldHp = member.hp;
     const oldEvasion = member.evasion;
@@ -222,8 +225,6 @@ export function startLevelUpPhase(members, onComplete) {
       member.level = oldLevel + 1;
       member.hp = next.hp;
       member.evasion = next.evasion;
-      // Bloqueo: 1 nivel por personaje por campamento
-      picked.add(member);
       saveTeamLevels();
       // Sube la vida máxima del miembro al nuevo valor
       restoreTeamHp();
