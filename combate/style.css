@@ -1346,7 +1346,7 @@ body {
   color: #f0d060;
 }
 
-#levelup-confirm, #upgrade-confirm, #learn-confirm {
+#levelup-confirm, #upgrade-confirm, #learn-confirm, #mercader-confirm {
   padding: 12px 40px;
   border: 2px solid #8a7a4a;
   border-radius: 10px;
@@ -1360,7 +1360,8 @@ body {
 
 #levelup-confirm:hover:not(:disabled),
 #upgrade-confirm:hover:not(:disabled),
-#learn-confirm:hover:not(:disabled) {
+#learn-confirm:hover:not(:disabled),
+#mercader-confirm:hover:not(:disabled) {
   background: linear-gradient(135deg, #5a4a2a, #4a3a1a);
   border-color: #c0a85a;
   transform: translateY(-2px);
@@ -1369,14 +1370,16 @@ body {
 
 #levelup-confirm:disabled,
 #upgrade-confirm:disabled,
-#learn-confirm:disabled {
+#learn-confirm:disabled,
+#mercader-confirm:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
 /* Overlays de fases del campamento: acciones (Confirmar / Omitir) */
 #learn-overlay .overlay-content,
-#levelup-overlay .overlay-content {
+#levelup-overlay .overlay-content,
+#mercader-overlay .overlay-content {
   width: min(840px, calc(100vw - 32px));
 }
 
@@ -1388,7 +1391,7 @@ body {
 }
 
 /* Fases del campamento: botón secundario (Omitir / Cancelar) */
-#levelup-skip, #upgrade-skip, #learn-skip {
+#levelup-skip, #upgrade-skip, #learn-skip, #mercader-skip {
   padding: 12px 32px;
   border: 2px solid #4a5a8a;
   border-radius: 10px;
@@ -1402,7 +1405,8 @@ body {
 
 #levelup-skip:hover,
 #upgrade-skip:hover,
-#learn-skip:hover {
+#learn-skip:hover,
+#mercader-skip:hover {
   background: linear-gradient(135deg, #2a3a5a, #1a2a4a);
   border-color: #6a8aca;
   transform: translateY(-2px);

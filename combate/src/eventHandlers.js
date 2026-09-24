@@ -1,6 +1,6 @@
 import state, { initState, restoreTeamHp, clearSavedSlot } from './state.js';
 import { ROLE_BY_INDEX } from './models.js';
-import { startLevelUpPhase, startSkillUpgrades, startLearnPhase } from './upgrades.js';
+import { startMercaderPhase, startLevelUpPhase, startSkillUpgrades, startLearnPhase } from './upgrades.js';
 import { clearGame } from './save.js';
 import characters from '../data/characters.js';
 import { stopMusic, playChill } from './music.js';
@@ -70,15 +70,17 @@ export function showCampEvent(event, advanceStageCb) {
       return;
     }
 
-    // Tres fases del campamento, en orden:
+    // Cuatro fases del campamento, en orden:
+    //  0) Mercader (1 orbe dorado por 1 orbe de otro tipo)
     //  1) Nivelación (1 orbe verde por nivel)
     //  2) Mejora de habilidades (1 orbe rojo por mejora)
     //  3) Aprendizaje de habilidades nuevas (1 orbe azul por habilidad)
     // Cada fase se omite sin interfaz si no tienes su orbe o no hay
     // nada que hacer en ella.
-    startLevelUpPhase(alive, () =>
-      startSkillUpgrades(alive, () =>
-        startLearnPhase(alive, advanceStageCb)));
+    startMercaderPhase(() =>
+      startLevelUpPhase(alive, () =>
+        startSkillUpgrades(alive, () =>
+          startLearnPhase(alive, advanceStageCb))));
   };
 }
 
