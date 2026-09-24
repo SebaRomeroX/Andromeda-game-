@@ -1,5 +1,6 @@
 import { ROLE_BY_INDEX, getLevelStats } from './models.js';
 import { pickNextEvent } from './eventGenerator.js';
+import { getEventOrbs } from './gameFlow.js';
 import characters from '../data/characters.js';
 
 function initialRun() {
@@ -14,9 +15,7 @@ function applyEvent(ev, run, roster, choices = {}) {
     run.enfrentamientos++;
     run.fightsSinceCamp++;
     // Recompensa de orbes: reward explícito o 1 por defecto
-    const reward = ev.reward;
-    const gained = typeof reward === 'number' ? reward : (reward?.orbs ?? 1);
-    run.orbes = (run.orbes ?? 0) + gained;
+    run.orbes = (run.orbes ?? 0) + getEventOrbs(ev);
   } else if (ev.type === 'reclutamiento') {
     const char = characters[ev.character];
     const slot = ROLE_BY_INDEX.indexOf(char?.role);

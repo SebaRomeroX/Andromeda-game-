@@ -460,10 +460,22 @@ if (popup) {
   popup.addEventListener('mouseleave', () => hideSkillPopup());
 }
 
-export function showRestart(won, onEnd) {
+/**
+ * Pantalla de fin de combate en `#restart-area`.
+ * @param {boolean} won - victoria del equipo A
+ * @param {Function} onEnd - callback al pulsar el boton
+ * @param {number} [orbs=0] - orbes ganados (solo se muestran en victoria)
+ */
+export function showRestart(won, onEnd, orbs = 0) {
   const div = $("restart-area");
-  const text = won ? 'Continuar' : 'Reintentar';
-  div.innerHTML = `<button id="restart-btn">${text}</button>`;
+  if (!won) {
+    div.innerHTML = `<button id="restart-btn">Reintentar</button>`;
+  } else {
+    const orbMsg = orbs > 0
+      ? `<div class="victory-orbs">🔵 ${orbs === 1 ? 'Orbe ganado' : `${orbs} Orbes ganados`}</div>`
+      : '';
+    div.innerHTML = `${orbMsg}<button id="restart-btn">Continuar</button>`;
+  }
   document.getElementById('restart-btn').onclick = () => {
     if (onEnd) onEnd();
   };

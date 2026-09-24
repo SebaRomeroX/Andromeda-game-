@@ -11,7 +11,7 @@ import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
 import { isDev } from './env.js';
 import { TEAMS } from './constants.js';
-import { advanceStage as advanceStageFlow, resolveVictory } from './gameFlow.js';
+import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs } from './gameFlow.js';
 import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding } from './eventHandlers.js';
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
@@ -452,11 +452,11 @@ function handleVictory() {
   saveTeamState();
 
   // ── Recompensa de orbes azules (mente) ──
-  const reward = state.session.currentEvent?.reward;
-  const gainedOrbs = typeof reward === 'number' ? reward : (reward?.orbs ?? 1);
+  // El importe ya se muestra en la pantalla de combate junto a Continuar;
+  // aqui solo se otorga (al pulsar Continuar) y se registra en el log.
+  const gainedOrbs = getEventOrbs(state.session.currentEvent);
   state.run.orbes = (state.run.orbes ?? 0) + gainedOrbs;
   const orbText = `🔵 +${gainedOrbs} ${gainedOrbs === 1 ? 'Orbe de la mente' : 'Orbes de la mente'}`;
-  showToast(orbText);
   log(orbText);
 
   if (result === 'allies_fallen') {

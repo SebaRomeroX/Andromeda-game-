@@ -330,9 +330,9 @@ const characters = [
     evasion: 5,
     role: "asesino",
     skills: [
-      createSkill({ name: "Proteccion",  type: "buff",    target: "ally",  stat: "defense",   value: 7,       precision: 99, apparicion: 70  }),
-      createSkill({ name: "Derribar",    type: "attack",  power: 12,       precision: 85,     aparicion: 40,
-        levelBonuses: { 2: { power: 7, stun: true }, 3: { power: 5, precision: 5 }, 4: { power: 5 } }
+      createSkill({ name: "Proteccion",  type: "buff",    target: "ally",  stat: "defense",   value: 7,      duration:5 ,  precision: 99, apparicion: 70  }),
+      createSkill({ name: "Derribar",    type: "attack",  power: 12,       precision: 90,     aparicion: 40,
+        levelBonuses: { 2: { power: 7, stun: true }, 3: { power: 5, precision: 3 }, 4: { power: 5 } }
        }),
       // createSkill({ name: "Estocada",    type: "attack",  power: 12,       precision: 90,     aparicion: 70   }),
       // createSkill({ name: "Bomba humo",  type: "buff",    target: "enemy", stat: "precision", value: 0.9,     precision: 99, apparicion: 70 }),
@@ -350,7 +350,7 @@ const characters = [
     evasion: 7,
     role: "rango",
     skills: [
-      createSkill({ name: "Lamarada",      type: "attack",  power: 12,   precision: 90, aparicion: 70, herida: true}),
+      createSkill({ name: "Lamarada",      type: "attack",  power: 17,   precision: 90, aparicion: 70, herida: true}),
       createSkill({ name: "Panacea",       type: "cura",    power: 4,    precision: 99, aparicion: 70  }),
       // createSkill({ name: "Fuego abisal",  type: "attack",  power: 15,   precision: 90, apparicion: 70  }),
       // createSkill({ name: "Intensidad",    type: "buff",    target: "self",  stat: "attack",  value: 0.10,   precision: 99, apparicion: 30 }),

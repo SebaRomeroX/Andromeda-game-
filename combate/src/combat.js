@@ -6,6 +6,7 @@ import { log } from './log.js';
 import { actionLabel, powerLabel } from './formatters.js';
 import { pickWeighted, computeEffect, computeTargets, getAttackTargets, sortActions, planEnemyActions, skillNameToId } from './combatEngine.js';
 import { playSound, stopMusic } from './music.js';
+import { resolveVictory, getEventOrbs } from './gameFlow.js';
 
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
   const actor = state.combat.teams[actorTeam].members[actorIndex];
@@ -148,7 +149,10 @@ function checkGameOver() {
     log(`🏆 ¡El EQUIPO B ha sido derrotado! El EQUIPO A gana.`);
     stopMusic();
     setTimeout(() => playSound('achievement'), 300);
-    showRestart(true, getGameEndCallback());
+    // Muestra el orbe ganado junto al boton Continuar (si procede)
+    const { result } = resolveVictory();
+    const orbs = result === 'protagonist_fallen' ? 0 : getEventOrbs(state.session.currentEvent);
+    showRestart(true, getGameEndCallback(), orbs);
     return true;
   }
   return false;

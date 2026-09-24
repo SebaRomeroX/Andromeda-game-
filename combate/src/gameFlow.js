@@ -37,6 +37,13 @@ export function advanceStage() {
   state.run.stage++;
 }
 
+// Recompensa de orbes de un evento de combate: `reward` numerico -> ese valor,
+// `reward: { orbs: N }` -> N, sin reward -> 1 por defecto. Fuente unica.
+export function getEventOrbs(event) {
+  const reward = event?.reward;
+  return typeof reward === 'number' ? reward : (reward?.orbs ?? 1);
+}
+
 // Determina que pasa al ganar: protagonista cae, aliados caen, victoria limpia
 export function resolveVictory() {
   const fallen = [];
