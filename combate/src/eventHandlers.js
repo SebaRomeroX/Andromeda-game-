@@ -1,6 +1,6 @@
 import state, { initState, saveTeamLevels, restoreTeamHp, clearSavedSlot } from './state.js';
 import { getLevelStats, ROLE_BY_INDEX } from './models.js';
-import { startSkillUpgrades } from './upgrades.js';
+import { startSkillUpgrades, startLearnPhase } from './upgrades.js';
 import { clearGame } from './save.js';
 import characters from '../data/characters.js';
 import { stopMusic, playChill } from './music.js';
@@ -121,8 +121,9 @@ export function showCampEvent(event, advanceStageCb) {
           if (idx < leveledMembers.length) {
             showLevelUp();
           } else {
+            // Último miembro: fase única de aprendizaje (una vez por campamento)
             overlay.classList.add('hidden');
-            advanceStageCb();
+            startLearnPhase(leveledMembers.map((l) => l.member), advanceStageCb);
           }
         });
       };

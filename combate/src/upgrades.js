@@ -1,9 +1,11 @@
 /**
  * @file Mejora y aprendizaje de habilidades en el campamento
  * @description Tras sanar y subir de nivel, cada superviviente de equipo A
- * mejora una de sus habilidades (gratis) y puede aprender una nueva
- * pagando 1 orbe azul (mente), u omitir. Se ofrecen 3 opciones al azar y
- * cada personaje puede aprender como maximo 1 habilidad por campamento.
+ * mejora una de sus habilidades (gratis). El aprendizaje de habilidades
+ * nuevas (1 orbe azul c/u) ocurre una unica vez por campamento, en una fase
+ * final con rejilla de seleccion de miembros: se elige personaje, se elige
+ * entre 3 habilidades al azar y se confirma o cancela. Cada personaje
+ * aprende como maximo 1 habilidad por campamento.
  */
 
 import { upgradeSkill } from './models.js';
@@ -115,86 +117,156 @@ function pickRandom(array, count) {
   return result;
 }
 
-function showLearnFor(member, onDone) {
-  const pool = member.learnableSkills;
-  if (!pool || pool.length === 0) {
-    onDone();
-    return;
-  }
+const hasLearnable = (m) => (m.learnableSkills?.length ?? 0) > 0;
 
-  const orbes = state.run.orbes ?? 0;
-  learnGrid().innerHTML = '';
-  learnConfirm().disabled = true;
-  learnConfirm().textContent = 'Confirmar';
-  learnSkip().textContent = 'Omitir';
+/**
+ * Fase unica de aprendizaje del campamento (una vez, tras las mejoras).
+ *
+ * Estados:
+ *  - A: ningun miembro con habilidades aprendibles
+ *       → "Tu equipo no tiene habilidades que aprender"
+ *  - B: hay habilidades pero 0 orbes → "No tienes orbes disponibles"
+ *  - C: rejilla de miembros (elegibles clicables, resto deshabilitados)
+ *       → al elegir, picking de 3 habilidades con Confirmar/Cancelar
+ *
+ * Tras confirmar, si quedan orbes y miembros elegibles se vuelve a la
+ * rejilla; si no, la fase termina. "Omitir" termina la fase en cualquier
+ * momento desde la rejilla.
+ *
+ * @param {Object[]} members - Supervivientes vivos que subieron de nivel
+ * @param {Function} onComplete - Se llama al terminar la fase
+ */
+export function startLearnPhase(members, onComplete) {
+  const picked = new Set();
 
-  // Sin orbes disponibles: solo se puede pasar
-  if (orbes < ORB_COST) {
-    learnTitle().textContent = 'No tienes orbes disponibles';
+  const finish = () => {
+    learnOverlay().classList.add('hidden');
+    onComplete();
+  };
+
+  const showMessage = (text, buttonText, onClick) => {
+    learnGrid().innerHTML = '';
+    learnTitle().textContent = text;
     learnConfirm().style.display = 'none';
-    learnSkip().textContent = 'Continuar';
-    learnSkip().onclick = () => {
-      learnOverlay().classList.add('hidden');
-      onDone();
-    };
+    learnSkip().textContent = buttonText;
+    learnSkip().onclick = onClick;
     learnOverlay().classList.remove('hidden');
+  };
+
+  // Estado A: el equipo no tiene habilidades que aprender
+  if (!members.some(hasLearnable)) {
+    showMessage('Tu equipo no tiene habilidades que aprender', 'Continuar', finish);
     return;
   }
 
-  const options = pickRandom(pool, 3);
-  learnTitle().textContent = `${member.name} aprende una nueva habilidad · 🔵 Orbes: ${orbes}`;
+  // Estado B: sin orbes disponibles
+  if ((state.run.orbes ?? 0) < ORB_COST) {
+    showMessage('No tienes orbes disponibles', 'Continuar', finish);
+    return;
+  }
 
-  let selectedIndex = null;
+  // Estado C: rejilla de selección de miembros
+  function showMemberGrid() {
+    const orbes = state.run.orbes ?? 0;
+    const eligible = (m) => hasLearnable(m) && !picked.has(m);
 
-  const render = () => {
-    learnGrid().querySelectorAll('.skill-btn').forEach((btn, i) => {
-      btn.classList.toggle('selected', i === selectedIndex);
+    // Sin orbes o sin elegibles: termina la fase
+    if (orbes < ORB_COST || !members.some(eligible)) {
+      finish();
+      return;
+    }
+
+    learnTitle().textContent = `Puedes usar orbes azules para que uno de tus personajes aprenda una nueva habilidad · 🔵 Orbes: ${orbes}`;
+    learnGrid().innerHTML = '';
+    learnConfirm().style.display = 'none';
+    learnSkip().textContent = 'Omitir';
+    learnSkip().onclick = finish;
+
+    members.forEach((member) => {
+      const canPick = eligible(member);
+      const card = document.createElement('button');
+      card.className = 'learn-member-card';
+      card.disabled = !canPick;
+      card.innerHTML = `
+        <img src="${member.image ?? ''}" alt="${member.name}">
+        <div class="learn-member-name">${member.name}</div>
+      `;
+      if (canPick) card.onclick = () => showSkillPick(member);
+      learnGrid().appendChild(card);
     });
-    learnConfirm().disabled = selectedIndex === null;
-  };
 
-  options.forEach((skill, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'skill-btn';
-    btn.innerHTML = skillCardHtml(skill);
-    btn.onclick = () => {
-      if (selectedIndex === null) {
-        selectedIndex = i;
-      } else if (selectedIndex === i) {
-        selectedIndex = null;
-      } else {
-        selectedIndex = i;
-      }
-      render();
+    learnOverlay().classList.remove('hidden');
+  }
+
+  // Vista de picking: 3 habilidades al azar del miembro elegido
+  function showSkillPick(member) {
+    const pool = member.learnableSkills;
+    if (!pool || pool.length === 0) {
+      showMemberGrid();
+      return;
+    }
+
+    const options = pickRandom(pool, 3);
+    learnGrid().innerHTML = '';
+    learnTitle().textContent = `${member.name} aprende una nueva habilidad · 🔵 Orbes: ${state.run.orbes ?? 0}`;
+    learnConfirm().style.display = '';
+    learnConfirm().textContent = 'Confirmar';
+    learnConfirm().disabled = true;
+    learnSkip().textContent = 'Cancelar';
+    learnSkip().onclick = showMemberGrid;
+
+    let selectedIndex = null;
+
+    const render = () => {
+      learnGrid().querySelectorAll('.skill-btn').forEach((btn, i) => {
+        btn.classList.toggle('selected', i === selectedIndex);
+      });
+      learnConfirm().disabled = selectedIndex === null;
     };
-    learnGrid().appendChild(btn);
-  });
 
-  learnConfirm().style.display = '';
-  learnSkip().onclick = () => {
-    learnOverlay().classList.add('hidden');
-    onDone();
-  };
+    options.forEach((skill, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'skill-btn';
+      btn.innerHTML = skillCardHtml(skill);
+      btn.onclick = () => {
+        if (selectedIndex === null) {
+          selectedIndex = i;
+        } else if (selectedIndex === i) {
+          selectedIndex = null;
+        } else {
+          selectedIndex = i;
+        }
+        render();
+      };
+      learnGrid().appendChild(btn);
+    });
 
-  learnOverlay().classList.remove('hidden');
+    learnConfirm().onclick = () => {
+      if (selectedIndex === null) return;
+      const chosen = options[selectedIndex];
+      state.run.orbes = (state.run.orbes ?? 0) - ORB_COST;
+      member.skills.push({ ...chosen, level: 1 });
+      const poolIdx = pool.findIndex((s) => s.name === chosen.name);
+      if (poolIdx !== -1) pool.splice(poolIdx, 1);
+      picked.add(member);
+      saveTeamSkills();
+      saveTeamLearnableSkills();
+      saveTeamLearnedSkills();
+      // Vuelve a la rejilla (o termina si ya no queda nada que hacer)
+      showMemberGrid();
+    };
 
-  learnConfirm().onclick = () => {
-    if (selectedIndex === null) return;
-    const chosen = options[selectedIndex];
-    state.run.orbes = (state.run.orbes ?? 0) - ORB_COST;
-    member.skills.push({ ...chosen, level: 1 });
-    const poolIdx = pool.findIndex(s => s.name === chosen.name);
-    if (poolIdx !== -1) pool.splice(poolIdx, 1);
-    learnOverlay().classList.add('hidden');
-    onDone();
-  };
+    learnOverlay().classList.remove('hidden');
+    render();
+  }
 
-  render();
+  showMemberGrid();
 }
 
 /**
- * Muestra el menú de mejora para cada superviviente, en orden.
- * Después de mejorar, si tiene habilidades aprendibles, ofrece aprender una.
+ * Muestra el menú de mejora (gratuita) para cada superviviente, en orden.
+ * El aprendizaje de habilidades nuevas ocurre después, en la fase única
+ * gestionada por startLearnPhase.
  *
  * @param {Object[]} members - Supervivientes de equipo A
  * @param {Function} onComplete - Se llama cuando todos terminaron
@@ -211,9 +283,7 @@ export function startSkillUpgrades(members, onComplete) {
       onComplete();
       return;
     }
-    showUpgradeFor(member, () => {
-      showLearnFor(member, next);
-    });
+    showUpgradeFor(member, next);
   }
 
   next();
