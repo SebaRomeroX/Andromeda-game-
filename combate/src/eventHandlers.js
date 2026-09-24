@@ -116,16 +116,16 @@ export function showCampEvent(event, advanceStageCb) {
       button.textContent = 'Continuar';
       button.onclick = () => {
         levelupEl.classList.add('hidden');
-        startSkillUpgrades([member], () => {
-          idx++;
-          if (idx < leveledMembers.length) {
-            showLevelUp();
-          } else {
-            // Último miembro: fase única de aprendizaje (una vez por campamento)
-            overlay.classList.add('hidden');
-            startLearnPhase(leveledMembers.map((l) => l.member), advanceStageCb);
-          }
-        });
+        idx++;
+        if (idx < leveledMembers.length) {
+          showLevelUp();
+        } else {
+          // Última tarjeta: fase única de mejoras (1 orbe rojo c/u) y,
+          // a continuación, fase única de aprendizaje (1 orbe azul c/u)
+          overlay.classList.add('hidden');
+          const leveled = leveledMembers.map((l) => l.member);
+          startSkillUpgrades(leveled, () => startLearnPhase(leveled, advanceStageCb));
+        }
       };
     }
 

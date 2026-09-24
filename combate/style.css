@@ -1406,6 +1406,25 @@ body {
   align-items: center;
 }
 
+#upgrade-skip {
+  padding: 12px 32px;
+  border: 2px solid #4a5a8a;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1a2a3a, #0a1a2a);
+  color: #a0c0f0;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+#upgrade-skip:hover {
+  background: linear-gradient(135deg, #2a3a5a, #1a2a4a);
+  border-color: #6a8aca;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(94, 168, 255, 0.25);
+}
+
 #learn-skip {
   padding: 12px 32px;
   border: 2px solid #4a5a8a;
