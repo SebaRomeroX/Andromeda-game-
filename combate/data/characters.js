@@ -357,7 +357,7 @@ const characters = [
       // createSkill({ name: "Intensidad",    type: "buff",    target: "self",  stat: "attack",  value: 0.10,   precision: 99, apparicion: 30 }),
     ],
     learnableSkills: [
-      // createSkill({ name: "Relampago",      type: "attack",  power: 26,   precision: 85,    aparicion: 20    }),
+      createSkill({ name: "Relampago",      type: "attack",  power: 26,   precision: 85,    aparicion: 20    }),
       // createSkill({ name: "Concentracion",  type: "buff",    target: "ally",  stat: "precision",  value: 1,  precision: 99, aparicion: 50 }),
     ]
   }),
