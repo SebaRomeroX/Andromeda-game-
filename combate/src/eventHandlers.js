@@ -55,7 +55,7 @@ export function showCampEvent(event, advanceStageCb) {
   const teamAData = buildTeamAData();
   initState(teamAData, []);
 
-  message.innerHTML = `${event.description}<br><span style="color:#5ea8ff;">🔵 Orbes de la mente: ${state.run.orbes ?? 0}</span>`;
+  message.innerHTML = event.description;
   button.textContent = 'Descansar';
   levelupEl.classList.add('hidden');
   titleEl.textContent = '';
