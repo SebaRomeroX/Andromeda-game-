@@ -127,7 +127,9 @@ const hasLearnable = (m) => (m.learnableSkills?.length ?? 0) > 0;
  *       → "Tu equipo no tiene habilidades que aprender"
  *  - B: hay habilidades pero 0 orbes → "No tienes orbes disponibles"
  *  - C: rejilla de miembros (elegibles clicables, resto deshabilitados)
- *       → al elegir, picking de 3 habilidades con Confirmar/Cancelar
+ *       → al elegir, picking de 3 habilidades con Confirmar/Cancelar.
+ *       Bloqueo estricto: elegir a un miembro lo fija para el resto del
+ *       campamento aunque se cancele o no aprenda nada.
  *
  * Tras confirmar, si quedan orbes y miembros elegibles se vuelve a la
  * rejilla; si no, la fase termina. "Omitir" termina la fase en cualquier
@@ -198,8 +200,11 @@ export function startLearnPhase(members, onComplete) {
     learnOverlay().classList.remove('hidden');
   }
 
-  // Vista de picking: 3 habilidades al azar del miembro elegido
+  // Vista de picking: 3 habilidades al azar del miembro elegido.
+  // Bloqueo estricto: al elegir al miembro queda fijado para el resto
+  // del campamento, da igual si finalmente aprende o cancela.
   function showSkillPick(member) {
+    picked.add(member);
     const pool = member.learnableSkills;
     if (!pool || pool.length === 0) {
       showMemberGrid();
@@ -248,7 +253,6 @@ export function startLearnPhase(members, onComplete) {
       member.skills.push({ ...chosen, level: 1 });
       const poolIdx = pool.findIndex((s) => s.name === chosen.name);
       if (poolIdx !== -1) pool.splice(poolIdx, 1);
-      picked.add(member);
       saveTeamSkills();
       saveTeamLearnableSkills();
       saveTeamLearnedSkills();
