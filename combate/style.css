@@ -737,36 +737,6 @@ body {
   box-shadow: 0 4px 20px rgba(200, 160, 50, 0.3);
 }
 
-/* Orbe ganado: badge tipo toast (pastilla con borde) sobre el boton Continuar */
-.victory-orbs {
-  display: inline-block;
-  padding: 10px 22px;
-  margin-bottom: 10px;
-  border: 2px solid #4a7ab8;
-  border-radius: 24px;
-  background: rgba(20, 40, 80, 0.95);
-  color: #5ea8ff;
-  font-size: 0.95rem;
-  font-weight: bold;
-  white-space: nowrap;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 12px rgba(94, 168, 255, 0.35);
-  animation: orb-pop 0.4s ease-out;
-}
-
-@keyframes orb-pop {
-  0% {
-    opacity: 0;
-    transform: translateY(8px) scale(0.8);
-  }
-  70% {
-    transform: translateY(-2px) scale(1.05);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 /* Screen management */
 .screen {
   display: none;

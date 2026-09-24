@@ -7,6 +7,7 @@ import { actionLabel, powerLabel } from './formatters.js';
 import { pickWeighted, computeEffect, computeTargets, getAttackTargets, sortActions, planEnemyActions, skillNameToId } from './combatEngine.js';
 import { playSound, stopMusic } from './music.js';
 import { resolveVictory, getEventOrbs } from './gameFlow.js';
+import { showToast } from './toast.js';
 
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
   const actor = state.combat.teams[actorTeam].members[actorIndex];
@@ -149,10 +150,13 @@ function checkGameOver() {
     log(`🏆 ¡El EQUIPO B ha sido derrotado! El EQUIPO A gana.`);
     stopMusic();
     setTimeout(() => playSound('achievement'), 300);
-    // Muestra el orbe ganado junto al boton Continuar (si procede)
+    // Badge "orbe ganado" (mismo toast que "Partida Guardada")
     const { result } = resolveVictory();
-    const orbs = result === 'protagonist_fallen' ? 0 : getEventOrbs(state.session.currentEvent);
-    showRestart(true, getGameEndCallback(), orbs);
+    if (result !== 'protagonist_fallen') {
+      const orbs = getEventOrbs(state.session.currentEvent);
+      showToast(`🔵 ${orbs === 1 ? 'Orbe ganado' : `${orbs} Orbes ganados`}`);
+    }
+    showRestart(true, getGameEndCallback());
     return true;
   }
   return false;

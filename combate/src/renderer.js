@@ -464,18 +464,11 @@ if (popup) {
  * Pantalla de fin de combate en `#restart-area`.
  * @param {boolean} won - victoria del equipo A
  * @param {Function} onEnd - callback al pulsar el boton
- * @param {number} [orbs=0] - orbes ganados (solo se muestran en victoria)
  */
-export function showRestart(won, onEnd, orbs = 0) {
+export function showRestart(won, onEnd) {
   const div = $("restart-area");
-  if (!won) {
-    div.innerHTML = `<button id="restart-btn">Reintentar</button>`;
-  } else {
-    const orbMsg = orbs > 0
-      ? `<span class="victory-orbs">🔵 ${orbs === 1 ? 'Orbe ganado' : `${orbs} Orbes ganados`}</span>`
-      : '';
-    div.innerHTML = `${orbMsg}<button id="restart-btn">Continuar</button>`;
-  }
+  const text = won ? 'Continuar' : 'Reintentar';
+  div.innerHTML = `<button id="restart-btn">${text}</button>`;
   document.getElementById('restart-btn').onclick = () => {
     if (onEnd) onEnd();
   };

@@ -16,20 +16,7 @@ import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogue
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
 import { initPause, showPause } from './pause.js';
-
-let toastTimer = null;
-function showToast(text) {
-  const toast = document.getElementById('save-toast');
-  if (!toast) return;
-  toast.textContent = text;
-  toast.classList.add('show');
-  toast.classList.remove('hidden');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    toast.classList.remove('show');
-    toast.classList.add('hidden');
-  }, 1500);
-}
+import { showToast } from './toast.js';
 
 function showConfirmModal(message) {
   return new Promise(resolve => {
