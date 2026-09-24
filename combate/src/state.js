@@ -29,7 +29,9 @@ const runState = {
   flags: {},
   recruitOffer: null,
   peakEnemyLevel: 0,
-  orbes: 0
+  // Cuatro tipos de orbe: mente (azul), poder (rojo), cuerpo (verde),
+  // riqueza (dorado). Solo la mente tiene uso por ahora (campamentos).
+  orbes: { mind: 0, power: 0, body: 0, wealth: 0 }
 };
 
 // ── Estado de sesion (seleccionado al elegir historia) ──
@@ -67,7 +69,7 @@ export function resetRunState() {
   runState.flags = {};
   runState.recruitOffer = null;
   runState.peakEnemyLevel = 0;
-  runState.orbes = 0;
+  runState.orbes = { mind: 0, power: 0, body: 0, wealth: 0 };
 }
 
 export function resetSessionState() {

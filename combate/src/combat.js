@@ -6,7 +6,7 @@ import { log } from './log.js';
 import { actionLabel, powerLabel } from './formatters.js';
 import { pickWeighted, computeEffect, computeTargets, getAttackTargets, sortActions, planEnemyActions, skillNameToId } from './combatEngine.js';
 import { playSound, stopMusic } from './music.js';
-import { resolveVictory, getEventOrbs } from './gameFlow.js';
+import { resolveVictory, getEventOrbs, formatOrbGainHtml } from './gameFlow.js';
 import { showEndModal } from './eventHandlers.js';
 
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
@@ -168,9 +168,10 @@ function checkGameOver() {
       return true;
     }
 
-    // Un solo modal: victoria + (bajas si las hay) + orbe ganado
+    // Un solo modal: victoria + (bajas si las hay) + orbes ganados
     const orbs = getEventOrbs(state.session.currentEvent);
-    const orbLine = `<span style="color:#5ea8ff;">🔵 ${orbs === 1 ? 'Orbe ganado' : `${orbs} Orbes ganados`}</span>`;
+    const orbLine = formatOrbGainHtml(orbs)
+      || '<span style="color:#888;">Sin orbes ganados</span>';
     const fallenLines = result === 'allies_fallen'
       ? names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>') + '<br>'
       : '';

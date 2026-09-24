@@ -4,7 +4,7 @@ import { getEventOrbs } from './gameFlow.js';
 import characters from '../data/characters.js';
 
 function initialRun() {
-  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null, flags: {}, orbes: 0 };
+  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null, flags: {}, orbes: { mind: 0, power: 0, body: 0, wealth: 0 } };
 }
 
 function applyEvent(ev, run, roster, choices = {}) {
@@ -14,8 +14,12 @@ function applyEvent(ev, run, roster, choices = {}) {
   } else if (ev.type === 'enfrentamiento') {
     run.enfrentamientos++;
     run.fightsSinceCamp++;
-    // Recompensa de orbes: reward explícito o 1 por defecto
-    run.orbes = (run.orbes ?? 0) + getEventOrbs(ev);
+    // Recompensa de orbes: reward explicito o 1 de cada tipo por defecto
+    const gained = getEventOrbs(ev);
+    const orbes = run.orbes ?? (run.orbes = { mind: 0, power: 0, body: 0, wealth: 0 });
+    Object.keys(gained).forEach((k) => {
+      orbes[k] = (orbes[k] ?? 0) + gained[k];
+    });
   } else if (ev.type === 'reclutamiento') {
     const char = characters[ev.character];
     const slot = ROLE_BY_INDEX.indexOf(char?.role);

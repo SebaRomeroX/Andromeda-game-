@@ -140,9 +140,11 @@ function findNextNode(story, ctx) {
  *   3. siguiente nodo narrativo en el grafo de historia
  *   4. enfrentamiento generico
  *
- * Recompensa de orbes: todo combate ganado otorga orbes azules (mente).
- * Un nodo `enfrentamiento` puede definir `reward: { orbs: 3 }` (o `reward: 3`
- * como atajo); si no define nada, la recompensa por defecto es 1 orbe.
+ * Recompensa de orbes: hay 4 tipos (mente 🔵, poder 🔴, cuerpo 💚,
+ * riqueza 🟡). Si un nodo `enfrentamiento` no define `reward`, la
+ * recompensa por defecto es 1 orbe de cada tipo. Un nodo puede definir
+ * `reward: { mind, power, body, wealth }` por tipo, o usar los atajos
+ * legados `reward: { orbs: 3 }` / `reward: 3` (3 orbes de la mente).
  */
 export function pickNextEvent(story, ctx, playerTeam) {
   if (story.infiniteMode) {

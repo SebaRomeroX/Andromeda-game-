@@ -161,15 +161,15 @@ export function startLearnPhase(members, onComplete) {
     return;
   }
 
-  // Estado B: sin orbes disponibles
-  if ((state.run.orbes ?? 0) < ORB_COST) {
+  // Estado B: sin orbes de la mente disponibles
+  if ((state.run.orbes?.mind ?? 0) < ORB_COST) {
     showMessage('No tienes orbes disponibles', 'Continuar', finish);
     return;
   }
 
   // Estado C: rejilla de selección de miembros
   function showMemberGrid() {
-    const orbes = state.run.orbes ?? 0;
+    const orbes = state.run.orbes?.mind ?? 0;
     const eligible = (m) => hasLearnable(m) && !picked.has(m);
 
     // Sin orbes o sin elegibles: termina la fase
@@ -213,7 +213,7 @@ export function startLearnPhase(members, onComplete) {
 
     const options = pickRandom(pool, 3);
     learnGrid().innerHTML = '';
-    learnTitle().textContent = `${member.name} aprende una nueva habilidad · 🔵 Orbes: ${state.run.orbes ?? 0}`;
+    learnTitle().textContent = `${member.name} aprende una nueva habilidad · 🔵 Orbes: ${state.run.orbes?.mind ?? 0}`;
     learnConfirm().style.display = '';
     learnConfirm().textContent = 'Confirmar';
     learnConfirm().disabled = true;
@@ -249,7 +249,7 @@ export function startLearnPhase(members, onComplete) {
     learnConfirm().onclick = () => {
       if (selectedIndex === null) return;
       const chosen = options[selectedIndex];
-      state.run.orbes = (state.run.orbes ?? 0) - ORB_COST;
+      state.run.orbes = { ...state.run.orbes, mind: (state.run.orbes?.mind ?? 0) - ORB_COST };
       member.skills.push({ ...chosen, level: 1 });
       const poolIdx = pool.findIndex((s) => s.name === chosen.name);
       if (poolIdx !== -1) pool.splice(poolIdx, 1);

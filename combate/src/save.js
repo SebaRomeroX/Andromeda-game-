@@ -1,6 +1,22 @@
 const SAVE_VERSION = 1;
 const SAVE_PREFIX = 'andromeda-progress:';
 
+// Normaliza los orbes guardados a { mind, power, body, wealth }.
+// Compatibilidad: un guardado antiguo con `orbes` numerico se interpreta
+// como orbes de la mente; los demas tipos quedan en 0.
+function normalizeOrbs(orbs) {
+  if (typeof orbs === 'number') return { mind: orbs, power: 0, body: 0, wealth: 0 };
+  if (orbs && typeof orbs === 'object') {
+    return {
+      mind: orbs.mind ?? 0,
+      power: orbs.power ?? 0,
+      body: orbs.body ?? 0,
+      wealth: orbs.wealth ?? 0
+    };
+  }
+  return { mind: 0, power: 0, body: 0, wealth: 0 };
+}
+
 function keyFor(storyId) {
   return SAVE_PREFIX + storyId;
 }
@@ -32,7 +48,7 @@ export function saveGame(storyId, payload) {
       currentNodeId: payload.run.currentNodeId ?? null,
       flags: payload.run.flags ?? {},
       peakEnemyLevel: payload.run.peakEnemyLevel ?? 0,
-      orbes: payload.run.orbes ?? 0
+      orbes: normalizeOrbs(payload.run.orbes)
     },
     fired: Array.from(payload.run.fired ?? []),
     team: payload.team
@@ -83,7 +99,7 @@ export function loadGame(storyId) {
         currentNodeId: data.run.currentNodeId ?? null,
         flags: data.run.flags ?? {},
         peakEnemyLevel: data.run.peakEnemyLevel ?? 0,
-        orbes: data.run.orbes ?? 0
+        orbes: normalizeOrbs(data.run.orbes)
       },
       fired: Array.isArray(data.fired) ? new Set(data.fired) : new Set(),
       team: data.team ?? {}

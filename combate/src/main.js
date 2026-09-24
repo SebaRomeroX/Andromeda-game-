@@ -11,7 +11,7 @@ import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
 import { isDev } from './env.js';
 import { TEAMS } from './constants.js';
-import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs } from './gameFlow.js';
+import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs, formatOrbTotals, formatOrbGainText, emptyOrbs, ORB_META } from './gameFlow.js';
 import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding, showEndModal } from './eventHandlers.js';
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
@@ -232,7 +232,7 @@ function startStory(story, { loadSave }) {
     state.run.choices = data.run.choices ?? {};
     state.run.currentNodeId = data.run.currentNodeId ?? null;
     state.run.flags = data.run.flags ?? {};
-    state.run.orbes = data.run.orbes ?? 0;
+    state.run.orbes = data.run.orbes ?? emptyOrbs();
     state.session.playerTeam = data.playerTeam;
     state.session.protagonistSlot = data.protagonistSlot;
     resetTeam();
@@ -271,9 +271,9 @@ function renderMap() {
     if (story.infiniteMode) {
       const cycle = state.run.campamentos + 1;
       const members = state.session.playerTeam.filter(idx => idx !== -1).length;
-      header.textContent = `Ciclo ${cycle} · Equipo: ${members}/4 · 🔵 Orbes: ${state.run.orbes ?? 0}`;
+      header.textContent = `Ciclo ${cycle} · Equipo: ${members}/4 · Orbes: ${formatOrbTotals(state.run.orbes)}`;
     } else {
-      header.textContent = `Etapa ${state.run.stage + 1} · 🔵 Orbes: ${state.run.orbes ?? 0}`;
+      header.textContent = `Etapa ${state.run.stage + 1} · Orbes: ${formatOrbTotals(state.run.orbes)}`;
     }
 
     state.session.currentEvent = pickNextEvent(state.session.selectedStory, state.run, state.session.playerTeam);
@@ -428,13 +428,16 @@ function handleVictory() {
 
   saveTeamState();
 
-  // ── Recompensa de orbes azules (mente) ──
+  // ── Recompensa de orbes (mente/poder/cuerpo/riqueza) ──
   // El importe ya se muestra en el modal de victoria; aqui solo se otorga
   // (al pulsar Continuar) y se registra en el log.
   const gainedOrbs = getEventOrbs(state.session.currentEvent);
-  state.run.orbes = (state.run.orbes ?? 0) + gainedOrbs;
-  const orbText = `🔵 +${gainedOrbs} ${gainedOrbs === 1 ? 'Orbe de la mente' : 'Orbes de la mente'}`;
-  log(orbText);
+  const orbes = state.run.orbes ?? (state.run.orbes = emptyOrbs());
+  ORB_META.forEach(({ key }) => {
+    orbes[key] = (orbes[key] ?? 0) + (gainedOrbs[key] ?? 0);
+  });
+  const gainText = formatOrbGainText(gainedOrbs);
+  if (gainText) log(`${gainText} — Orbes ganados`);
 
   if (result === 'allies_fallen') {
     // Las bajas ya se mostraron en el modal de victoria; aqui solo se aplican

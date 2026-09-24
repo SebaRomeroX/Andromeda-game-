@@ -37,11 +37,68 @@ export function advanceStage() {
   state.run.stage++;
 }
 
-// Recompensa de orbes de un evento de combate: `reward` numerico -> ese valor,
-// `reward: { orbs: N }` -> N, sin reward -> 1 por defecto. Fuente unica.
+// ── Recompensa de orbes de un evento de combate (fuente unica) ──
+// Devuelve { mind, power, body, wealth }:
+//  - sin `reward`            -> 1 de cada tipo (valor por defecto)
+//  - `reward: 3` (atajo)     -> 3 mente, 0 resto (compat. legado)
+//  - `reward: { orbs: 3 }`   -> 3 mente, 0 resto (compat. legado)
+//  - `reward: { mind, power, body, wealth }` -> por tipo; los tipos no
+//    indicados valen 0 (la recompensa explicita sustituye al defecto).
+//    `orbs` se mapea a `mind` si no hay `mind` explicito.
+const DEFAULT_ORB_REWARD = Object.freeze({ mind: 1, power: 1, body: 1, wealth: 1 });
+const ZERO_ORB_REWARD = Object.freeze({ mind: 0, power: 0, body: 0, wealth: 0 });
+
+export function emptyOrbs() {
+  return { mind: 0, power: 0, body: 0, wealth: 0 };
+}
+
 export function getEventOrbs(event) {
   const reward = event?.reward;
-  return typeof reward === 'number' ? reward : (reward?.orbs ?? 1);
+
+  if (reward == null) return { ...DEFAULT_ORB_REWARD };
+
+  if (typeof reward === 'number') return { ...ZERO_ORB_REWARD, mind: reward };
+
+  const mind = reward.mind ?? reward.orbs ?? 0;
+  return {
+    mind,
+    power: reward.power ?? 0,
+    body: reward.body ?? 0,
+    wealth: reward.wealth ?? 0
+  };
+}
+
+// ── Display de orbes (iconos, colores y etiquetas por tipo) ──
+export const ORB_META = [
+  { key: 'mind', icon: '🔵', color: '#5ea8ff', label: 'mente' },
+  { key: 'power', icon: '🔴', color: '#ff5c5c', label: 'poder' },
+  { key: 'body', icon: '💚', color: '#5cd65c', label: 'cuerpo' },
+  { key: 'wealth', icon: '🟡', color: '#ffd700', label: 'riqueza' }
+];
+
+// Totales siempre con los 4 tipos: "🔵 3 · 🔴 1 · 💚 2 · 🟡 0"
+export function formatOrbTotals(orbes) {
+  return ORB_META
+    .map(m => `${m.icon} ${orbes?.[m.key] ?? 0}`)
+    .join(' · ');
+}
+
+// Ganancia en texto plano (log), solo tipos > 0:
+// "🔵 +1 · 🔴 +1 · 💚 +1 · 🟡 +1"
+export function formatOrbGainText(gained) {
+  return ORB_META
+    .filter(m => (gained?.[m.key] ?? 0) > 0)
+    .map(m => `${m.icon} +${gained[m.key]}`)
+    .join(' · ');
+}
+
+// Ganancia en HTML coloreado (modal de victoria), solo tipos > 0:
+// '<span style="color:#5ea8ff">🔵 +1</span> ...'
+export function formatOrbGainHtml(gained) {
+  return ORB_META
+    .filter(m => (gained?.[m.key] ?? 0) > 0)
+    .map(m => `<span style="color:${m.color}">${m.icon} +${gained[m.key]}</span>`)
+    .join(' ');
 }
 
 // Determina que pasa al ganar: protagonista cae, aliados caen, victoria limpia
