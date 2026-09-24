@@ -39,23 +39,45 @@ export function advanceStage() {
 
 // ── Recompensa de orbes de un evento de combate (fuente unica) ──
 // Devuelve { mind, power, body, wealth }:
-//  - sin `reward`            -> 1 de cada tipo (valor por defecto)
+//  - sin `reward`            -> tirada de azar por tipo (valor por defecto):
+//                               riqueza 10%, mente 20%, poder 50%, cuerpo 90%.
+//                               Las tiradas son independientes: puede caer
+//                               uno de cada tipo, varios, o ninguno.
 //  - `reward: 3` (atajo)     -> 3 mente, 0 resto (compat. legado)
 //  - `reward: { orbs: 3 }`   -> 3 mente, 0 resto (compat. legado)
 //  - `reward: { mind, power, body, wealth }` -> por tipo; los tipos no
 //    indicados valen 0 (la recompensa explicita sustituye al defecto).
 //    `orbs` se mapea a `mind` si no hay `mind` explicito.
-const DEFAULT_ORB_REWARD = Object.freeze({ mind: 1, power: 1, body: 1, wealth: 1 });
 const ZERO_ORB_REWARD = Object.freeze({ mind: 0, power: 0, body: 0, wealth: 0 });
+
+// Probabilidad de ganar 1 orbe de cada tipo al vencer sin `reward`
+// explicito. Claves alineadas con ORB_META (riqueza=dorado, mente=azul,
+// poder=rojo, cuerpo=verde).
+export const DEFAULT_ORB_CHANCES = Object.freeze({
+  wealth: 0.10,
+  mind: 0.20,
+  power: 0.50,
+  body: 0.90
+});
 
 export function emptyOrbs() {
   return { mind: 0, power: 0, body: 0, wealth: 0 };
 }
 
-export function getEventOrbs(event) {
+// Tirada de la recompensa por defecto: 1 orbe por tipo que supera su
+// probabilidad, con tiradas independientes entre si.
+export function rollDefaultOrbs(rng = Math.random) {
+  const orbs = emptyOrbs();
+  for (const [key, chance] of Object.entries(DEFAULT_ORB_CHANCES)) {
+    if (rng() < chance) orbs[key] = 1;
+  }
+  return orbs;
+}
+
+export function getEventOrbs(event, rng = Math.random) {
   const reward = event?.reward;
 
-  if (reward == null) return { ...DEFAULT_ORB_REWARD };
+  if (reward == null) return rollDefaultOrbs(rng);
 
   if (typeof reward === 'number') return { ...ZERO_ORB_REWARD, mind: reward };
 
@@ -66,6 +88,15 @@ export function getEventOrbs(event) {
     body: reward.body ?? 0,
     wealth: reward.wealth ?? 0
   };
+}
+
+// Recompensa de una victoria. Se tira UNA SOLA VEZ, en el momento en que
+// se detecta el triunfo (combat.js); el resultado se guarda en
+// `state.session.pendingOrbReward` para mostrarlo en el modal de victoria
+// y otorgarlo despues (handleVictory) sin volver a tirar. Si el combate se
+// pierde y se reintenta, la nueva victoria vuelve a tirar.
+export function rollVictoryOrbs(event, rng = Math.random) {
+  return getEventOrbs(event, rng);
 }
 
 // ── Display de orbes (colores y etiquetas por tipo) ──

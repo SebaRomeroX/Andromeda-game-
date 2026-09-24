@@ -332,6 +332,9 @@ function renderMap() {
 
 function startCombat(event) {
   state.session.currentEvent = event;
+  // Cada intento de combate parte sin recompensa pendiente: si el anterior
+  // se perdio (o quedo un residuo), la proxima victoria vuelve a tirar.
+  state.session.pendingOrbReward = null;
 
   if (event.type === 'campamento') {
     showCampEvent(event, advanceStage);
@@ -429,9 +432,11 @@ function handleVictory() {
   saveTeamState();
 
   // ── Recompensa de orbes (mente/poder/cuerpo/riqueza) ──
-  // El importe ya se muestra en el modal de victoria; aqui solo se otorga
-  // (al pulsar Continuar) y se registra en el log.
-  const gainedOrbs = getEventOrbs(state.session.currentEvent);
+  // La tirada ya se hizo al detectar la victoria (combat.js) y se muestra
+  // en el modal; aqui solo se otorga (al pulsar Continuar) y se registra
+  // en el log. Si no hubiera tirada guardada, se tira ahora.
+  const gainedOrbs = state.session.pendingOrbReward ?? getEventOrbs(state.session.currentEvent);
+  state.session.pendingOrbReward = null;
   const orbes = state.run.orbes ?? (state.run.orbes = emptyOrbs());
   ORB_META.forEach(({ key }) => {
     orbes[key] = (orbes[key] ?? 0) + (gainedOrbs[key] ?? 0);

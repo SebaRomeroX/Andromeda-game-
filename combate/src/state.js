@@ -39,7 +39,10 @@ const sessionState = {
   selectedStory: null,
   playerTeam: null,
   protagonistSlot: 0,
-  currentEvent: null
+  currentEvent: null,
+  // Recompensa de orbes tirada al detectar la victoria; se consume en
+  // handleVictory() y se limpia al iniciar cada combate.
+  pendingOrbReward: null
 };
 
 export default { combat: combatState, run: runState, session: sessionState };
@@ -77,6 +80,7 @@ export function resetSessionState() {
   sessionState.playerTeam = null;
   sessionState.protagonistSlot = 0;
   sessionState.currentEvent = null;
+  sessionState.pendingOrbReward = null;
 }
 
 // ── Team save helpers ──

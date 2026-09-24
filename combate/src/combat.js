@@ -6,7 +6,7 @@ import { log } from './log.js';
 import { actionLabel, powerLabel } from './formatters.js';
 import { pickWeighted, computeEffect, computeTargets, getAttackTargets, sortActions, planEnemyActions, skillNameToId } from './combatEngine.js';
 import { playSound, stopMusic } from './music.js';
-import { resolveVictory, getEventOrbs, formatOrbGainHtml } from './gameFlow.js';
+import { resolveVictory, rollVictoryOrbs, formatOrbGainHtml } from './gameFlow.js';
 import { showEndModal } from './eventHandlers.js';
 
 function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outcome) {
@@ -176,8 +176,11 @@ function checkGameOver() {
       return true;
     }
 
-    // Un solo modal: victoria + (bajas si las hay) + recompensa de orbes
-    const orbs = getEventOrbs(state.session.currentEvent);
+    // Un solo modal: victoria + (bajas si las hay) + recompensa de orbes.
+    // La recompensa se tira UNA sola vez, aqui, al detectar la victoria;
+    // handleVictory() la otorga desde pendingOrbReward sin repetir la tirada.
+    const orbs = rollVictoryOrbs(state.session.currentEvent);
+    state.session.pendingOrbReward = orbs;
     const orbLine = `<strong>Recompensa:</strong><br>${formatOrbGainHtml(orbs)}`;
     const fallenLines = result === 'allies_fallen'
       ? names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>') + '<br>'

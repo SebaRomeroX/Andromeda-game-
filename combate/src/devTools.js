@@ -1,6 +1,6 @@
 import { ROLE_BY_INDEX, getLevelStats } from './models.js';
 import { pickNextEvent } from './eventGenerator.js';
-import { getEventOrbs } from './gameFlow.js';
+import { rollVictoryOrbs } from './gameFlow.js';
 import characters from '../data/characters.js';
 
 function initialRun() {
@@ -14,8 +14,9 @@ function applyEvent(ev, run, roster, choices = {}) {
   } else if (ev.type === 'enfrentamiento') {
     run.enfrentamientos++;
     run.fightsSinceCamp++;
-    // Recompensa de orbes: reward explicito o 1 de cada tipo por defecto
-    const gained = getEventOrbs(ev);
+    // Recompensa de orbes: reward explicito o tirada de azar por defecto
+    // (riqueza 10%, mente 20%, poder 50%, cuerpo 90%; independientes)
+    const gained = rollVictoryOrbs(ev);
     const orbes = run.orbes ?? (run.orbes = { mind: 0, power: 0, body: 0, wealth: 0 });
     Object.keys(gained).forEach((k) => {
       orbes[k] = (orbes[k] ?? 0) + gained[k];

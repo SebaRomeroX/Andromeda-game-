@@ -142,10 +142,11 @@ function findNextNode(story, ctx) {
  *
  * Recompensa de orbes: hay 4 tipos (mente, poder, cuerpo, riqueza), cada
  * uno con su punto de color en la UI. Si un nodo `enfrentamiento` no
- * define `reward`, la recompensa por defecto es 1 orbe de cada tipo. Un
- * nodo puede definir `reward: { mind, power, body, wealth }` por tipo, o
- * usar los atajos legados `reward: { orbs: 3 }` / `reward: 3` (3 orbes
- * de la mente).
+ * define `reward`, al vencer se tira por tipo de forma independiente:
+ * riqueza 10%, mente 20%, poder 50%, cuerpo 90% (puede no caer ninguno).
+ * Un nodo puede definir `reward: { mind, power, body, wealth }` por tipo,
+ * o usar los atajos legados `reward: { orbs: 3 }` / `reward: 3` (3 orbes
+ * de la mente); esas recompensas explicitas son fijas.
  */
 export function pickNextEvent(story, ctx, playerTeam) {
   if (story.infiniteMode) {
