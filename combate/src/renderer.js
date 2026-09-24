@@ -376,9 +376,23 @@ export function renderActions(skills, onChoose, actorCtx) {
   const container = $("actions");
   container.innerHTML = "";
   const isDesktop = !document.documentElement.classList.contains('mobile');
-  skills.forEach((skill, i) => {
+  // Always reserve 3 action slots so the bar never changes size when skills
+  // appear (selection phase) or disappear (resolution/enemy phase).
+  const slotCount = Math.max(3, skills.length);
+  for (let i = 0; i < slotCount; i++) {
+    const skill = skills[i];
     const btn = document.createElement("button");
     btn.className = "skill-btn";
+
+    if (!skill) {
+      // Placeholder slot: keeps the layout box but is invisible and inert.
+      btn.classList.add("placeholder");
+      btn.disabled = true;
+      btn.tabIndex = -1;
+      btn.setAttribute("aria-hidden", "true");
+      container.appendChild(btn);
+      continue;
+    }
 
     if (isDesktop) {
       const typeBadge = skillTypeLabel(skill.type);
@@ -435,7 +449,7 @@ export function renderActions(skills, onChoose, actorCtx) {
     }
 
     container.appendChild(btn);
-  });
+  }
 }
 
 document.addEventListener('mouseenter', (e) => {

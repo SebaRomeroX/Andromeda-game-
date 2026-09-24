@@ -624,6 +624,12 @@ body {
   box-shadow: 0 4px 16px rgba(100, 100, 200, 0.3);
 }
 
+/* Placeholder slot: reserves layout space only where the action bar is part
+   of the normal flow (desktop). Hidden elsewhere since the bar is fixed. */
+.skill-btn.placeholder {
+  display: none;
+}
+
 .skill-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -1894,6 +1900,7 @@ html.mobile #log-overlay #log {
     margin: 28px auto 0;
     padding: 12px 16px;
     gap: 14px;
+    align-items: stretch;
   }
 
   html:not(.mobile) .skill-popup {
@@ -1906,6 +1913,41 @@ html.mobile #log-overlay #log {
     padding: 10px 14px;
     font-size: 0.95rem;
     text-align: left;
+  }
+
+  /* Reserved action-bar geometry: every slot (real or placeholder) occupies
+     the exact same box, so skills appearing/disappearing never shifts the UI.
+     Header, stats and description are clamped so content can't exceed it. */
+  html:not(.mobile) #actions .skill-btn {
+    min-height: 150px;
+    overflow: hidden;
+  }
+
+  html:not(.mobile) #actions .skill-btn.placeholder {
+    display: block;
+    visibility: hidden;
+  }
+
+  html:not(.mobile) #actions .skill-popup-name {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  html:not(.mobile) #actions .skill-popup-stats {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  html:not(.mobile) #actions .skill-popup-desc {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+    max-height: 4.2rem; /* 4 lines × 0.75rem × 1.4 line-height */
+    overflow: hidden;
   }
 
   html:not(.mobile) .skill-name {
