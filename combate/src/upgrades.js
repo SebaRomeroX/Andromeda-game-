@@ -9,6 +9,11 @@
  *  - Mejora de habilidades: 1 orbe rojo (poder) por mejora.
  *  - Aprendizaje: 1 orbe azul (mente) por habilidad nueva; se ofrecen 3
  *    habilidades al azar del personaje elegido.
+ *
+ * Cada fase se omite sin mostrar interfaz si no tienes el orbe que
+ * cuesta o si no hay nada que hacer en ella (sin niveles, mejoras ni
+ * habilidades aprendibles): solo se muestran las fases en las que
+ * puedes actuar.
  */
 
 import { upgradeSkill, getNextLevelStats } from './models.js';
@@ -94,7 +99,7 @@ const hasLearnable = (m) => (m.learnableSkills?.length ?? 0) > 0;
  *
  * Estados:
  *  - A: no hay supervivientes vivos → termina la fase
- *  - B: hay personajes pero 0 orbes de cuerpo → "No tienes orbes disponibles"
+ *  - B: 0 orbes de cuerpo (verdes) → la fase se omite sin mostrar nada
  *  - C: rejilla de miembros (elegibles clicables, resto deshabilitados)
  *       → al elegir, vista de comparación de stats (Nivel/Salud/Evasion
  *       de la antigua a la nueva) con Confirmar/Cancelar.
@@ -117,26 +122,16 @@ export function startLevelUpPhase(members, onComplete) {
     onComplete();
   };
 
-  const showMessage = (text, buttonText, onClick) => {
-    lvlGrid().innerHTML = '';
-    lvlGrid().classList.remove('hidden');
-    lvlPreview().classList.add('hidden');
-    lvlTitle().textContent = text;
-    lvlConfirm().style.display = 'none';
-    lvlSkip().textContent = buttonText;
-    lvlSkip().onclick = onClick;
-    lvlOverlay().classList.remove('hidden');
-  };
-
   // Estado A: no hay supervivientes vivos que puedan subir de nivel
   if (members.length === 0) {
     finish();
     return;
   }
 
-  // Estado B: sin orbes de cuerpo (verdes) disponibles
+  // Estado B: sin orbes de cuerpo (verdes) → la fase se omite sin
+  // mostrar interfaz y se encadena directamente con la siguiente
   if ((state.run.orbes?.body ?? 0) < ORB_COST) {
-    showMessage('No tienes orbes disponibles', 'Continuar', finish);
+    finish();
     return;
   }
 
@@ -242,9 +237,9 @@ export function startLevelUpPhase(members, onComplete) {
  * Fase unica de aprendizaje del campamento (una vez, tras las mejoras).
  *
  * Estados:
- *  - A: ningun miembro con habilidades aprendibles
- *       → "Tu equipo no tiene habilidades que aprender"
- *  - B: hay habilidades pero 0 orbes → "No tienes orbes disponibles"
+ *  - A: 0 orbes de la mente → la fase se omite sin mostrar interfaz
+ *  - B: ningun miembro con habilidades aprendibles → la fase se omite
+ *       sin mostrar interfaz
  *  - C: rejilla de miembros (elegibles clicables, resto deshabilitados)
  *       → al elegir, picking de 3 habilidades con Confirmar/Cancelar.
  *       Bloqueo estricto: elegir a un miembro lo fija para el resto del
@@ -265,24 +260,16 @@ export function startLearnPhase(members, onComplete) {
     onComplete();
   };
 
-  const showMessage = (text, buttonText, onClick) => {
-    learnGrid().innerHTML = '';
-    learnTitle().textContent = text;
-    learnConfirm().style.display = 'none';
-    learnSkip().textContent = buttonText;
-    learnSkip().onclick = onClick;
-    learnOverlay().classList.remove('hidden');
-  };
-
-  // Estado A: el equipo no tiene habilidades que aprender
-  if (!members.some(hasLearnable)) {
-    showMessage('Tu equipo no tiene habilidades que aprender', 'Continuar', finish);
+  // Estado A: sin orbes de la mente → la fase se omite sin mostrar
+  // interfaz y se encadena directamente con la siguiente
+  if ((state.run.orbes?.mind ?? 0) < ORB_COST) {
+    finish();
     return;
   }
 
-  // Estado B: sin orbes de la mente disponibles
-  if ((state.run.orbes?.mind ?? 0) < ORB_COST) {
-    showMessage('No tienes orbes disponibles', 'Continuar', finish);
+  // Estado B: el equipo no tiene habilidades que aprender → se omite
+  if (!members.some(hasLearnable)) {
+    finish();
     return;
   }
 
@@ -392,9 +379,9 @@ export function startLearnPhase(members, onComplete) {
  * personaje puede mejorar como maximo 1 habilidad por campamento.
  *
  * Estados:
- *  - A: ningun miembro con habilidades mejorables (todas a Lv4)
- *       → "Tu equipo no tiene habilidades que mejorar"
- *  - B: hay habilidades pero 0 orbes de poder → "No tienes orbes disponibles"
+ *  - A: 0 orbes de poder (rojos) → la fase se omite sin mostrar interfaz
+ *  - B: ningun miembro con habilidades mejorables (todas a Lv4)
+ *       → la fase se omite sin mostrar interfaz
  *  - C: rejilla de miembros (elegibles clicables, resto deshabilitados)
  *       → al elegir, vista con TODAS las habilidades mejorables del
  *       miembro (nivel + previsualizacion del siguiente nivel) y
@@ -418,24 +405,16 @@ export function startSkillUpgrades(members, onComplete) {
     onComplete();
   };
 
-  const showMessage = (text, buttonText, onClick) => {
-    grid().innerHTML = '';
-    title().textContent = text;
-    confirmBtn().style.display = 'none';
-    skipBtn().textContent = buttonText;
-    skipBtn().onclick = onClick;
-    overlay().classList.remove('hidden');
-  };
-
-  // Estado A: el equipo no tiene habilidades que mejorar
-  if (!members.some(hasUpgradeable)) {
-    showMessage('Tu equipo no tiene habilidades que mejorar', 'Continuar', finish);
+  // Estado A: sin orbes de poder (rojos) → la fase se omite sin mostrar
+  // interfaz y se encadena directamente con la siguiente
+  if ((state.run.orbes?.power ?? 0) < ORB_COST) {
+    finish();
     return;
   }
 
-  // Estado B: sin orbes de poder (rojos) disponibles
-  if ((state.run.orbes?.power ?? 0) < ORB_COST) {
-    showMessage('No tienes orbes disponibles', 'Continuar', finish);
+  // Estado B: el equipo no tiene habilidades que mejorar → se omite
+  if (!members.some(hasUpgradeable)) {
+    finish();
     return;
   }
 
