@@ -136,6 +136,13 @@ function enemySelectSkills() {
   }, 600);
 }
 
+// El flash del golpe (style.css: objective-flash, 0.8s) arranca en t+1500
+// y checkGameOver corre en t+1700 → quedan ~600ms de animacion (flash,
+// drenaje de HP .4s y fade .6s de .member-slot.dead). 700ms deja que
+// terminen todas (ultimo frame visual en t+2400) con 100ms de margen.
+// gameOver se pone en true de forma sincrona; solo se retrasa el modal.
+const END_MODAL_DELAY = 700;
+
 function checkGameOver() {
   if (state.combat.gameOver) return true;
 
@@ -144,12 +151,12 @@ function checkGameOver() {
     log(`☠️ ¡El EQUIPO A ha sido derrotado! El EQUIPO B gana.`);
     stopMusic();
     setTimeout(() => playSound('defeat'), 300);
-    showEndModal({
+    setTimeout(() => showEndModal({
       title: 'Derrota',
       message: '☠️ El EQUIPO A ha sido derrotado.',
       buttonText: 'Reintentar',
       onClick: getGameEndCallback()
-    });
+    }), END_MODAL_DELAY);
     return true;
   }
 
@@ -163,8 +170,9 @@ function checkGameOver() {
 
     // Protagonista caido: sin modal de victoria; handleVictory() muestra
     // directamente el modal de caida (sin recompensa de orbes).
+    // Tambien se retrasa para esperar al animation del golpe final.
     if (result === 'protagonist_fallen') {
-      getGameEndCallback()();
+      setTimeout(() => getGameEndCallback()(), END_MODAL_DELAY);
       return true;
     }
 
@@ -176,12 +184,12 @@ function checkGameOver() {
       : '';
     const allGone = state.session.playerTeam.every((idx, i) => idx === -1 || fallen.includes(i));
 
-    showEndModal({
+    setTimeout(() => showEndModal({
       title: 'Ganaste el combate',
       message: fallenLines + orbLine,
       buttonText: allGone ? 'Volver al menú' : 'Continuar',
       onClick: getGameEndCallback()
-    });
+    }), END_MODAL_DELAY);
     return true;
   }
 
