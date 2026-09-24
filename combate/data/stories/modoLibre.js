@@ -6,7 +6,7 @@ const modoLibre = {
   allies: [1,2,9],
   genericEnemies: [3, 7, 8, 10, 11, 12, 13, 14, 15],
   narrativeEnemies: [4, 5, 6, 16, 17],
-  teamA: [-1, 0, -1, -1],
+  teamA: [-1, 19, 20, -1],
   events: [
     {
       type: 'enfrentamiento',

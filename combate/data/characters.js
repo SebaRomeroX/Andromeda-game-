@@ -24,7 +24,7 @@ const characters = [
     evasion: 10,
     role: "asesino",
     skills: [
-      createSkill({ name: "EXCALIBUR",          type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
+      // createSkill({ name: "EXCALIBUR",          type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
       createSkill({ name: "Estocada",           type: "attack",  power: 14,   precision: 85,    aparicion: 70,
         levelBonuses: { 2: { power: 7, precision: 2 }, 3: { power: 7, precision: 2 }, 4: { power: 8, precision: 1 }}
       }),
@@ -330,6 +330,7 @@ const characters = [
     evasion: 5,
     role: "asesino",
     skills: [
+      // createSkill({ name: "EXCALIBUR",   type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
       createSkill({ name: "Proteccion",  type: "buff",    target: "ally",  stat: "defense",   value: 7,      duration:5 ,  precision: 99, apparicion: 70  }),
       createSkill({ name: "Derribar",    type: "attack",  power: 12,       precision: 90,     aparicion: 40,
         levelBonuses: { 2: { power: 7, stun: true }, 3: { power: 5, precision: 3 }, 4: { power: 5 } }
