@@ -11,8 +11,8 @@ import { pickNextEvent } from './eventGenerator.js';
 import { setupDevPanel } from './devTools.js';
 import { isDev } from './env.js';
 import { TEAMS } from './constants.js';
-import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs, formatOrbTotalsHtml, formatOrbGainInlineHtml, emptyOrbs, ORB_META } from './gameFlow.js';
-import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showEnding, showEndModal } from './eventHandlers.js';
+import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs, grantOrbs, formatOrbTotalsHtml, formatOrbGainInlineHtml, emptyOrbs } from './gameFlow.js';
+import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showPuzzleEvent, showEnding, showEndModal } from './eventHandlers.js';
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
 import { initPause, showPause } from './pause.js';
@@ -110,6 +110,20 @@ function validateStoryCast(story) {
           warn(`Evento ${i + 1}, linea ${j + 1}: speaker ${sp} no es un indice valido de characters.`);
         }
       });
+      return;
+    }
+
+    if (event.type === 'acertijo') {
+      if (event.question == null) {
+        warn(`Evento ${i + 1}: es un acertijo pero no tiene "question".`);
+      }
+      if (!Array.isArray(event.options) || event.options.length === 0) {
+        warn(`Evento ${i + 1}: es un acertijo pero no tiene opciones en "options".`);
+      } else if (!event.options.some(o => o.id != null && o.id === event.answer)) {
+        warn(`Evento ${i + 1}: "answer" no coincide con el id de ninguna opcion.`);
+      } else if (event.reward == null) {
+        warn(`Evento ${i + 1}: acertijo sin "reward"; al acertar se tirara la recompensa por defecto.`);
+      }
       return;
     }
 
@@ -361,6 +375,11 @@ function startCombat(event) {
     return;
   }
 
+  if (event.type === 'acertijo') {
+    showPuzzleEvent(event, advanceStage);
+    return;
+  }
+
   showScreen('combat');
   playCombat();
 
@@ -437,10 +456,7 @@ function handleVictory() {
   // en el log. Si no hubiera tirada guardada, se tira ahora.
   const gainedOrbs = state.session.pendingOrbReward ?? getEventOrbs(state.session.currentEvent);
   state.session.pendingOrbReward = null;
-  const orbes = state.run.orbes ?? (state.run.orbes = emptyOrbs());
-  ORB_META.forEach(({ key }) => {
-    orbes[key] = (orbes[key] ?? 0) + (gainedOrbs[key] ?? 0);
-  });
+  grantOrbs(gainedOrbs);
   const gainText = formatOrbGainInlineHtml(gainedOrbs);
   if (gainText) logHtml(`${gainText} — Orbes ganados`);
 

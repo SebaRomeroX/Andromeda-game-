@@ -100,6 +100,17 @@ export function rollVictoryOrbs(event, rng = Math.random) {
   return getEventOrbs(event, rng);
 }
 
+// Otorga orbes a la bolsa del run. Fuente unica de ingreso: la usa la
+// victoria de combate (handleVictory) y el acertijo (showPuzzleEvent).
+// Devuelve la bolsa resultante.
+export function grantOrbs(gained) {
+  const orbes = state.run.orbes ?? (state.run.orbes = emptyOrbs());
+  ORB_META.forEach(({ key }) => {
+    orbes[key] = (orbes[key] ?? 0) + (gained?.[key] ?? 0);
+  });
+  return orbes;
+}
+
 // ── Display de orbes (colores y etiquetas por tipo) ──
 export const ORB_META = [
   { key: 'mind', color: '#5ea8ff', label: 'mente' },

@@ -4,6 +4,8 @@ import { startMercaderPhase, startLevelUpPhase, startSkillUpgrades, startLearnPh
 import { clearGame } from './save.js';
 import characters from '../data/characters.js';
 import { stopMusic, playChill } from './music.js';
+import { getEventOrbs, grantOrbs, formatOrbGainHtml } from './gameFlow.js';
+import { logHtml } from './log.js';
 
 function buildTeamAData() {
   return (state.session.playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
@@ -290,6 +292,55 @@ export function showChoiceEvent(event, advanceStageCb) {
       if (option.next) state.run.currentNodeId = option.next;
       overlay.classList.add('hidden');
       advanceStageCb();
+    };
+    optionsEl.appendChild(btn);
+  });
+
+  overlay.classList.remove('hidden');
+}
+
+// Muestra evento de acertijo: pregunta + opciones de respuesta (una sola
+// correcta, identificada por `event.answer` = id de la opcion). El premio
+// solo se otorga si se acierta a la primera; un fallo cierra el evento sin
+// recompensa (one shot, sin reintentos). Ambos casos avanzan de etapa.
+export function showPuzzleEvent(event, advanceStageCb) {
+  const options = event.options ?? [];
+
+  if (event.question == null || options.length === 0) {
+    advanceStageCb();
+    return;
+  }
+
+  const overlay = document.getElementById('choice-overlay');
+  const title = document.getElementById('choice-title');
+  const prompt = document.getElementById('choice-prompt');
+  const optionsEl = document.getElementById('choice-options');
+
+  const answerLabel = options.find(o => o.id === event.answer)?.label ?? '???';
+
+  function finish(message) {
+    overlay.classList.add('hidden');
+    showEndModal({ message, buttonText: 'Continuar', onClick: () => advanceStageCb() });
+  }
+
+  title.textContent = event.title ?? 'Acertijo';
+  prompt.textContent = event.question;
+  optionsEl.innerHTML = '';
+
+  options.forEach(option => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = option.label;
+    btn.onclick = () => {
+      if (option.id === event.answer) {
+        const gained = getEventOrbs(event);
+        grantOrbs(gained);
+        const gainText = formatOrbGainHtml(gained);
+        logHtml(`${gainText} — Recompensa del acertijo`);
+        finish(`✅ <strong>¡Correcto!</strong><br><br><strong>Recompensa:</strong><br>${gainText}`);
+      } else {
+        finish(`❌ <strong>Incorrecto.</strong> La respuesta correcta era: <strong>${answerLabel}</strong>.<br>No hay recompensa.`);
+      }
     };
     optionsEl.appendChild(btn);
   });

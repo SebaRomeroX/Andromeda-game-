@@ -21,6 +21,13 @@ function applyEvent(ev, run, roster, choices = {}) {
     Object.keys(gained).forEach((k) => {
       orbes[k] = (orbes[k] ?? 0) + gained[k];
     });
+  } else if (ev.type === 'acertijo') {
+    // Simula el acierto: se otorga la recompensa (explicita o tirada por defecto)
+    const gained = rollVictoryOrbs(ev);
+    const orbes = run.orbes ?? (run.orbes = { mind: 0, power: 0, body: 0, wealth: 0 });
+    Object.keys(gained).forEach((k) => {
+      orbes[k] = (orbes[k] ?? 0) + gained[k];
+    });
   } else if (ev.type === 'reclutamiento') {
     const char = characters[ev.character];
     const slot = ROLE_BY_INDEX.indexOf(char?.role);
