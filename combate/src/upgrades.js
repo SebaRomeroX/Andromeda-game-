@@ -41,6 +41,8 @@ const EXCHANGE_RATE = 1;
 // ── Mercader overlay ──
 const mercOverlay = () => document.getElementById('mercader-overlay');
 const mercTitle = () => document.getElementById('mercader-title');
+// Bolsa de orbes visible en el mercader: los 4 tipos con su recuento.
+const mercWallet = () => document.getElementById('mercader-wallet');
 const mercGrid = () => document.getElementById('mercader-grid');
 const mercConfirm = () => document.getElementById('mercader-confirm');
 const mercSkip = () => document.getElementById('mercader-skip');
@@ -118,6 +120,8 @@ const hasLearnable = (m) => (m.learnableSkills?.length ?? 0) > 0;
  *       dorado y otorga 1 del tipo elegido; si aun quedan orbes
  *       dorados se vuelve a la rejilla, si no la fase termina.
  *       "Omitir" termina la fase en cualquier momento.
+ *       El titulo va acompanado de la bolsa completa (los 4 tipos) para
+ *       ver cuanto tienes de cada orbe antes de canjear.
  *
  * @param {Function} onComplete - Se llama al terminar la fase
  */
@@ -150,6 +154,12 @@ export function startMercaderPhase(onComplete) {
 
     selectedIndex = null;
     mercTitle().innerHTML = `Puedes canjear tus orbes dorados por otra cosa · ${WEALTH_DOT}Orbes: ${orbes}`;
+    // Bolsa completa (los 4 tipos): sirve para decidir que compensa canjear.
+    // Se re-pinta en cada vuelta a la rejilla, asi que los totales se
+    // actualizan solos tras cada confirmacion.
+    mercWallet().innerHTML = ORB_META
+      .map(m => `<span class="orb-wallet-item">${orbDotHtml(m.color)}${m.label}: ${state.run.orbes?.[m.key] ?? 0}</span>`)
+      .join('');
     mercGrid().innerHTML = '';
     mercConfirm().style.display = '';
     mercConfirm().textContent = 'Confirmar';
