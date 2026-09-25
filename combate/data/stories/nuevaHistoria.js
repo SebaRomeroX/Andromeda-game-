@@ -304,7 +304,7 @@ const nuevaHistoria = {
             { id: 'dudar', label: 'Un sabio debe dudar de todo' }
           ],
           answer: 'dudar',
-          explanation: 'Esto es asi porque quien se atreve a dudar sigue buscando la verdad; el que se aferra a lo que dice deja de aprender.'
+          explanation: 'Quien se atreve a dudar sigue buscando la verdad; el que se aferra a lo que dice deja de aprender.'
         },
         {
           question: 'Un sabio habla poco porque...',
@@ -313,7 +313,7 @@ const nuevaHistoria = {
             { id: 'nadie', label: 'No encuentra quien lo escuche' }
           ],
           answer: 'ocultan',
-          explanation: 'Esto es asi porque las palabras de mas tapan lo que quieren decir; el que habla poco, cuando habla, vale oro.'
+          explanation: 'Las palabras de mas tapan lo que quieren decir; el que habla poco, cuando habla, vale oro.'
         },
         {
           question: 'Conocer a los demas es ser listo. Conocerte a ti mismo es...',
@@ -322,16 +322,16 @@ const nuevaHistoria = {
             { id: 'suerte', label: 'Suerte' }
           ],
           answer: 'sabiduria',
-          explanation: 'Esto es asi porque ver los defectos ajenos es facil; mirar los propios es el principio de toda sabiduria.'
+          explanation: 'Ver los defectos ajenos es facil; mirar los propios es el principio de toda sabiduria.'
         },
         {
-          question: 'Mil li de viaje comienzan con...',
+          question: 'Los mejores viaje comienzan con...',
           options: [
             { id: 'paso', label: 'Un solo paso' },
             { id: 'mapa', label: 'Un buen mapa' }
           ],
           answer: 'paso',
-          explanation: 'Esto es asi porque ni el mejor plan vale nada si no lo das; el primer paso es el unico que nunca falla.'
+          explanation: 'Ni el mejor plan vale nada si no lo ejecutas; el primer paso es el unico que te hara avanzar.'
         },
         {
           question: 'Si te pierdes en el mar te guias de...',
@@ -340,7 +340,7 @@ const nuevaHistoria = {
             { id: 'estrellas', label: 'Las estrellas' }
           ],
           answer: 'estrellas',
-          explanation: 'Esto es asi porque las estrellas son fijas y marcan el norte; la luna va cambiando y solo presta luz.'
+          explanation: 'Las estrellas son fijas y marcan el norte; la luna va cambiando y solo presta luz.'
         },
         {
           question: 'La luna no tiene luz propia. La suya es...',
@@ -349,7 +349,7 @@ const nuevaHistoria = {
             { id: 'fuego', label: 'Un fuego frio' }
           ],
           answer: 'reflejo',
-          explanation: 'Esto es asi porque la luna es una piedra fria que no alumbra por si sola; toma prestada la luz del sol que da en ella.'
+          explanation: 'La luna es una piedra fria que no alumbra por si sola; toma prestada la luz del sol que da en ella.'
         },
         {
           question: 'Cada estrella que ves de noche es...',
@@ -358,7 +358,7 @@ const nuevaHistoria = {
             { id: 'lampara', label: 'Una lampara encendida en el cielo' }
           ],
           answer: 'otro-sol',
-          explanation: 'Esto es asi porque la estrella es un sol como el nuestro, tan lejos que su fuego nos llega como un punto de luz.'
+          explanation: 'La estrella es un sol como el nuestro, tan lejos que su fuego nos llega como un punto de luz.'
         },
         {
           question: 'El sol sale cada dia porque...',
@@ -367,7 +367,7 @@ const nuevaHistoria = {
             { id: 'orbita', label: 'El sol da vueltas alrededor de la Tierra' }
           ],
           answer: 'tierra',
-          explanation: 'Esto es asi porque es la Tierra la que gira sobre si misma; mientras gira, cada lugar recibe la luz del sol por su vez.'
+          explanation: 'Es la Tierra la que gira sobre si misma; mientras gira, cada lugar recibe la luz del sol por su vez.'
         },
         {
           question: 'El agua es mas blanda que la piedra, y aun asi...',
@@ -376,7 +376,7 @@ const nuevaHistoria = {
             { id: 'aparta', label: 'Se aparta ante ella' }
           ],
           answer: 'desgasta',
-          explanation: 'Esto es asi porque el agua cede ante todo y por eso lo atraviesa todo; la piedra resiste y con el tiempo se quiebra.'
+          explanation: 'El agua cede ante todo y por eso lo atraviesa todo; la piedra resiste y con el tiempo se quiebra.'
         },
         {
           question: 'Para el sabio, la hoja que cae no es el fin, sino...',
@@ -385,7 +385,7 @@ const nuevaHistoria = {
             { id: 'desgracia', label: 'Una desgracia' }
           ],
           answer: 'cambio',
-          explanation: 'Esto es asi porque la hoja cae para que la raiz descanse y el arbol vuelva a verdecer; temer el cambio es temer la vida.'
+          explanation: 'La hoja cae para que la raiz descanse y el arbol vuelva a verdecer; temer el cambio es temer la vida.'
         }
       ],
       reward: { randomType: ['mind', 'power', 'body'] },
