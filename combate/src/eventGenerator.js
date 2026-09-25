@@ -144,9 +144,11 @@ function findNextNode(story, ctx) {
  * uno con su punto de color en la UI. Si un nodo `enfrentamiento` no
  * define `reward`, al vencer se tira por tipo de forma independiente:
  * riqueza 10%, mente 20%, poder 50%, cuerpo 90% (puede no caer ninguno).
- * Un nodo puede definir `reward: { mind, power, body, wealth }` por tipo,
- * o usar los atajos legados `reward: { orbs: 3 }` / `reward: 3` (3 orbes
- * de la mente); esas recompensas explicitas son fijas.
+ * Los nodos de historia deben definir la recompensa explicita por tipo:
+ * `reward: { mind, power, body, wealth }` (los tipos no indicados valen
+ * 0). Los atajos legados `reward: { orbs: 3 }` / `reward: 3` siguen
+ * soportados por compatibilidad, pero se interpretan como 3 orbes de la
+ * mente; no los uses en nodos nuevos.
  */
 export function pickNextEvent(story, ctx, playerTeam) {
   if (story.infiniteMode) {

@@ -43,8 +43,9 @@ export function advanceStage() {
 //                               riqueza 10%, mente 20%, poder 50%, cuerpo 90%.
 //                               Las tiradas son independientes: puede caer
 //                               uno de cada tipo, varios, o ninguno.
-//  - `reward: 3` (atajo)     -> 3 mente, 0 resto (compat. legado)
-//  - `reward: { orbs: 3 }`   -> 3 mente, 0 resto (compat. legado)
+//  - `reward: 3` (atajo legado) -> 3 mente, 0 resto (solo compat.; los
+//                                  nodos nuevos usan el formato por tipo)
+//  - `reward: { orbs: 3 }`       -> 3 mente, 0 resto (atajo legado)
 //  - `reward: { mind, power, body, wealth }` -> por tipo; los tipos no
 //    indicados valen 0 (la recompensa explicita sustituye al defecto).
 //    `orbs` se mapea a `mind` si no hay `mind` explicito.
