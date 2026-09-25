@@ -154,7 +154,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Dama afligida',
       description: 'La senda se cierra a tu espalda: la hermana perdida era cebo.',
-      enemyTeam: [-1, 10, 11, 13],
+      enemyTeam: [11, 13, 14, -1],
       reward: { mind: 1, power: 1, wealth: 1 },
       next: 'dama-final'
     },
