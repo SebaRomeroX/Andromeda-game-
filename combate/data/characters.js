@@ -210,8 +210,8 @@ const characters = [
     evasion: 2,
     role: "tanque",
     skills: [
-      createSkill({ name: "Lanza",            type: "attack",  power: 7,  precision: 85, aparicion: 40,  herida: true }),
-      createSkill({ name: "Defensa",          type: "defense", power: 10, precision: 95, aparicion: 60   }),
+      createSkill({ name: "Lanza",            type: "attack",  power: 7,  precision: 85, aparicion: 50,  herida: true }),
+      createSkill({ name: "Defensa",          type: "defense", power: 10, precision: 95, aparicion: 40   }),
     ],
     learnableSkills: []
   }),

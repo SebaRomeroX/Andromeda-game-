@@ -215,7 +215,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'Una segunda oleada embiste los carros.',
-      enemyTeam: [-1, 7, 11, -1],
+      enemyTeam: [10, -1, -1, 3],
       next: 'escolta-combate-3'
     },
 
@@ -224,7 +224,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'La emboscada se cierra sobre el camino.',
-      enemyTeam: [-1, 10, 13, -1],
+      enemyTeam: [7, -1, 14, -1],
       next: 'escolta-combate-4'
     },
 
@@ -233,7 +233,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'Los jefes de la banda cargan por ultima vez.',
-      enemyTeam: [7, 12, 13, -1],
+      enemyTeam: [11, 13, 15, -1],
       reward: { wealth: 2 },
       next: 'escolta-final'
     },
@@ -245,7 +245,7 @@ const nuevaHistoria = {
       title: 'Caravana a salvo',
       description: 'La caravana llega a su destino sin perdidas.',
       dialog: [
-        { text: '—Lo tenemos todo contigo, andariego. Sin ti no hubieramos llegado.' },
+        { text: '—Te debemos mucho, andariego. Sin ti no hubieramos llegado.' },
         { text: 'Descargan las mercancias en la ciudad y tu cobras el pago acordado.' }
       ]
     },
@@ -269,7 +269,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'Los asaltantes no piensan dejar testigos.',
-      enemyTeam: [7, 11, 13, -1],
+      enemyTeam: [7, 8, 14, 3],
       reward: { wealth: 2 },
       next: 'escolta-asalto-final'
     },
