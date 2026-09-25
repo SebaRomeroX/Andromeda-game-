@@ -491,7 +491,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Los enemigos del aspirante',
       description: 'Los enemigos del aspirante te cortan el paso en el camino.',
-      enemyTeam: [10, 13, 14, 4],
+      enemyTeam: [10, 13, 14, 3],
       next: 'reclutas-exito'
     },
 
