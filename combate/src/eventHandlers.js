@@ -347,12 +347,11 @@ export function showPuzzleEvent(event, advanceStageCb, rng = Math.random) {
         grantOrbs(gained);
         const gainText = formatOrbGainHtml(gained);
         logHtml(`${gainText} — Recompensa del acertijo`);
-        finish(`✅ <strong>¡Correcto!</strong><br><br><strong>Recompensa:</strong><br>${gainText}`);
+        finish(`<strong>Bien dicho, ten, llevate esto. Espero que le saquen provecho</strong><br><br><strong>Recompensa:</strong><br>${gainText}`);
       } else {
-        const explain = q.explanation
-          ? ` La respuesta correcta era: <strong>${answerLabel}</strong>.<br><br>${q.explanation}<br><br>No hay recompensa.`
-          : ` La respuesta correcta era: <strong>${answerLabel}</strong>.<br>No hay recompensa.`;
-        finish(`❌ <strong>Incorrecto.</strong>${explain}`);
+        // El sabio explica el por que (si la pregunta lo trae); si no, solo
+        // revela la respuesta. Sin 'Incorrecto' ni 'No hay recompensa'.
+        finish(q.explanation ?? `La respuesta correcta era: <strong>${answerLabel}</strong>.`);
       }
     };
     optionsEl.appendChild(btn);
