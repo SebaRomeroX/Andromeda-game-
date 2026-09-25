@@ -15,7 +15,7 @@ const nuevaHistoria = {
   // ── Eventos aleatorios ──
   // Sorteo 1: al no haber nodo de historia pendiente, con esta
   // probabilidad ocurre un evento aleatorio en vez de combate generico.
-  randomEventChance: 0.5,
+  randomEventChance: 0.3,
 
   storyNodes: {},
 
