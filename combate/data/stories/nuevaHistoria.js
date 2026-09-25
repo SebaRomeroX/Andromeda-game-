@@ -21,8 +21,9 @@ const nuevaHistoria = {
 
   // Sorteo 2: entre las entradas elegibles se sortea ponderado por
   // `chance` (peso relativo; mas alto = mas comun). Entradas: 'prueba'
-  // y 'viajero' (20 de 70 = 28.6% de los eventos aleatorios). Los
-  // demas nodos forman el sub-grafo de una entrada y se llega a ellos
+  // (20), 'viajero' (30) y 'dama' (20) -> total 70: viajero 42.9%,
+  // dama 28.6%, prueba 28.6% de los eventos aleatorios. Los demas
+  // nodos forman el sub-grafo de una entrada y se llega a ellos
   // eligiendo rama (o por `next`).
   randomEvents: {
 
@@ -129,6 +130,56 @@ const nuevaHistoria = {
       dialog: [
         { text: 'Pasas de largo. Detras de ti, los gritos se apagan poco a poco.' },
         { text: 'No todo lo que ocurre en el camino es cosa tuya.' }
+      ]
+    },
+
+    // ── Evento aleatorio: dama afligida -> trampa de bandidos (repeatable) ──
+    'dama': {
+      chance: 20,
+      repeatable: true,
+      type: 'eleccion',
+      narrativo: true,
+      title: 'Dama afligida',
+      description: 'Una dama suplica tu ayuda junto al bosque.',
+      prompt: 'Una dama, con los ojos hinchados, te dice que su hermana pequeña se ha perdido en el bosque. ¿Que haces?',
+      options: [
+        { id: 'ayudar', label: 'Ayudar a la dama', next: 'dama-combate' },
+        { id: 'ignorar', label: 'No meterte', next: 'dama-ignorado' }
+      ]
+    },
+
+    // ── Rama ayudar: el bosque es una trampa; los bandidos emboscan ──
+    'dama-combate': {
+      type: 'enfrentamiento',
+      narrativo: true,
+      title: 'Dama afligida',
+      description: 'La senda se cierra a tu espalda: la hermana perdida era cebo.',
+      enemyTeam: [-1, 10, 11, 13],
+      reward: { mind: 1, power: 1, wealth: 1 },
+      next: 'dama-final'
+    },
+
+    // ── Rama ayudar: la trampa queda al descubierto (terminal) ──
+    'dama-final': {
+      type: 'dialogo',
+      narrativo: true,
+      title: 'Trampa del bosque',
+      description: 'No hubo hermana perdida: solo cebo.',
+      dialog: [
+        { text: 'Cuando el ultimo bandido cae, buscas a la dama entre los arboles. No esta.' },
+        { text: 'Nunca hubo hermana perdida: el bosque solo tenia cebo y sombra.' }
+      ]
+    },
+
+    // ── Rama no meterte: nada ocurre (terminal) ──
+    'dama-ignorado': {
+      type: 'dialogo',
+      narrativo: true,
+      title: 'No es tu asunto',
+      description: 'Su problema no es el tuyo.',
+      dialog: [
+        { text: 'Le niegas la ayuda con un gesto y sigues tu camino.' },
+        { text: 'Detras de ti, la dama te observa en silencio hasta que te pierdes entre el polvo.' }
       ]
     }
   }
