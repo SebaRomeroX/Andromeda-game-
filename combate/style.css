@@ -1267,11 +1267,17 @@ body {
   transition: all 0.2s;
 }
 
-.choice-btn:hover {
+.choice-btn:hover:not(:disabled) {
   border-color: #f0d060;
   color: #f0e0a0;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(240, 208, 96, 0.3);
+}
+
+.choice-btn:disabled {
+  opacity: 0.45;
+  filter: grayscale(1);
+  cursor: not-allowed;
 }
 
 /* Skill upgrade overlay */
