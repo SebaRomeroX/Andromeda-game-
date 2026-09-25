@@ -115,17 +115,21 @@ function pickInfiniteEvent(story, ctx, playerTeam) {
  */
 function findNextNode(story, ctx) {
   const nodes = story.storyNodes;
-  if (!nodes) return null;
+  if (!nodes && !story.randomEvents) return null;
 
   if (!ctx.currentNodeId) {
-    for (const [id, node] of Object.entries(nodes)) {
+    // Solo el grafo principal: las entradas aleatorias jamas se eligen por
+    // bootstrap (suelen llegar por el doble sorteo del fallback).
+    for (const [id, node] of Object.entries(nodes ?? {})) {
       if (ctx.fired.has(id)) continue;
       if (evaluateConditions(node.conditions, ctx)) return id;
     }
     return null;
   }
 
-  const candidate = nodes[ctx.currentNodeId];
+  // El puntero puede apuntar a un sub-nodo de `randomEvents` (la rama de un
+  // evento aleatorio avanza con la misma mecanica que el grafo principal).
+  const candidate = resolveNode(story, ctx.currentNodeId);
   if (candidate && !ctx.fired.has(ctx.currentNodeId) && evaluateConditions(candidate.conditions, ctx)) {
     return ctx.currentNodeId;
   }
@@ -133,12 +137,117 @@ function findNextNode(story, ctx) {
   return null;
 }
 
+// Resuelve un id en ambos pools de nodos (grafo principal y de eventos
+// aleatorios); null si no existe en ninguno.
+function resolveNode(story, id) {
+  if (id == null) return null;
+  return story.storyNodes?.[id] ?? story.randomEvents?.[id] ?? null;
+}
+
+// ── Eventos aleatorios ──
+// Historias con `randomEvents` pueden interrumpir el fallback a combate
+// generico con dos sorteos encadenados:
+//   1) `randomEventChance` decide si ocurre un evento aleatorio; si la
+//      tirada falla, sigue el combate generico de siempre.
+//   2) Entre las entradas elegibles se sortea ponderado por `chance`
+//      (peso relativo: mas alto = mas comun; por defecto 1). Una vez
+//      acertado el sorteo 1 el evento queda garantizado: siempre sale
+//      uno, si queda alguno elegible.
+// Entradas (raices): nodos del pool a los que no apunta ningun `next`
+// (ni de historia ni del pool); los demas son sub-nodos de una entrada y
+// se llega a ellos por el flujo normal via currentNodeId.
+
+/** Todos los `next` declarados (options incluidas) de ambos pools. */
+function collectNextTargets(story) {
+  const targets = new Set();
+  const scan = (nodes) => {
+    Object.values(nodes ?? {}).forEach(node => {
+      if (node.next != null) targets.add(node.next);
+      (node.options ?? []).forEach(opt => {
+        if (opt.next != null) targets.add(opt.next);
+      });
+    });
+  };
+  scan(story.storyNodes);
+  scan(story.randomEvents);
+  return targets;
+}
+
+/** Entradas del pool aleatorio como [id, nodo], en orden de insercion. */
+export function randomEntries(story) {
+  const pool = story.randomEvents;
+  if (!pool) return [];
+  const targets = collectNextTargets(story);
+  return Object.entries(pool).filter(([id]) => !targets.has(id));
+}
+
+/** Una entrada solo participa del sorteo si: chance > 0, no fue disparada
+ * (o es repeatable) y cumple sus condiciones. */
+function isEntryEligible(id, node, ctx) {
+  return (node.chance ?? 1) > 0 &&
+    (node.repeatable || !ctx.fired.has(id)) &&
+    evaluateConditions(node.conditions, ctx);
+}
+
+/** Sorteo ponderado: `chance` como peso relativo dentro de los elegibles. */
+function weightedEntryPick(entries, rng) {
+  const total = entries.reduce((sum, [, node]) => sum + (node.chance ?? 1), 0);
+  let roll = rng() * total;
+  for (const [id, node] of entries) {
+    roll -= (node.chance ?? 1);
+    if (roll < 0) return id;
+  }
+  return entries[entries.length - 1][0]; // borde por coma flotante
+}
+
+/** Borra las marcas `fired` del sub-grafo de una entrada. Solo se aplica
+ * a eventos `repeatable`, para que la repeticion vuelva a jugar la rama
+ * completa (incluido su nodo final). */
+function clearSubgraphFired(pool, entryId, ctx) {
+  const stack = [entryId];
+  const seen = new Set();
+  while (stack.length) {
+    const id = stack.pop();
+    if (seen.has(id)) continue;
+    seen.add(id);
+    ctx.fired.delete(id);
+    const node = pool[id];
+    if (!node) continue;
+    if (node.next != null) stack.push(node.next);
+    (node.options ?? []).forEach(opt => {
+      if (opt.next != null) stack.push(opt.next);
+    });
+  }
+}
+
+/** Doble sorteo de eventos aleatorios. Devuelve el evento elegido o null
+ * si el fallback sigue siendo combate generico (sin pool, gate en 0,
+ * pool agotado o tirada fallida). */
+function pickRandomEvent(story, ctx, rng) {
+  const pool = story.randomEvents;
+  if (!pool || !((story.randomEventChance ?? 0) > 0)) return null;
+
+  const eligible = randomEntries(story).filter(([id, node]) => isEntryEligible(id, node, ctx));
+  if (eligible.length === 0) return null;
+
+  // Sorteo 1: ¿evento aleatorio o combate generico?
+  if (!(rng() < story.randomEventChance)) return null;
+
+  // Sorteo 2: entre los elegibles siempre sale uno (ponderado por chance).
+  const id = weightedEntryPick(eligible, rng);
+  if (pool[id].repeatable) clearSubgraphFired(pool, id, ctx);
+  return { ...pool[id], id, random: true };
+}
+
 /**
  * Genera el siguiente evento segun la prioridad:
  *   1. modo infinito: ciclo automatico
  *   2. campamento (tras superar N combates desde el ultimo campamento)
  *   3. siguiente nodo narrativo en el grafo de historia
- *   4. enfrentamiento generico
+ *   4. evento aleatorio (doble sorteo, ver pickRandomEvent; el id elegido
+ *      se fija en `ctx.pendingRandomId` para que la tarjeta del mapa no
+ *      re-tire sin avanzar de etapa)
+ *   5. enfrentamiento generico
  *
  * Recompensa de orbes: hay 4 tipos (mente, poder, cuerpo, riqueza), cada
  * uno con su punto de color en la UI. Si un nodo `enfrentamiento` no
@@ -149,8 +258,12 @@ function findNextNode(story, ctx) {
  * 0). Los atajos legados `reward: { orbs: 3 }` / `reward: 3` siguen
  * soportados por compatibilidad, pero se interpretan como 3 orbes de la
  * mente; no los uses en nodos nuevos.
+ *
+ * `rng` permite inyectar aleatoriedad deterministica (devTools usa
+ * `() => 0`: siempre cae en el evento aleatorio y elige la primera
+ * entrada elegible, para que la lista de etapas sea estable).
  */
-export function pickNextEvent(story, ctx, playerTeam) {
+export function pickNextEvent(story, ctx, playerTeam, rng = Math.random) {
   if (story.infiniteMode) {
     return pickInfiniteEvent(story, ctx, playerTeam);
   }
@@ -162,7 +275,26 @@ export function pickNextEvent(story, ctx, playerTeam) {
 
   const nextId = findNextNode(story, ctx);
   if (nextId) {
-    return { ...story.storyNodes[nextId], id: nextId };
+    return { ...resolveNode(story, nextId), id: nextId };
+  }
+
+  // ── Fallback ──
+  // Sin nodo de historia pendiente: primero consume el pin (la tarjeta ya
+  // mostro un evento aleatorio; renderMap re-tira en cada render y sin
+  // pin la tarjeta podria cambiar sin avanzar de etapa). despues intenta
+  // el doble sorteo; si no, combate generico.
+  if (ctx.pendingRandomId != null) {
+    const node = story.randomEvents?.[ctx.pendingRandomId];
+    if (node && isEntryEligible(ctx.pendingRandomId, node, ctx)) {
+      return { ...node, id: ctx.pendingRandomId, random: true };
+    }
+    ctx.pendingRandomId = null;
+  }
+
+  const picked = pickRandomEvent(story, ctx, rng);
+  if (picked) {
+    ctx.pendingRandomId = picked.id;
+    return picked;
   }
 
   return genericFightEvent();

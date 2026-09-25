@@ -34,6 +34,9 @@ export function advanceStage() {
       state.run.currentNodeId = event.next;
     }
   }
+  // Evento completado: la siguiente etapa vuelve a sortear el evento
+  // aleatorio (el pin solo vive mientras la tarjeta espera en el mapa).
+  state.run.pendingRandomId = null;
   state.run.stage++;
 }
 

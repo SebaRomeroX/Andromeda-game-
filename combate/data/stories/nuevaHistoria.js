@@ -12,11 +12,22 @@ const nuevaHistoria = {
   teamA: [-1, 19, 20, -1],
   campAfterFights: 3,
 
+  // ── Eventos aleatorios ──
+  // Sorteo 1: al no haber nodo de historia pendiente, con esta
+  // probabilidad ocurre un evento aleatorio en vez de combate generico.
+  randomEventChance: 0.5,
 
-  storyNodes: {
+  storyNodes: {},
 
-    // ── Nodo inicial: las dos pruebas ──
+  // Sorteo 2: entre las entradas elegibles se sortea ponderado por
+  // `chance` (peso relativo; mas alto = mas comun). Solo 'prueba' es
+  // entrada; los demas nodos forman su sub-grafo y se llega a ellos
+  // eligiendo rama (o por `next`).
+  randomEvents: {
+
+    // ── Nodo de entrada: las dos pruebas ──
     'prueba': {
+      chance: 50,
       type: 'eleccion',
       narrativo: true,
       title: 'Prueba',

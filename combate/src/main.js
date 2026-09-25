@@ -8,6 +8,7 @@ import characters from '../data/characters.js';
 import stories from '../data/stories/index.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
 import { pickNextEvent } from './eventGenerator.js';
+import { validateStoryCast } from './storyValidation.js';
 import { setupDevPanel } from './devTools.js';
 import { isDev } from './env.js';
 import { TEAMS } from './constants.js';
@@ -70,76 +71,6 @@ function persistProgress() {
 
 function buildTeamAData() {
   return (state.session.playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
-}
-
-function validateStoryCast(story) {
-  const generic = new Set(story.genericEnemies ?? []);
-  const narrative = new Set(story.narrativeEnemies ?? []);
-  const allies = new Set(story.allies ?? []);
-
-  const warn = (msg) => console.warn(`[historia "${story.title}"] ${msg}`);
-
-  const eventList = story.storyNodes
-    ? Object.values(story.storyNodes)
-    : (story.narrativeEvents ?? story.events ?? []);
-
-  eventList.forEach((event, i) => {
-    if (event.type === 'reclutamiento') {
-      if (event.character != null && !allies.has(event.character)) {
-        warn(`Evento ${i + 1}: ${characters[event.character]?.name ?? event.character} es reclutable pero no esta en allies.`);
-      }
-      return;
-    }
-
-    if (event.type === 'eleccion') {
-      if (!Array.isArray(event.options) || event.options.length === 0) {
-        warn(`Evento ${i + 1}: es una eleccion pero no tiene opciones en "options".`);
-      } else if (event.options.some(o => o.id == null)) {
-        warn(`Evento ${i + 1}: todas las opciones deben tener un "id".`);
-      }
-      return;
-    }
-
-    if (event.type === 'dialogo') {
-      if (!Array.isArray(event.dialog) || event.dialog.length === 0) {
-        warn(`Evento ${i + 1}: es un dialogo pero no tiene lineas en "dialog".`);
-      }
-      (event.dialog ?? []).forEach((line, j) => {
-        const sp = line.speaker;
-        if (sp != null && (sp < 0 || sp >= characters.length)) {
-          warn(`Evento ${i + 1}, linea ${j + 1}: speaker ${sp} no es un indice valido de characters.`);
-        }
-      });
-      return;
-    }
-
-    if (event.type === 'acertijo') {
-      if (event.question == null) {
-        warn(`Evento ${i + 1}: es un acertijo pero no tiene "question".`);
-      }
-      if (!Array.isArray(event.options) || event.options.length === 0) {
-        warn(`Evento ${i + 1}: es un acertijo pero no tiene opciones en "options".`);
-      } else if (!event.options.some(o => o.id != null && o.id === event.answer)) {
-        warn(`Evento ${i + 1}: "answer" no coincide con el id de ninguna opcion.`);
-      } else if (event.reward == null) {
-        warn(`Evento ${i + 1}: acertijo sin "reward"; al acertar se tirara la recompensa por defecto.`);
-      }
-      return;
-    }
-
-    if (event.reward != null && event.type !== 'enfrentamiento') {
-      warn(`Evento ${i + 1}: tiene "reward" pero no es un enfrentamiento; se ignorará.`);
-    }
-
-    if (event.type !== 'enfrentamiento' || !event.enemyTeam) return;
-
-    const allowed = event.narrativo ? new Set([...generic, ...narrative]) : generic;
-    event.enemyTeam.forEach(idx => {
-      if (idx >= 0 && !allowed.has(idx)) {
-        warn(`Evento ${i + 1}: ${characters[idx]?.name ?? idx} no deberia aparecer en un enfrentamiento ${event.narrativo ? 'narrativo' : 'generico'}.`);
-      }
-    });
-  });
 }
 
 document.getElementById('combat-area').addEventListener('click', (e) => {
@@ -245,6 +176,7 @@ function startStory(story, { loadSave }) {
     state.run.fired = data.fired;
     state.run.choices = data.run.choices ?? {};
     state.run.currentNodeId = data.run.currentNodeId ?? null;
+    state.run.pendingRandomId = data.run.pendingRandomId ?? null;
     state.run.flags = data.run.flags ?? {};
     state.run.orbes = data.run.orbes ?? emptyOrbs();
     state.session.playerTeam = data.playerTeam;

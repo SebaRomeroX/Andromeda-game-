@@ -4,8 +4,13 @@ import { rollVictoryOrbs } from './gameFlow.js';
 import characters from '../data/characters.js';
 
 function initialRun() {
-  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null, flags: {}, orbes: { mind: 0, power: 0, body: 0, wealth: 0 } };
+  return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null, flags: {}, orbes: { mind: 0, power: 0, body: 0, wealth: 0 }, pendingRandomId: null };
 }
+
+// rng deterministica para las simulaciones: el sorteo 1 siempre acierta y
+// el ponderado elige la primera entrada elegible, de modo que la lista de
+// etapas y los saltos son estables (e incluyen el contenido aleatorio).
+const DETERMINISTIC_RNG = () => 0;
 
 function applyEvent(ev, run, roster, choices = {}) {
   if (ev.type === 'campamento') {
@@ -50,6 +55,9 @@ function applyEvent(ev, run, roster, choices = {}) {
     Object.assign(run.flags, ev.setFlags);
   }
   if (ev.type !== 'eleccion' && ev.next) run.currentNodeId = ev.next;
+  // Paridad con advanceStage: el pin del evento aleatorio se limpia al
+  // completar la etapa.
+  run.pendingRandomId = null;
 }
 
 /**
@@ -65,7 +73,7 @@ export function listStages(story, choices = {}) {
   const cap = 500;
 
   while (entries.length < cap) {
-    const ev = pickNextEvent(story, run);
+    const ev = pickNextEvent(story, run, undefined, DETERMINISTIC_RNG);
     entries.push({
       stage: entries.length + 1,
       type: ev.type,
@@ -93,7 +101,7 @@ export function simulateToStage(story, stageNumber, choices = {}) {
   let campCount = 0;
 
   while (run.stage < completed) {
-    const ev = pickNextEvent(story, run);
+    const ev = pickNextEvent(story, run, undefined, DETERMINISTIC_RNG);
     if (ev.type === 'campamento') campCount++;
     applyEvent(ev, run, roster, choices);
     run.stage++;
@@ -190,7 +198,14 @@ export function setupDevPanel(stories, onJump) {
     choicesBox.innerHTML = '';
     if (!story) return;
 
-    const allNodes = story.storyNodes ? Object.values(story.storyNodes) : (story.narrativeEvents ?? []);
+    // Nodos de ambos pools, con su id de clave adjunto (pickNextEvent hace
+    // lo mismo al devolverlos; sin id el filtro de abajo los descartaria y
+    // no apareceria ningun selector de rama).
+    const dictNodes = (pool) => Object.entries(pool ?? {}).map(([id, node]) => ({ ...node, id }));
+    const allNodes = [
+      ...(story.storyNodes ? dictNodes(story.storyNodes) : (story.narrativeEvents ?? [])),
+      ...dictNodes(story.randomEvents)
+    ];
     const elecciones = allNodes
       .filter(ev => ev.type === 'eleccion' && ev.id && Array.isArray(ev.options) && ev.options.length > 0);
 

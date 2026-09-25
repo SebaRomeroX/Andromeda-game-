@@ -29,6 +29,9 @@ const runState = {
   flags: {},
   recruitOffer: null,
   peakEnemyLevel: 0,
+  // Evento aleatorio ya sorteado para la etapa actual (pin de la tarjeta
+  // del mapa). Se limpia en advanceStage para re-tirar en la siguiente.
+  pendingRandomId: null,
   // Cuatro tipos de orbe: mente (azul, aprender habilidades), poder
   // (rojo, mejorar habilidades), cuerpo (verde, subir de nivel) y
   // riqueza (dorado, sin uso por ahora).
@@ -73,6 +76,7 @@ export function resetRunState() {
   runState.flags = {};
   runState.recruitOffer = null;
   runState.peakEnemyLevel = 0;
+  runState.pendingRandomId = null;
   runState.orbes = { mind: 0, power: 0, body: 0, wealth: 0 };
 }
 
