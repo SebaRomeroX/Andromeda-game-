@@ -21,10 +21,10 @@ const nuevaHistoria = {
 
   // Sorteo 2: entre las entradas elegibles se sortea ponderado por
   // `chance` (peso relativo; mas alto = mas comun). Entradas: 'prueba'
-  // (20), 'viajero' (30), 'dama' (20) y 'escolta' (20) -> total 90:
-  // viajero 33.3%, las otras 22.2% cada una de los eventos aleatorios.
-  // Los demas nodos forman el sub-grafo de una entrada y se llega a
-  // ellos eligiendo rama (o por `next`).
+  // (20), 'viajero' (30), 'dama' (20), 'escolta' (20) y 'maestro' (10)
+  // -> total 100: viajero 30%, 'prueba'/'dama'/'escolta' 20% y 'maestro'
+  // 10% de los eventos aleatorios. Los demas nodos forman el sub-grafo
+  // de una entrada y se llega a ellos eligiendo rama (o por `next`).
   randomEvents: {
 
     // ── Nodo de entrada: las dos pruebas ──
@@ -282,6 +282,125 @@ const nuevaHistoria = {
       dialog: [
         { text: 'Cuando el ultimo asaltante cae, revisas sus alforjas.' },
         { text: 'Alli esta el oro de la caravana. Les pertenecia; ahora es tuyo.' }
+      ]
+    },
+
+    // ── Evento aleatorio: el Maestro del camino (repeatable) ──
+    // Pregunta sabia al azar de `questions` (una por reencuentro). Acertar
+    // otorga 1 orbe de un tipo al azar (mente/poder/cuerpo, sin riqueza);
+    // fallar no da recompensa pero el sabio explica su `explanation`.
+    'maestro': {
+      chance: 10,
+      repeatable: true,
+      type: 'acertijo',
+      narrativo: true,
+      title: 'Maestro',
+      description: 'Un sabio del camino te hace una pregunta.',
+      questions: [
+        {
+          question: 'Un sabio debe estar seguro de lo que dice?',
+          options: [
+            { id: 'seguro', label: 'Siempre' },
+            { id: 'dudar', label: 'Un sabio debe dudar de todo' }
+          ],
+          answer: 'dudar',
+          explanation: 'Esto es asi porque quien se atreve a dudar sigue buscando la verdad; el que se aferra a lo que dice deja de aprender.'
+        },
+        {
+          question: 'Un sabio habla poco porque...',
+          options: [
+            { id: 'ocultan', label: 'Las palabras de mas ocultan la verdad' },
+            { id: 'nadie', label: 'No encuentra quien lo escuche' }
+          ],
+          answer: 'ocultan',
+          explanation: 'Esto es asi porque las palabras de mas tapan lo que quieren decir; el que habla poco, cuando habla, vale oro.'
+        },
+        {
+          question: 'Conocer a los demas es ser listo. Conocerte a ti mismo es...',
+          options: [
+            { id: 'sabiduria', label: 'Sabiduria' },
+            { id: 'suerte', label: 'Suerte' }
+          ],
+          answer: 'sabiduria',
+          explanation: 'Esto es asi porque ver los defectos ajenos es facil; mirar los propios es el principio de toda sabiduria.'
+        },
+        {
+          question: 'Mil li de viaje comienzan con...',
+          options: [
+            { id: 'paso', label: 'Un solo paso' },
+            { id: 'mapa', label: 'Un buen mapa' }
+          ],
+          answer: 'paso',
+          explanation: 'Esto es asi porque ni el mejor plan vale nada si no lo das; el primer paso es el unico que nunca falla.'
+        },
+        {
+          question: 'Si te pierdes en el mar te guias de...',
+          options: [
+            { id: 'luna', label: 'La luna' },
+            { id: 'estrellas', label: 'Las estrellas' }
+          ],
+          answer: 'estrellas',
+          explanation: 'Esto es asi porque las estrellas son fijas y marcan el norte; la luna va cambiando y solo presta luz.'
+        },
+        {
+          question: 'La luna no tiene luz propia. La suya es...',
+          options: [
+            { id: 'reflejo', label: 'Reflejo de la del sol' },
+            { id: 'fuego', label: 'Un fuego frio' }
+          ],
+          answer: 'reflejo',
+          explanation: 'Esto es asi porque la luna es una piedra fria que no alumbra por si sola; toma prestada la luz del sol que da en ella.'
+        },
+        {
+          question: 'Cada estrella que ves de noche es...',
+          options: [
+            { id: 'otro-sol', label: 'Otro sol muy lejano' },
+            { id: 'lampara', label: 'Una lampara encendida en el cielo' }
+          ],
+          answer: 'otro-sol',
+          explanation: 'Esto es asi porque la estrella es un sol como el nuestro, tan lejos que su fuego nos llega como un punto de luz.'
+        },
+        {
+          question: 'El sol sale cada dia porque...',
+          options: [
+            { id: 'tierra', label: 'La Tierra gira sobre si misma' },
+            { id: 'orbita', label: 'El sol da vueltas alrededor de la Tierra' }
+          ],
+          answer: 'tierra',
+          explanation: 'Esto es asi porque es la Tierra la que gira sobre si misma; mientras gira, cada lugar recibe la luz del sol por su vez.'
+        },
+        {
+          question: 'El agua es mas blanda que la piedra, y aun asi...',
+          options: [
+            { id: 'desgasta', label: 'Desgasta la roca' },
+            { id: 'aparta', label: 'Se aparta ante ella' }
+          ],
+          answer: 'desgasta',
+          explanation: 'Esto es asi porque el agua cede ante todo y por eso lo atraviesa todo; la piedra resiste y con el tiempo se quiebra.'
+        },
+        {
+          question: 'Para el sabio, la hoja que cae no es el fin, sino...',
+          options: [
+            { id: 'cambio', label: 'El cambio que viene' },
+            { id: 'desgracia', label: 'Una desgracia' }
+          ],
+          answer: 'cambio',
+          explanation: 'Esto es asi porque la hoja cae para que la raiz descanse y el arbol vuelva a verdecer; temer el cambio es temer la vida.'
+        }
+      ],
+      reward: { randomType: ['mind', 'power', 'body'] },
+      next: 'maestro-final'
+    },
+
+    // ── Terminal: el sabio sigue su camino (gap antes del re-sorteo) ──
+    'maestro-final': {
+      type: 'dialogo',
+      narrativo: true,
+      title: 'El sabio sigue su camino',
+      description: 'La leccion termina y el sabio se despide.',
+      dialog: [
+        { text: 'El sabio recoge su baston y retoma la senda sin mirar atras.' },
+        { text: '—Preguntate bien, andariego. El camino ensena a quien sabe escuchar.' }
       ]
     }
   }

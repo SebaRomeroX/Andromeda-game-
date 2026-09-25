@@ -52,6 +52,9 @@ export function advanceStage() {
 //  - `reward: { mind, power, body, wealth }` -> por tipo; los tipos no
 //    indicados valen 0 (la recompensa explicita sustituye al defecto).
 //    `orbs` se mapea a `mind` si no hay `mind` explicito.
+//  - `reward: { randomType: [...] }` -> exactamente 1 orbe de un tipo al
+//    azar de la lista (uniforme). Sirve para premios "al azar" como el
+//    Maestro (p. ej. ['mind','power','body'] sin riqueza).
 const ZERO_ORB_REWARD = Object.freeze({ mind: 0, power: 0, body: 0, wealth: 0 });
 
 // Probabilidad de ganar 1 orbe de cada tipo al vencer sin `reward`
@@ -84,6 +87,20 @@ export function getEventOrbs(event, rng = Math.random) {
   if (reward == null) return rollDefaultOrbs(rng);
 
   if (typeof reward === 'number') return { ...ZERO_ORB_REWARD, mind: reward };
+
+  // `randomType`: 1 orbe de un tipo al azar de la lista (uniforme, con
+  // guardia de coma flotante). Lista invalida o vacia -> 0 orbes (la
+  // validacion de la historia avisa).
+  if (reward.randomType != null) {
+    const types = (Array.isArray(reward.randomType) ? reward.randomType : [])
+      .filter(k => k in ZERO_ORB_REWARD);
+    const orbs = { ...ZERO_ORB_REWARD };
+    if (types.length > 0) {
+      const idx = Math.min(types.length - 1, Math.max(0, Math.floor(rng() * types.length)));
+      orbs[types[idx]] = 1;
+    }
+    return orbs;
+  }
 
   const mind = reward.mind ?? reward.orbs ?? 0;
   return {

@@ -65,6 +65,24 @@ function validateLinks(story, warn) {
   });
 }
 
+// Forma `reward: { randomType: [...] }` (1 orbe de un tipo al azar de la
+// lista; ver getEventOrbs en gameFlow). Lista no-array/vacia o tipos
+// desconocidos hacen que la recompensa otorgue 0 orbes.
+const ORB_TYPES = ['mind', 'power', 'body', 'wealth'];
+function checkRandomType(event, where, warn) {
+  const rt = event?.reward?.randomType;
+  if (rt == null) return;
+  if (!Array.isArray(rt) || rt.length === 0) {
+    warn(`Evento ${where}: "reward.randomType" debe ser una lista no vacia de tipos de orbe.`);
+    return;
+  }
+  rt.forEach((k) => {
+    if (!ORB_TYPES.includes(k)) {
+      warn(`Evento ${where}: "reward.randomType" contiene un tipo desconocido "${k}".`);
+    }
+  });
+}
+
 export function validateStoryCast(story) {
   const generic = new Set(story.genericEnemies ?? []);
   const narrative = new Set(story.narrativeEnemies ?? []);
@@ -75,6 +93,7 @@ export function validateStoryCast(story) {
   // Validacion estructural de un evento. `where` identifica el nodo:
   // id entre comillas (pools con clave) o numero (listas legadas).
   const checkEvent = (event, where) => {
+    checkRandomType(event, where, warn);
     if (event.type === 'reclutamiento') {
       if (event.character != null && !allies.has(event.character)) {
         warn(`Evento ${where}: ${characters[event.character]?.name ?? event.character} es reclutable pero no esta en allies.`);
@@ -105,14 +124,33 @@ export function validateStoryCast(story) {
     }
 
     if (event.type === 'acertijo') {
-      if (event.question == null) {
+      // Dos formas: clasica (question/options/answer en el nodo) o pool
+      // de preguntas `questions` (se elige una al azar al renderizar).
+      const pooled = Array.isArray(event.questions) && event.questions.length > 0;
+      if (event.questions != null && !pooled) {
+        warn(`Evento ${where}: define "questions" pero la lista esta vacia.`);
+      }
+      if (!pooled && event.question == null) {
         warn(`Evento ${where}: es un acertijo pero no tiene "question".`);
       }
-      if (!Array.isArray(event.options) || event.options.length === 0) {
-        warn(`Evento ${where}: es un acertijo pero no tiene opciones en "options".`);
-      } else if (!event.options.some(o => o.id != null && o.id === event.answer)) {
-        warn(`Evento ${where}: "answer" no coincide con el id de ninguna opcion.`);
-      } else if (event.reward == null) {
+      const qs = pooled
+        ? event.questions
+        : [{ question: event.question, options: event.options, answer: event.answer }];
+      let anyComplete = false;
+      qs.forEach((q, i) => {
+        const at = pooled ? `, pregunta ${i + 1}` : '';
+        if (pooled && q?.question == null) {
+          warn(`Evento ${where}${at}: la pregunta no tiene texto.`);
+        }
+        if (!Array.isArray(q?.options) || q.options.length === 0) {
+          warn(`Evento ${where}${at}: es un acertijo pero no tiene opciones en "options".`);
+        } else if (!q.options.some(o => o?.id != null && o.id === q.answer)) {
+          warn(`Evento ${where}${at}: "answer" no coincide con el id de ninguna opcion.`);
+        } else {
+          anyComplete = true;
+        }
+      });
+      if (anyComplete && event.reward == null) {
         warn(`Evento ${where}: acertijo sin "reward"; al acertar se tirara la recompensa por defecto.`);
       }
       return;

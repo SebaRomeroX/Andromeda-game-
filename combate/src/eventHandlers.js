@@ -300,13 +300,23 @@ export function showChoiceEvent(event, advanceStageCb) {
 }
 
 // Muestra evento de acertijo: pregunta + opciones de respuesta (una sola
-// correcta, identificada por `event.answer` = id de la opcion). El premio
-// solo se otorga si se acierta a la primera; un fallo cierra el evento sin
-// recompensa (one shot, sin reintentos). Ambos casos avanzan de etapa.
-export function showPuzzleEvent(event, advanceStageCb) {
-  const options = event.options ?? [];
+// correcta, identificada por `answer` = id de la opcion). Dos formas:
+//   - clasica: `question`/`options`/`answer` en el propio nodo;
+//   - pool: `questions` = lista de { question, options, answer,
+//     explanation? } de la que se elige una al azar al renderizar
+//     (`rng` inyectable, por defecto Math.random).
+// El premio solo se otorga si se acierta a la primera; un fallo cierra
+// el evento sin recompensa (one shot, sin reintentos) y, si la pregunta
+// trae `explanation`, el sabio explica el por que en el modal. Ambos
+// casos avanzan de etapa.
+export function showPuzzleEvent(event, advanceStageCb, rng = Math.random) {
+  const pooled = Array.isArray(event.questions) && event.questions.length > 0;
+  const q = pooled
+    ? event.questions[Math.min(event.questions.length - 1, Math.max(0, Math.floor(rng() * event.questions.length)))]
+    : { question: event.question, options: event.options ?? [], answer: event.answer, explanation: event.explanation };
+  const options = q?.options ?? [];
 
-  if (event.question == null || options.length === 0) {
+  if (q?.question == null || options.length === 0) {
     advanceStageCb();
     return;
   }
@@ -316,7 +326,7 @@ export function showPuzzleEvent(event, advanceStageCb) {
   const prompt = document.getElementById('choice-prompt');
   const optionsEl = document.getElementById('choice-options');
 
-  const answerLabel = options.find(o => o.id === event.answer)?.label ?? '???';
+  const answerLabel = options.find(o => o.id === q.answer)?.label ?? '???';
 
   function finish(message) {
     overlay.classList.add('hidden');
@@ -324,7 +334,7 @@ export function showPuzzleEvent(event, advanceStageCb) {
   }
 
   title.textContent = event.title ?? 'Acertijo';
-  prompt.textContent = event.question;
+  prompt.textContent = q.question;
   optionsEl.innerHTML = '';
 
   options.forEach(option => {
@@ -332,14 +342,17 @@ export function showPuzzleEvent(event, advanceStageCb) {
     btn.className = 'choice-btn';
     btn.textContent = option.label;
     btn.onclick = () => {
-      if (option.id === event.answer) {
-        const gained = getEventOrbs(event);
+      if (option.id === q.answer) {
+        const gained = getEventOrbs(event, rng);
         grantOrbs(gained);
         const gainText = formatOrbGainHtml(gained);
         logHtml(`${gainText} — Recompensa del acertijo`);
         finish(`✅ <strong>¡Correcto!</strong><br><br><strong>Recompensa:</strong><br>${gainText}`);
       } else {
-        finish(`❌ <strong>Incorrecto.</strong> La respuesta correcta era: <strong>${answerLabel}</strong>.<br>No hay recompensa.`);
+        const explain = q.explanation
+          ? ` La respuesta correcta era: <strong>${answerLabel}</strong>.<br><br>${q.explanation}<br><br>No hay recompensa.`
+          : ` La respuesta correcta era: <strong>${answerLabel}</strong>.<br>No hay recompensa.`;
+        finish(`❌ <strong>Incorrecto.</strong>${explain}`);
       }
     };
     optionsEl.appendChild(btn);
