@@ -21,10 +21,12 @@ const nuevaHistoria = {
 
   // Sorteo 2: entre las entradas elegibles se sortea ponderado por
   // `chance` (peso relativo; mas alto = mas comun). Entradas: 'prueba'
-  // (20), 'viajero' (30), 'dama' (20), 'escolta' (20) y 'maestro' (10)
-  // -> total 100: viajero 30%, 'prueba'/'dama'/'escolta' 20% y 'maestro'
-  // 10% de los eventos aleatorios. Los demas nodos forman el sub-grafo
-  // de una entrada y se llega a ellos eligiendo rama (o por `next`).
+  // (20), 'viajero' (30), 'dama' (20), 'escolta' (20), 'maestro' (10) y
+  // 'reclutas' (10) -> total 110: viajero 27.3%, 'prueba'/'dama'/
+  // 'escolta' 18.2% y 'maestro'/'reclutas' 9.1% de los eventos aleatorios
+  // ('reclutas' solo sortea con al menos 2 aspirantes de rol libre).
+  // Los demas nodos forman el sub-grafo de una entrada y se llega a
+  // ellos eligiendo rama (o por `next`).
   randomEvents: {
 
     // ── Nodo de entrada: las dos pruebas ──
@@ -402,6 +404,111 @@ const nuevaHistoria = {
         { text: 'El sabio recoge su baston y retoma la senda sin mirar atras.' },
         { text: '—Preguntate bien, andariego. El camino ensena a quien sabe escuchar.' }
       ]
+    },
+
+    // ── Evento aleatorio: dos viajeros piden unirse (repeatable) ──
+    // Dos aspirantes al azar de `genericEnemies` con la ranura de su rol
+    // libre (la entrada no sortea si hay menos de 2). Al elegir uno, pide
+    // una demanda al azar: 1 orbe de riqueza, derrotar a sus enemigos o
+    // 3 preguntas de confianza (3/3 para unirse). Rechazar la demanda (o
+    // seguir de largo) cierra el evento sin union. El combate se encadena
+    // por `branches` (el handler fija el puntero, no hay `next` visible).
+    'reclutas': {
+      chance: 10,
+      repeatable: true,
+      type: 'reclutamiento_oferta',
+      narrativo: true,
+      title: 'Viajeros sin banda',
+      description: 'Dos desconocidos del camino te piden unirse a tu grupo.',
+      prompt: 'Dos viajeros sin banda se acercan a tu fuego. ¿Quieres que uno de ellos se una a tu grupo?',
+      branches: ['reclutas-combate'],
+      refuseText: '—Como quieras. El desconocido asiente y retoma la senda sin mirar atras.',
+      failText: '—No confio en ti. La prueba termina aqui y cada uno sigue su camino.',
+      demands: {
+        wealth: {
+          text: '—El camino es duro y yo ando sin nada. Dame 1 orbe de riqueza y te servire con lealtad.',
+          accept: 'Pagar 1 orbe de riqueza',
+          refuse: 'Marcharse sin el'
+        },
+        combat: {
+          text: '—Hay enemigos que me persiguen. Si los derrotas a mi lado, juro unirme a tus filas.',
+          accept: 'Aceptar y luchar',
+          refuse: 'Rechazar y seguir de camino'
+        },
+        questions: {
+          text: '—No me bastan las palabras. Responde mis tres preguntas de confianza y unire a tu grupo.',
+          accept: 'Aceptar la prueba',
+          refuse: 'Rechazar y seguir de camino'
+        }
+      },
+      questions: [
+        {
+          question: 'El grupo hambriento encuentra un campamento abandonado con comida. ¿Que haces?',
+          options: [
+            { id: 'repartir', label: 'Repartirla por igual' },
+            { id: 'esconder', label: 'Esconderla para mi' }
+          ],
+          answer: 'repartir'
+        },
+        {
+          question: 'Un compañero te cuenta un secreto del grupo y otro te lo pregunta. ¿Que respondes?',
+          options: [
+            { id: 'callar', label: 'No es mio que contar' },
+            { id: 'contar', label: 'Contarselo todo' }
+          ],
+          answer: 'callar'
+        },
+        {
+          question: 'Te toca velar la retaguardia mientras el grupo duerme. ¿Que haces?',
+          options: [
+            { id: 'velar', label: 'Me mantengo despierto' },
+            { id: 'dormir', label: 'Duermo; alguien vigilara' }
+          ],
+          answer: 'velar'
+        },
+        {
+          question: 'Encuentas una moneda de oro en el camino y nadie la ha visto. ¿Que haces?',
+          options: [
+            { id: 'grupo', label: 'La guardo para el grupo' },
+            { id: 'yo', label: 'La guardo para mi' }
+          ],
+          answer: 'grupo'
+        },
+        {
+          question: 'Un enemigo derrotado te pide agua y tu grupo no lo ve. ¿Que haces?',
+          options: [
+            { id: 'agua', label: 'Le doy de beber' },
+            { id: 'dejar', label: 'Lo dejo donde esta' }
+          ],
+          answer: 'agua'
+        },
+        {
+          question: 'Tu racion cae al suelo y el grupo no se ha dado cuenta. ¿Que haces?',
+          options: [
+            { id: 'avisar', label: 'Aviso y la compartimos' },
+            { id: 'comer', label: 'Me la como sin decir nada' }
+          ],
+          answer: 'avisar'
+        }
+      ]
+    },
+
+    // ── Rama combate: los enemigos del aspirante; al vencer se une ──
+    'reclutas-combate': {
+      type: 'enfrentamiento',
+      narrativo: true,
+      title: 'Los enemigos del aspirante',
+      description: 'Los enemigos del aspirante te cortan el paso en el camino.',
+      enemyTeam: [10, 12, 14, -1],
+      next: 'reclutas-exito'
+    },
+
+    // ── Rama combate: el aspirante se une al grupo (terminal) ──
+    'reclutas-exito': {
+      type: 'reclutamiento_final',
+      narrativo: true,
+      title: 'Un nuevo rostro en el grupo',
+      description: 'Los enemigos caen y el aspirante reconoce tu valor.'
     }
   }
 };

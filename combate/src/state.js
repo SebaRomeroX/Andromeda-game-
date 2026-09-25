@@ -32,6 +32,10 @@ const runState = {
   // Evento aleatorio ya sorteado para la etapa actual (pin de la tarjeta
   // del mapa). Se limpia en advanceStage para re-tirar en la siguiente.
   pendingRandomId: null,
+  // Aspirante elegido en 'reclutamiento_oferta' mientras resuelve su
+  // demanda (se conserva a traves del combate; lo limpia la union o el
+  // rechazo). null cuando no hay oferta en curso.
+  pendingRecruit: null,
   // Cuatro tipos de orbe: mente (azul, aprender habilidades), poder
   // (rojo, mejorar habilidades), cuerpo (verde, subir de nivel) y
   // riqueza (dorado, sin uso por ahora).
@@ -77,6 +81,7 @@ export function resetRunState() {
   runState.recruitOffer = null;
   runState.peakEnemyLevel = 0;
   runState.pendingRandomId = null;
+  runState.pendingRecruit = null;
   runState.orbes = { mind: 0, power: 0, body: 0, wealth: 0 };
 }
 

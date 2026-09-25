@@ -47,6 +47,7 @@ export function saveGame(storyId, payload) {
       choices: payload.run.choices ?? {},
       currentNodeId: payload.run.currentNodeId ?? null,
       pendingRandomId: payload.run.pendingRandomId ?? null,
+      pendingRecruit: payload.run.pendingRecruit ?? null,
       flags: payload.run.flags ?? {},
       peakEnemyLevel: payload.run.peakEnemyLevel ?? 0,
       orbes: normalizeOrbs(payload.run.orbes)
@@ -99,6 +100,7 @@ export function loadGame(storyId) {
         choices: data.run.choices ?? {},
         currentNodeId: data.run.currentNodeId ?? null,
         pendingRandomId: data.run.pendingRandomId ?? null,
+        pendingRecruit: data.run.pendingRecruit ?? null,
         flags: data.run.flags ?? {},
         peakEnemyLevel: data.run.peakEnemyLevel ?? 0,
         orbes: normalizeOrbs(data.run.orbes)

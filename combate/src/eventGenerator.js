@@ -1,3 +1,6 @@
+import characters from '../data/characters.js';
+import { ROLE_BY_INDEX } from './models.js';
+
 const DEFAULT_CAMP_AFTER_FIGHTS = 3;
 
 function numericMinimum(key, value, ctx) {
@@ -157,7 +160,7 @@ function resolveNode(story, id) {
 // (ni de historia ni del pool); los demas son sub-nodos de una entrada y
 // se llega a ellos por el flujo normal via currentNodeId.
 
-/** Todos los `next` declarados (options incluidas) de ambos pools. */
+/** Todos los `next` declarados (options y branches incluidos) de ambos pools. */
 function collectNextTargets(story) {
   const targets = new Set();
   const scan = (nodes) => {
@@ -165,6 +168,11 @@ function collectNextTargets(story) {
       if (node.next != null) targets.add(node.next);
       (node.options ?? []).forEach(opt => {
         if (opt.next != null) targets.add(opt.next);
+      });
+      // `branches`: nodos alcanzables solo por puntero que pone el handler
+      // (sin `next` visible); cuentan como sub-grafo, no como entradas.
+      (node.branches ?? []).forEach(b => {
+        if (b != null) targets.add(b);
       });
     });
   };
@@ -181,12 +189,30 @@ export function randomEntries(story) {
   return Object.entries(pool).filter(([id]) => !targets.has(id));
 }
 
+/** Pool de aspirantes del evento `reclutamiento_oferta`: indices de
+ * `genericEnemies` (sin duplicados) cuya ranura de rol esta libre en el
+ * equipo (`-1` en su indice). La entrada solo sortea con 2+ candidatos. */
+export function eligibleRecruitPool(story, playerTeam) {
+  const pool = story?.genericEnemies ?? [];
+  const team = playerTeam ?? [];
+  return pool.filter((idx, i) => {
+    if (typeof idx !== 'number' || idx < 0 || pool.indexOf(idx) !== i) return false;
+    const char = characters[idx];
+    if (!char) return false;
+    const slot = ROLE_BY_INDEX.indexOf(char.role);
+    return slot >= 0 && team[slot] === -1;
+  });
+}
+
 /** Una entrada solo participa del sorteo si: chance > 0, no fue disparada
- * (o es repeatable) y cumple sus condiciones. */
-function isEntryEligible(id, node, ctx) {
-  return (node.chance ?? 1) > 0 &&
-    (node.repeatable || !ctx.fired.has(id)) &&
-    evaluateConditions(node.conditions, ctx);
+ * (o es repeatable) y cumple sus condiciones. La oferta de reclutamiento
+ * exige ademas 2 aspirantes cuyo rol quede libre en el equipo. */
+function isEntryEligible(id, node, ctx, story, playerTeam) {
+  if (!((node.chance ?? 1) > 0)) return false;
+  if (!(node.repeatable || !ctx.fired.has(id))) return false;
+  if (!evaluateConditions(node.conditions, ctx)) return false;
+  if (node.type === 'reclutamiento_oferta' && eligibleRecruitPool(story, playerTeam).length < 2) return false;
+  return true;
 }
 
 /** Sorteo ponderado: `chance` como peso relativo dentro de los elegibles. */
@@ -217,17 +243,21 @@ function clearSubgraphFired(pool, entryId, ctx) {
     (node.options ?? []).forEach(opt => {
       if (opt.next != null) stack.push(opt.next);
     });
+    (node.branches ?? []).forEach(b => {
+      if (b != null) stack.push(b);
+    });
   }
 }
 
 /** Doble sorteo de eventos aleatorios. Devuelve el evento elegido o null
  * si el fallback sigue siendo combate generico (sin pool, gate en 0,
  * pool agotado o tirada fallida). */
-function pickRandomEvent(story, ctx, rng) {
+function pickRandomEvent(story, ctx, playerTeam, rng) {
   const pool = story.randomEvents;
   if (!pool || !((story.randomEventChance ?? 0) > 0)) return null;
 
-  const eligible = randomEntries(story).filter(([id, node]) => isEntryEligible(id, node, ctx));
+  const eligible = randomEntries(story).filter(([id, node]) =>
+    isEntryEligible(id, node, ctx, story, playerTeam));
   if (eligible.length === 0) return null;
 
   // Sorteo 1: ¿evento aleatorio o combate generico?
@@ -285,13 +315,13 @@ export function pickNextEvent(story, ctx, playerTeam, rng = Math.random) {
   // el doble sorteo; si no, combate generico.
   if (ctx.pendingRandomId != null) {
     const node = story.randomEvents?.[ctx.pendingRandomId];
-    if (node && isEntryEligible(ctx.pendingRandomId, node, ctx)) {
+    if (node && isEntryEligible(ctx.pendingRandomId, node, ctx, story, playerTeam)) {
       return { ...node, id: ctx.pendingRandomId, random: true };
     }
     ctx.pendingRandomId = null;
   }
 
-  const picked = pickRandomEvent(story, ctx, rng);
+  const picked = pickRandomEvent(story, ctx, playerTeam, rng);
   if (picked) {
     ctx.pendingRandomId = picked.id;
     return picked;

@@ -51,9 +51,9 @@ function validateLinks(story, warn) {
     ...Object.keys(story.storyNodes ?? {}),
     ...Object.keys(story.randomEvents ?? {})
   ]);
-  const check = (fromId, target) => {
+  const check = (fromId, target, field = 'next') => {
     if (target != null && !known.has(target)) {
-      warn(`El nodo "${fromId}" apunta con "next" a "${target}", que no existe en storyNodes ni randomEvents.`);
+      warn(`El nodo "${fromId}" apunta con "${field}" a "${target}", que no existe en storyNodes ni randomEvents.`);
     }
   };
 
@@ -61,6 +61,7 @@ function validateLinks(story, warn) {
     Object.entries(nodes ?? {}).forEach(([id, node]) => {
       check(id, node.next);
       (node.options ?? []).forEach(opt => check(id, opt.next));
+      (node.branches ?? []).forEach(b => check(id, b, 'branches'));
     });
   });
 }
@@ -98,6 +99,40 @@ export function validateStoryCast(story) {
       if (event.character != null && !allies.has(event.character)) {
         warn(`Evento ${where}: ${characters[event.character]?.name ?? event.character} es reclutable pero no esta en allies.`);
       }
+      return;
+    }
+
+    if (event.type === 'reclutamiento_oferta') {
+      if (!Array.isArray(event.branches) || event.branches.length === 0) {
+        warn(`Evento ${where}: es una oferta de reclutamiento pero no declara "branches" con su nodo de combate.`);
+      }
+      ['wealth', 'combat', 'questions'].forEach(k => {
+        const d = event.demands?.[k];
+        if (d?.text == null || d?.accept == null || d?.refuse == null) {
+          warn(`Evento ${where}: demands.${k} necesita "text", "accept" y "refuse".`);
+        }
+      });
+      if (event.refuseText == null) {
+        warn(`Evento ${where}: falta "refuseText" (despedida al rechazar la demanda o seguir de largo).`);
+      }
+      if (event.failText == null) {
+        warn(`Evento ${where}: falta "failText" (resultado al fallar la prueba de confianza).`);
+      }
+      const trustQs = event.questions;
+      if (!Array.isArray(trustQs) || trustQs.length < 3) {
+        warn(`Evento ${where}: la prueba de confianza necesita "questions" con al menos 3 preguntas.`);
+      }
+      (Array.isArray(trustQs) ? trustQs : []).forEach((q, i) => {
+        const at = `, pregunta ${i + 1}`;
+        if (q?.question == null) {
+          warn(`Evento ${where}${at}: la pregunta no tiene texto.`);
+        }
+        if (!Array.isArray(q?.options) || q.options.length === 0) {
+          warn(`Evento ${where}${at}: la prueba no tiene opciones en "options".`);
+        } else if (!q.options.some(o => o?.id != null && o.id === q.answer)) {
+          warn(`Evento ${where}${at}: "answer" no coincide con el id de ninguna opcion.`);
+        }
+      });
       return;
     }
 

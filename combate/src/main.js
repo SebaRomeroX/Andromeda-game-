@@ -13,7 +13,7 @@ import { setupDevPanel } from './devTools.js';
 import { isDev } from './env.js';
 import { TEAMS } from './constants.js';
 import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs, grantOrbs, formatOrbTotalsHtml, formatOrbGainInlineHtml, emptyOrbs } from './gameFlow.js';
-import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showDialogueEvent, showChoiceEvent, showPuzzleEvent, showEnding, showEndModal } from './eventHandlers.js';
+import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showRecruitOfferEvent, showRecruitJoinEvent, showDialogueEvent, showChoiceEvent, showPuzzleEvent, showEnding, showEndModal } from './eventHandlers.js';
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
 import { initPause, showPause } from './pause.js';
@@ -294,6 +294,16 @@ function startCombat(event) {
 
   if (event.type === 'reclutamiento_infinite') {
     showInfiniteRecruitEvent(event, advanceStage);
+    return;
+  }
+
+  if (event.type === 'reclutamiento_oferta') {
+    showRecruitOfferEvent(event, advanceStage);
+    return;
+  }
+
+  if (event.type === 'reclutamiento_final') {
+    showRecruitJoinEvent(event, advanceStage);
     return;
   }
 
