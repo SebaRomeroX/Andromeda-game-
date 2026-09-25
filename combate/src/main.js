@@ -177,6 +177,13 @@ function startStory(story, { loadSave }) {
     state.run.choices = data.run.choices ?? {};
     state.run.currentNodeId = data.run.currentNodeId ?? null;
     state.run.pendingRandomId = data.run.pendingRandomId ?? null;
+    // pendingRecruit se guarda al aceptar la demanda de combate del
+    // reclutamiento; sin restaurarlo la carga perdia al aspirante y
+    // 'reclutamiento_final' no unia a nadie tras vencer.
+    state.run.pendingRecruit = data.run.pendingRecruit ?? null;
+    // Igual que pendingRecruit: se persiste pero se quedaba sin restaurar,
+    // reiniciando la escalada de nivel de los enemigos en cada carga.
+    state.run.peakEnemyLevel = data.run.peakEnemyLevel ?? 0;
     state.run.flags = data.run.flags ?? {};
     state.run.orbes = data.run.orbes ?? emptyOrbs();
     state.session.playerTeam = data.playerTeam;
