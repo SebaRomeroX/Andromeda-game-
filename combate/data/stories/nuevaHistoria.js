@@ -28,7 +28,7 @@ const nuevaHistoria = {
 
     // ── Nodo de entrada: las dos pruebas ──
     'prueba': {
-      chance: 50,
+      chance: 20,
       type: 'eleccion',
       narrativo: true,
       title: 'Prueba',
@@ -46,7 +46,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Prueba de Fuerza',
       description: 'Akay, la hoja certera, bloquea el paso con una escolta.',
-      enemyTeam: [-1, 5, 12, -1],
+      enemyTeam: [-1, 5, 15, -1],
       reward: { power: 1, body: 1 },
       next: 'prueba-final'
     },
@@ -80,9 +80,11 @@ const nuevaHistoria = {
       ]
     },
 
+
+
     // ── Evento aleatorio: viajero atacado por bandidos (repeatable) ──
     'viajero': {
-      chance: 20,
+      chance: 30,
       repeatable: true,
       type: 'eleccion',
       narrativo: true,
@@ -101,7 +103,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Viajero en apuros',
       description: 'Tres bandidos se abalanzan sobre ti.',
-      enemyTeam: [-1, 7, 12, 13],
+      enemyTeam: [7, 12, 14, -1],
       reward: { wealth: 1 },
       next: 'viajero-final'
     },
