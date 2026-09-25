@@ -15,7 +15,7 @@ const nuevaHistoria = {
   // ── Eventos aleatorios ──
   // Sorteo 1: al no haber nodo de historia pendiente, con esta
   // probabilidad ocurre un evento aleatorio en vez de combate generico.
-  randomEventChance: 0.3,
+  randomEventChance: 0.9,
 
   storyNodes: {},
 
@@ -414,13 +414,13 @@ const nuevaHistoria = {
     // seguir de largo) cierra el evento sin union. El combate se encadena
     // por `branches` (el handler fija el puntero, no hay `next` visible).
     'reclutas': {
-      chance: 10,
+      chance: 90,
       repeatable: true,
       type: 'reclutamiento_oferta',
       narrativo: true,
-      title: 'Viajeros sin banda',
-      description: 'Dos desconocidos del camino te piden unirse a tu grupo.',
-      prompt: 'Dos viajeros sin banda se acercan a tu fuego. ¿Quieres que uno de ellos se una a tu grupo?',
+      title: 'Desbandados',
+      description: 'Te encuentras con unos desconocidos.',
+      prompt: 'Dos viajeros se acercan a tu fuego. ¿Quieres que uno de ellos se una a tu grupo?',
       branches: ['reclutas-combate'],
       refuseText: '—Como quieras. El desconocido asiente y retoma la senda sin mirar atras.',
       failText: '—No confio en ti. La prueba termina aqui y cada uno sigue su camino.',
@@ -431,12 +431,12 @@ const nuevaHistoria = {
           refuse: 'Marcharse sin el'
         },
         combat: {
-          text: '—Hay enemigos que me persiguen. Si los derrotas a mi lado, juro unirme a tus filas.',
+          text: '—Hay enemigos que me persiguen. Si me ayudas a derrotarlos, juro unirme a tus filas.',
           accept: 'Aceptar y luchar',
           refuse: 'Rechazar y seguir de camino'
         },
         questions: {
-          text: '—No me bastan las palabras. Responde mis tres preguntas de confianza y unire a tu grupo.',
+          text: '—No se si puedo confiar en ti. Respondeme unas preguntas y sabre si quiero unire a tu grupo.',
           accept: 'Aceptar la prueba',
           refuse: 'Rechazar y seguir de camino'
         }
@@ -446,47 +446,39 @@ const nuevaHistoria = {
           question: 'El grupo hambriento encuentra un campamento abandonado con comida. ¿Que haces?',
           options: [
             { id: 'repartir', label: 'Repartirla por igual' },
-            { id: 'esconder', label: 'Esconderla para mi' }
+            { id: 'esconder', label: 'Racionarla' }
           ],
           answer: 'repartir'
         },
         {
-          question: 'Un compañero te cuenta un secreto del grupo y otro te lo pregunta. ¿Que respondes?',
+          question: 'Un compañero te cuenta un secreto del grupo pero los demas deberian saberlo. ¿Que respondes?',
           options: [
-            { id: 'callar', label: 'No es mio que contar' },
-            { id: 'contar', label: 'Contarselo todo' }
+            { id: 'callar', label: 'No es mi derecho contarlo' },
+            { id: 'contar', label: 'Contarselo al grupo' }
           ],
           answer: 'callar'
         },
         {
-          question: 'Te toca velar la retaguardia mientras el grupo duerme. ¿Que haces?',
+          question: 'Te toca velar la retaguardia mientras el grupo duerme, pero un compañero ofrece hacerlo por ti. ¿Que haces?',
           options: [
             { id: 'velar', label: 'Me mantengo despierto' },
-            { id: 'dormir', label: 'Duermo; alguien vigilara' }
+            { id: 'dormir', label: 'Acepto el ofrecimiento y duermo' }
           ],
           answer: 'velar'
         },
         {
           question: 'Encuentas una moneda de oro en el camino y nadie la ha visto. ¿Que haces?',
           options: [
-            { id: 'grupo', label: 'La guardo para el grupo' },
-            { id: 'yo', label: 'La guardo para mi' }
+            { id: 'grupo', label: 'Darsela al que mas se esfuerza' },
+            { id: 'yo', label: 'Yo guío al grupo y la merezco mas' }
           ],
           answer: 'grupo'
         },
         {
-          question: 'Un enemigo derrotado te pide agua y tu grupo no lo ve. ¿Que haces?',
+          question: 'La racion de un compañero cae al suelo. ¿Que haces?',
           options: [
-            { id: 'agua', label: 'Le doy de beber' },
-            { id: 'dejar', label: 'Lo dejo donde esta' }
-          ],
-          answer: 'agua'
-        },
-        {
-          question: 'Tu racion cae al suelo y el grupo no se ha dado cuenta. ¿Que haces?',
-          options: [
-            { id: 'avisar', label: 'Aviso y la compartimos' },
-            { id: 'comer', label: 'Me la como sin decir nada' }
+            { id: 'avisar', label: 'Compartir las raciones que quedan' },
+            { id: 'comer', label: 'Pasar hambre una noche le enseñara a se cuidadoso' }
           ],
           answer: 'avisar'
         }
@@ -499,7 +491,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Los enemigos del aspirante',
       description: 'Los enemigos del aspirante te cortan el paso en el camino.',
-      enemyTeam: [10, 12, 14, -1],
+      enemyTeam: [10, 13, 14, 4],
       next: 'reclutas-exito'
     },
 
