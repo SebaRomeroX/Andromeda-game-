@@ -20,8 +20,9 @@ const nuevaHistoria = {
   storyNodes: {},
 
   // Sorteo 2: entre las entradas elegibles se sortea ponderado por
-  // `chance` (peso relativo; mas alto = mas comun). Solo 'prueba' es
-  // entrada; los demas nodos forman su sub-grafo y se llega a ellos
+  // `chance` (peso relativo; mas alto = mas comun). Entradas: 'prueba'
+  // y 'viajero' (20 de 70 = 28.6% de los eventos aleatorios). Los
+  // demas nodos forman el sub-grafo de una entrada y se llega a ellos
   // eligiendo rama (o por `next`).
   randomEvents: {
 
@@ -76,6 +77,56 @@ const nuevaHistoria = {
       dialog: [
         { text: 'La prueba queda superada. El arco se cierra tras de ti.' },
         { text: 'Quien la supera sigue su camino, y el camino no perdona.' }
+      ]
+    },
+
+    // ── Evento aleatorio: viajero atacado por bandidos (repeatable) ──
+    'viajero': {
+      chance: 20,
+      repeatable: true,
+      type: 'eleccion',
+      narrativo: true,
+      title: 'Viajero en apuros',
+      description: 'Un grupo de bandidos ha cercado a un viajero.',
+      prompt: 'Bandidos cercan a un viajero desvalido entre el polvo del camino. ¿Que haces?',
+      options: [
+        { id: 'ayudar', label: 'Ayudar al viajero', next: 'viajero-combate' },
+        { id: 'ignorar', label: 'Seguir de largo', next: 'viajero-ignorado' }
+      ]
+    },
+
+    // ── Rama ayudar: combate contra los bandidos; el viajero paga ──
+    'viajero-combate': {
+      type: 'enfrentamiento',
+      narrativo: true,
+      title: 'Viajero en apuros',
+      description: 'Tres bandidos se abalanzan sobre ti.',
+      enemyTeam: [-1, 7, 12, 13],
+      reward: { wealth: 1 },
+      next: 'viajero-final'
+    },
+
+    // ── Rama ayudar: agradecimiento (terminal) ──
+    'viajero-final': {
+      type: 'dialogo',
+      narrativo: true,
+      title: 'Viajero agradecido',
+      description: 'El viajero sobrevive gracias a ti.',
+      dialog: [
+        { text: 'El viajero recobra el aliento y te mira con los ojos muy abiertos.' },
+        { text: '—Te debo la vida, andariego. Llevate esto; poco puedo darte, pero es sincero.' }
+      ]
+    },
+
+    // ── Rama ignorar: nada ocurre (terminal) ──
+    'viajero-ignorado': {
+      type: 'dialogo',
+      narrativo: true,
+      title: 'Siguiendo de largo',
+      description: 'No te implican en lo que no es tuyo.',
+      dialog: [
+        { text: 'Pasas de largo. Detras de ti, los gritos se apagan poco a poco.' },
+        { text: 'No todo lo que ocurre en el camino es cosa tuya.' }
       ]
     }
   }
