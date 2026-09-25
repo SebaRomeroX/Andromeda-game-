@@ -15,7 +15,7 @@ const nuevaHistoria = {
   // ── Eventos aleatorios ──
   // Sorteo 1: al no haber nodo de historia pendiente, con esta
   // probabilidad ocurre un evento aleatorio en vez de combate generico.
-  randomEventChance: 0.9,
+  randomEventChance: 0.3,
 
   storyNodes: {},
 
@@ -414,7 +414,7 @@ const nuevaHistoria = {
     // seguir de largo) cierra el evento sin union. El combate se encadena
     // por `branches` (el handler fija el puntero, no hay `next` visible).
     'reclutas': {
-      chance: 90,
+      chance: 10,
       repeatable: true,
       type: 'reclutamiento_oferta',
       narrativo: true,
