@@ -20,7 +20,7 @@ NARRATIVE:
 aparicion/ apparicion
 precision:99 / type:'precision'
 
-skill button (modified stats showing)
+camp characters show brakes mobile
 
-test Sima new set
-
+prueba de astucia ?
+pruebas fuerza con mas bosses

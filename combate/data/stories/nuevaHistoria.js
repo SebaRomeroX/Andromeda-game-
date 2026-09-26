@@ -15,7 +15,7 @@ const nuevaHistoria = {
   // ── Eventos aleatorios ──
   // Sorteo 1: al no haber nodo de historia pendiente, con esta
   // probabilidad ocurre un evento aleatorio en vez de combate generico.
-  randomEventChance: 0.3,
+  randomEventChance: 0.5,
 
   storyNodes: {},
 
@@ -31,7 +31,7 @@ const nuevaHistoria = {
 
     // ── Nodo de entrada: las dos pruebas ──
     'prueba': {
-      chance: 20,
+      chance: 10,
       type: 'eleccion',
       narrativo: true,
       title: 'Prueba',
