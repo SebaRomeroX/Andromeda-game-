@@ -9,7 +9,7 @@ MECHANIC:
 
 NARRATIVE:
   mas dialogos *
-  integrate dialogs in events *
+  integrate dialogs in events ****
   
   map routes visualization *
   eleccion dialogos
@@ -17,10 +17,9 @@ NARRATIVE:
 
 -----------------
 
-aparicion/ apparicion
-precision:99 / type:'precision'
-
-camp characters show brakes mobile
-
 prueba de astucia ?
 pruebas fuerza con mas bosses
+
+different enemy number team
+randomizable enemy team 
+exteriorize random events

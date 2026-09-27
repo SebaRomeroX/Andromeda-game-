@@ -333,12 +333,12 @@ const characters = [
       // createSkill({ name: "EXCALIBUR",   type: "attack",  power: 1000, precision: 1000,  aparicion: 1000 }), // SKILL PARA AGIlizAR TESTEO DE JUEGO // NO ELIMINAR
       createSkill({ name: "Proteccion",  type: "buff",    target: "ally",  stat: "defense",   value: 7,      duration:5 ,  precision: 99, apparicion: 70  }),
       createSkill({ name: "Derribar",    type: "attack",  power: 12,       precision: 90,     aparicion: 40,
-        levelBonuses: { 2: { power: 7, stun: true }, 3: { power: 5, precision: 3 }, 4: { power: 5 } }
+        levelBonuses: { 2: { power: 4, stun: true }, 3: { power: 5, precision: 3 }, 4: { power: 7 } }
        }),
       createSkill({
-        name: "Vampirico",  type: "attack",  power: 12,  precision: 85,  aparicion: 20,  drain: 30,
+        name: "Vampirico",  type: "attack",  power: 15,  precision: 85,  aparicion: 20,  drain: 30,
         description: "Inflige daño y absorbe parte de ese daño para curarse",
-        levelBonuses: { 2: { power: 6, drain: 10 }, 3: { power: 6, drain: 10 }, 4: { power: 7, drain: 10 } }
+        levelBonuses: { 2: { power: 4, drain: 10 }, 3: { power: 4, drain: 10 }, 4: { power: 5, drain: 10 } }
       }),
       // createSkill({ name: "Estocada",    type: "attack",  power: 12,       precision: 90,     aparicion: 70   }),
       // createSkill({ name: "Bomba humo",  type: "buff",    target: "enemy", stat: "precision", value: 0.9,     precision: 99, apparicion: 70 }),
