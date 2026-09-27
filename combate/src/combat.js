@@ -185,7 +185,7 @@ function checkGameOver() {
     const fallenLines = result === 'allies_fallen'
       ? names.map(n => `☠️ <strong>${n}</strong> ha caído en batalla.`).join('<br>') + '<br>'
       : '';
-    const allGone = state.session.playerTeam.every((idx, i) => idx === -1 || fallen.includes(i));
+    const allGone = state.session.playerTeam.every((name, i) => name == null || fallen.includes(i));
 
     setTimeout(() => showEndModal({
       title: 'Ganaste el combate',

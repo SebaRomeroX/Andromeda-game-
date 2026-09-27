@@ -1,5 +1,4 @@
 import state from './state.js';
-import characters from '../data/characters.js';
 
 // Avanza la stage, actualiza contadores de run
 export function advanceStage() {
@@ -188,12 +187,13 @@ export function resolveVictory() {
   const story = state.session.selectedStory;
 
   if (!story?.noProtagonist && fallen.includes(protagonistSlot)) {
-    const protagonistName = characters[state.session.selectedStory.protagonist ?? 0].name;
+    const protagonistName = story.protagonist ?? 'el protagonista';
     return { result: 'protagonist_fallen', fallen, protagonistName };
   }
 
   if (fallen.length > 0) {
-    const names = fallen.map(i => characters[state.session.playerTeam[i]].name);
+    // playerTeam guarda nombres: ya son los nombres de las bajas.
+    const names = fallen.map(i => state.session.playerTeam[i]);
     return { result: 'allies_fallen', fallen, names };
   }
 

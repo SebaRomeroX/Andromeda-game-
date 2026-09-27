@@ -4,7 +4,7 @@ import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
 import { log, logHtml, clearLog, openLog, closeLog } from './log.js';
 import { saveGame, loadGame, clearGame, debugSave } from './save.js';
-import characters from '../data/characters.js';
+import { getCharacter } from '../data/characters.js';
 import stories from '../data/stories/index.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
 import { pickNextEvent } from './eventGenerator.js';
@@ -69,8 +69,9 @@ function persistProgress() {
 
 }
 
+// `state.session.playerTeam` guarda NOMBRES (null = ranura vacia).
 function buildTeamAData() {
-  return (state.session.playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
+  return (state.session.playerTeam ?? []).map(name => getCharacter(name));
 }
 
 document.getElementById('combat-area').addEventListener('click', (e) => {
@@ -193,9 +194,10 @@ function startStory(story, { loadSave }) {
   } else {
     resetRunState();
     state.session.playerTeam = [...story.teamA];
-    state.session.protagonistSlot = story.noProtagonist
+    const protagonistChar = getCharacter(story.protagonist);
+    state.session.protagonistSlot = story.noProtagonist || !protagonistChar
       ? -1
-      : ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role);
+      : ROLE_BY_INDEX.indexOf(protagonistChar.role);
     resetTeam();
     clearSavedTeamHp();
     clearSavedTeamLevels();
@@ -223,7 +225,7 @@ function renderMap() {
     const story = state.session.selectedStory;
     if (story.infiniteMode) {
       const cycle = state.run.campamentos + 1;
-      const members = state.session.playerTeam.filter(idx => idx !== -1).length;
+      const members = state.session.playerTeam.filter(name => name != null).length;
       header.innerHTML = `Ciclo ${cycle} · Equipo: ${members}/4 · Orbes: ${formatOrbTotalsHtml(state.run.orbes)}`;
     } else {
       header.innerHTML = `Etapa ${state.run.stage + 1} · Orbes: ${formatOrbTotalsHtml(state.run.orbes)}`;
@@ -249,12 +251,12 @@ function renderMap() {
       const roleNames = { tanque: 'Tanque', asesino: 'Asesino', rango: 'Rango', soporte: 'Soporte' };
       const ROLE_BY = ['tanque', 'asesino', 'rango', 'soporte'];
       ROLE_BY.forEach((role, i) => {
-        const charIdx = state.session.playerTeam[i];
+        const charName = state.session.playerTeam[i];
         const slot = document.createElement('div');
         slot.style.cssText = 'border:1px solid #444;border-radius:6px;padding:0.4rem 0.6rem;text-align:center;font-size:0.75rem;min-width:80px;background:#1a1a2e;';
-        if (charIdx !== -1) {
-          const ch = characters[charIdx];
-          slot.innerHTML = `<div style="color:#aaa;font-size:0.6rem;text-transform:uppercase;">${roleNames[role]}</div><div style="font-weight:bold;">${ch.name}</div>`;
+        if (charName != null) {
+          const ch = getCharacter(charName);
+          slot.innerHTML = `<div style="color:#aaa;font-size:0.6rem;text-transform:uppercase;">${roleNames[role]}</div><div style="font-weight:bold;">${ch?.name ?? charName}</div>`;
         } else {
           slot.innerHTML = `<div style="color:#aaa;font-size:0.6rem;text-transform:uppercase;">${roleNames[role]}</div><div style="color:#666;">Vacío</div>`;
         }
@@ -349,13 +351,13 @@ function startCombat(event) {
       enemyTeamOverride: event.enemyTeam
     });
     state.run.peakEnemyLevel = generated.newPeakEnemyLevel;
-    teamBData = generated.team.map((g, i) => {
+    teamBData = generated.team.map(g => {
       if (!g) return null;
-      const idx = event.enemyTeam ? event.enemyTeam[i] : g.index;
-      return { ...characters[idx], level: g.level };
+      const char = getCharacter(g.name);
+      return char ? { ...char, level: g.level } : null;
     });
   } else {
-    teamBData = (event.enemyTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
+    teamBData = (event.enemyTeam ?? []).map(name => getCharacter(name));
   }
 
   setGameEndCallback(() => {
@@ -412,11 +414,11 @@ function handleVictory() {
   if (result === 'allies_fallen') {
     // Las bajas ya se mostraron en el modal de victoria; aqui solo se aplican
     fallen.forEach(i => {
-      state.session.playerTeam[i] = -1;
+      state.session.playerTeam[i] = null;
       clearSavedSlot(i);
     });
 
-    const allGone = state.session.playerTeam.every(idx => idx === -1);
+    const allGone = state.session.playerTeam.every(name => name == null);
 
     if (allGone) {
       state.session.selectedStory = null;

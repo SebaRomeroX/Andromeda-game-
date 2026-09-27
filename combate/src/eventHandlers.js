@@ -2,14 +2,15 @@ import state, { initState, restoreTeamHp, clearSavedSlot } from './state.js';
 import { ROLE_BY_INDEX } from './models.js';
 import { startMercaderPhase, startLevelUpPhase, startSkillUpgrades, startLearnPhase } from './upgrades.js';
 import { clearGame } from './save.js';
-import characters from '../data/characters.js';
+import { getCharacter } from '../data/characters.js';
 import { stopMusic, playChill } from './music.js';
 import { getEventOrbs, grantOrbs, formatOrbGainHtml } from './gameFlow.js';
 import { logHtml } from './log.js';
 import { eligibleRecruitPool } from './eventGenerator.js';
 
+// `state.session.playerTeam` guarda NOMBRES (null = ranura vacia).
 function buildTeamAData() {
-  return (state.session.playerTeam ?? []).map(idx => idx >= 0 ? characters[idx] : null);
+  return (state.session.playerTeam ?? []).map(name => getCharacter(name));
 }
 
 /**
@@ -89,17 +90,22 @@ export function showCampEvent(event, advanceStageCb) {
 
 // Muestra evento de reclutamiento
 export function showRecruitEvent(event, advanceStageCb) {
-  const char = characters[event.character];
+  const char = getCharacter(event.character);
+  if (!char) {
+    console.warn(`[reclutamiento] personaje desconocido "${event.character}"; se omite el evento.`);
+    advanceStageCb();
+    return;
+  }
   const slot = ROLE_BY_INDEX.indexOf(char.role);
 
-  if (state.session.playerTeam[slot] !== -1) {
+  if (state.session.playerTeam[slot] != null) {
     showOverlay(`${char.name} quiere unirse, pero su puesto ya está ocupado.`, 'Continuar', () => {
       advanceStageCb();
     });
     return;
   }
 
-  state.session.playerTeam[slot] = event.character;
+  state.session.playerTeam[slot] = char.name;
   clearSavedSlot(slot);
   showOverlay(`✨ <strong>${char.name}</strong> se ha unido al grupo.`, 'Continuar', () => {
     advanceStageCb();
@@ -108,9 +114,10 @@ export function showRecruitEvent(event, advanceStageCb) {
 
 /** Tarjeta de aspirante para los eventos de reclutamiento (modo infinito
  * y oferta del camino). `note` agrega la linea de aviso de reemplazo y
- * `onClick` el handler de la tarjeta. Devuelve null si el indice no existe. */
-function buildRecruitCard(charIdx, { note = null, onClick } = {}) {
-  const char = characters[charIdx];
+ * `onClick` el handler de la tarjeta. `charName` es el nombre del
+ * personaje; devuelve null si ese nombre no existe. */
+function buildRecruitCard(charName, { note = null, onClick } = {}) {
+  const char = getCharacter(charName);
   if (!char) return null;
 
   const slot = document.createElement('div');
@@ -174,20 +181,20 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
   optionsDiv.className = 'infinite-recruit-options';
   optionsDiv.style.cssText = 'display:flex;gap:1rem;justify-content:center;margin-top:1rem;flex-wrap:wrap;';
 
-  offer.forEach(charIdx => {
-    const char = characters[charIdx];
+  offer.forEach(charName => {
+    const char = getCharacter(charName);
     if (!char) return;
 
     const teamSlot = ROLE_BY_INDEX.indexOf(char.role);
-    const occupied = state.session.playerTeam[teamSlot] !== -1;
+    const occupied = state.session.playerTeam[teamSlot] != null;
     const note = occupied
-      ? `Reemplazará a ${characters[state.session.playerTeam[teamSlot]]?.name ?? 'desconocido'}`
+      ? `Reemplazará a ${state.session.playerTeam[teamSlot] ?? 'desconocido'}`
       : null;
 
-    const card = buildRecruitCard(charIdx, {
+    const card = buildRecruitCard(charName, {
       note,
       onClick: () => {
-        state.session.playerTeam[teamSlot] = charIdx;
+        state.session.playerTeam[teamSlot] = charName;
         clearSavedSlot(teamSlot);
         state.run.recruitOffer = null;
         button.style.display = '';
@@ -200,10 +207,11 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
     if (card) optionsDiv.appendChild(card);
   });
 
-  const bothOccupied = offer.every(charIdx => {
-    const char = characters[charIdx];
+  const bothOccupied = offer.every(charName => {
+    const char = getCharacter(charName);
+    if (!char) return false;
     const teamSlot = ROLE_BY_INDEX.indexOf(char.role);
-    return state.session.playerTeam[teamSlot] !== -1;
+    return state.session.playerTeam[teamSlot] != null;
   });
 
   if (bothOccupied) {
@@ -234,16 +242,17 @@ export function showInfiniteRecruitEvent(event, advanceStageCb) {
 // marcharse sin consecuencias. Union inline en riqueza y preguntas; el
 // combate encadena a `event.branches[0]` y cierra 'reclutamiento_final'.
 
-/** Une al aspirante a la ranura de su rol (definitivo). Devuelve el
- * mensaje del resultado; jamas sobrescribe una ranura ocupada. */
-function joinRecruit(charIdx) {
-  const char = characters[charIdx];
+/** Une al aspirante (por nombre) a la ranura de su rol (definitivo).
+ * Devuelve el mensaje del resultado; jamas sobrescribe una ranura
+ * ocupada. */
+function joinRecruit(charName) {
+  const char = getCharacter(charName);
   if (!char) return { ok: false, message: 'El aspirante ya no esta en el camino.' };
   const slot = ROLE_BY_INDEX.indexOf(char.role);
-  if (slot < 0 || state.session.playerTeam[slot] !== -1) {
+  if (slot < 0 || state.session.playerTeam[slot] != null) {
     return { ok: false, message: `${char.name} quiere unirse, pero su puesto ya esta ocupado.` };
   }
-  state.session.playerTeam[slot] = charIdx;
+  state.session.playerTeam[slot] = charName;
   clearSavedSlot(slot);
   playChill();
   return { ok: true, char, message: `✨ <strong>${char.name}</strong> se ha unido al grupo.` };
@@ -288,12 +297,12 @@ export function showRecruitOfferEvent(event, advanceStageCb, rng = Math.random) 
     overlay.classList.add('hidden');
   };
 
-  picks.forEach(charIdx => {
-    const card = buildRecruitCard(charIdx, {
+  picks.forEach(charName => {
+    const card = buildRecruitCard(charName, {
       onClick: () => {
         closeOffer();
-        state.run.pendingRecruit = { charIdx };
-        showRecruitDemand(event, charIdx, advanceStageCb, rng);
+        state.run.pendingRecruit = { charName };
+        showRecruitDemand(event, charName, advanceStageCb, rng);
       }
     });
     if (card) optionsDiv.appendChild(card);
@@ -320,8 +329,8 @@ export function showRecruitOfferEvent(event, advanceStageCb, rng = Math.random) 
 
 /** Pantalla de demanda del aspirante elegido: texto + aceptar / rechazar
  * (rechazar siempre esta disponible y cierra el evento sin union). */
-function showRecruitDemand(event, charIdx, advanceStageCb, rng) {
-  const char = characters[charIdx];
+function showRecruitDemand(event, charName, advanceStageCb, rng) {
+  const char = getCharacter(charName);
   const kinds = ['wealth', 'combat', 'questions'];
   const kind = kinds[Math.min(kinds.length - 1, Math.max(0, Math.floor(rng() * kinds.length)))];
   const demand = event.demands?.[kind] ?? {};
@@ -366,7 +375,7 @@ function showRecruitDemand(event, charIdx, advanceStageCb, rng) {
   if (kind === 'wealth') {
     renderDemand(() => {
       state.run.orbes = { ...state.run.orbes, wealth: (state.run.orbes?.wealth ?? 0) - 1 };
-      finish(joinRecruit(charIdx).message);
+      finish(joinRecruit(charName).message);
     });
     return;
   }
@@ -442,7 +451,7 @@ function showRecruitDemand(event, charIdx, advanceStageCb, rng) {
 
     const verdict = () => {
       if (correct === picked.length) {
-        finish(joinRecruit(charIdx).message);
+        finish(joinRecruit(charName).message);
         return;
       }
       const list = misses.map(m => `• ${m.question} → <strong>${m.answer}</strong>`).join('<br>');
@@ -458,12 +467,12 @@ function showRecruitDemand(event, charIdx, advanceStageCb, rng) {
 // partida antigua) avanza sin union.
 export function showRecruitJoinEvent(event, advanceStageCb) {
   const pending = state.run.pendingRecruit;
-  if (pending?.charIdx == null) {
+  if (pending?.charName == null) {
     console.warn('[reclutamiento] "reclutamiento_final" sin pendingRecruit; se omite la union.');
     advanceStageCb();
     return;
   }
-  const join = joinRecruit(pending.charIdx);
+  const join = joinRecruit(pending.charName);
   state.run.pendingRecruit = null;
   const message = join.ok
     ? [event.description, join.message].filter(Boolean).join('<br><br>')
@@ -496,7 +505,7 @@ export function showDialogueEvent(event, advanceStageCb) {
       portrait.alt = '';
       speaker.textContent = '';
     } else {
-      const char = characters[line.speaker];
+      const char = getCharacter(line.speaker);
       portrait.src = char?.image ?? '';
       portrait.alt = char?.name ?? '';
       speaker.textContent = char?.name ?? '';

@@ -1,4 +1,4 @@
-import characters from '../data/characters.js';
+import { getCharacter } from '../data/characters.js';
 import { ROLE_BY_INDEX } from './models.js';
 
 const DEFAULT_CAMP_AFTER_FIGHTS = 3;
@@ -189,18 +189,21 @@ export function randomEntries(story) {
   return Object.entries(pool).filter(([id]) => !targets.has(id));
 }
 
-/** Pool de aspirantes del evento `reclutamiento_oferta`: indices de
- * `genericEnemies` (sin duplicados) cuya ranura de rol esta libre en el
- * equipo (`-1` en su indice). La entrada solo sortea con 2+ candidatos. */
+/** Pool de aspirantes del evento `reclutamiento_oferta`: nombres de
+ * `genericEnemies` (sin repetir) cuya ranura de rol esta libre en el
+ * equipo (`null` en su posicion). La entrada solo sortea con 2+
+ * candidatos. Devuelve NOMBRES de personaje. */
 export function eligibleRecruitPool(story, playerTeam) {
   const pool = story?.genericEnemies ?? [];
   const team = playerTeam ?? [];
-  return pool.filter((idx, i) => {
-    if (typeof idx !== 'number' || idx < 0 || pool.indexOf(idx) !== i) return false;
-    const char = characters[idx];
+  const seen = new Set();
+  return pool.filter(name => {
+    if (typeof name !== 'string' || seen.has(name)) return false;
+    seen.add(name);
+    const char = getCharacter(name);
     if (!char) return false;
     const slot = ROLE_BY_INDEX.indexOf(char.role);
-    return slot >= 0 && team[slot] === -1;
+    return slot >= 0 && team[slot] == null;
   });
 }
 

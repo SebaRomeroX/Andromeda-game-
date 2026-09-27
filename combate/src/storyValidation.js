@@ -1,4 +1,4 @@
-import characters from '../data/characters.js';
+import { hasCharacter } from '../data/characters.js';
 import { randomEntries } from './eventGenerator.js';
 
 // Valida cast, enlaces y configuracion de eventos de una historia.
@@ -91,13 +91,34 @@ export function validateStoryCast(story) {
 
   const warn = (msg) => console.warn(`[historia "${story.title}"] ${msg}`);
 
+  // Toda referencia a personaje es un NOMBRE (el nombre es la clave
+  // estable). Aqui se avisa si el nombre no existe o si alguien dejo una
+  // referencia numerica antigua (posicion en characters.js).
+  const checkName = (value, label) => {
+    if (value == null) return;
+    if (typeof value === 'number') {
+      warn(`${label}: referencia numerica (${value}); debe ser el nombre del personaje.`);
+      return;
+    }
+    if (!hasCharacter(value)) {
+      warn(`${label}: "${value}" no existe en characters.`);
+    }
+  };
+
+  ['allies', 'genericEnemies', 'narrativeEnemies'].forEach(key => {
+    (story[key] ?? []).forEach((n, i) => checkName(n, `${key}[${i}]`));
+  });
+  (story.teamA ?? []).forEach((n, i) => checkName(n, `teamA[${i}]`));
+  checkName(story.protagonist, 'protagonist');
+
   // Validacion estructural de un evento. `where` identifica el nodo:
   // id entre comillas (pools con clave) o numero (listas legadas).
   const checkEvent = (event, where) => {
     checkRandomType(event, where, warn);
     if (event.type === 'reclutamiento') {
+      checkName(event.character, `Evento ${where}: character`);
       if (event.character != null && !allies.has(event.character)) {
-        warn(`Evento ${where}: ${characters[event.character]?.name ?? event.character} es reclutable pero no esta en allies.`);
+        warn(`Evento ${where}: ${event.character} es reclutable pero no esta en allies.`);
       }
       return;
     }
@@ -150,10 +171,7 @@ export function validateStoryCast(story) {
         warn(`Evento ${where}: es un dialogo pero no tiene lineas en "dialog".`);
       }
       (event.dialog ?? []).forEach((line, j) => {
-        const sp = line.speaker;
-        if (sp != null && (sp < 0 || sp >= characters.length)) {
-          warn(`Evento ${where}, linea ${j + 1}: speaker ${sp} no es un indice valido de characters.`);
-        }
+        checkName(line.speaker, `Evento ${where}, linea ${j + 1}: speaker`);
       });
       return;
     }
@@ -198,9 +216,10 @@ export function validateStoryCast(story) {
     if (event.type !== 'enfrentamiento' || !event.enemyTeam) return;
 
     const allowed = event.narrativo ? new Set([...generic, ...narrative]) : generic;
-    event.enemyTeam.forEach(idx => {
-      if (idx >= 0 && !allowed.has(idx)) {
-        warn(`Evento ${where}: ${characters[idx]?.name ?? idx} no deberia aparecer en un enfrentamiento ${event.narrativo ? 'narrativo' : 'generico'}.`);
+    event.enemyTeam.forEach((name, i) => {
+      checkName(name, `Evento ${where}: enemyTeam[${i}]`);
+      if (name != null && !allowed.has(name)) {
+        warn(`Evento ${where}: ${name} no deberia aparecer en un enfrentamiento ${event.narrativo ? 'narrativo' : 'generico'}.`);
       }
     });
   };

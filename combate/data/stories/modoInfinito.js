@@ -1,4 +1,11 @@
-const ALL_CHARACTERS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
+// Pool fijo por nombre (mismos 19 personajes de siempre): Xall y Veraldin
+// quedan fuera a proposito.
+const ALL_CHARACTERS = [
+  'Sima', 'La druida', 'Urbol', 'Sacerdotiza oscura', 'Narada', 'Akay',
+  'La bruja del paramo', 'Guerrero', 'Sabueso de Guerra', 'Aracnida',
+  'Lancero', 'Hamer', 'Espadachin', 'Asesina', 'Arquera', 'Witch',
+  'Capitan Oscuro', 'Demonic', 'Piedrita'
+];
 
 const modoInfinito = {
   id: 'modo-infinito',
@@ -9,7 +16,7 @@ const modoInfinito = {
   infiniteMode: true,
   allies: ALL_CHARACTERS,
   genericEnemies: ALL_CHARACTERS,
-  teamA: [-1, -1, -1, -1],
+  teamA: [null, null, null, null],
   campAfterFights: 3,
   storyNodes: {}
 };

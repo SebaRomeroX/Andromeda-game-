@@ -2,11 +2,11 @@ const modoLibre = {
   id: 'modo-libre',
   title: 'Modo libre para desarrollo',
   description: 'Se puede elegir el evento.',
-  protagonist: 0,
-  allies: [1,2,9],
-  genericEnemies: [3, 7, 8, 10, 11, 12, 13, 14, 15],
-  narrativeEnemies: [4, 5, 6, 16, 17],
-  teamA: [-1, 19, 20, -1],
+  protagonist: 'Sima',
+  allies: ['La druida', 'Urbol', 'Aracnida'],
+  genericEnemies: ['Sacerdotiza oscura', 'Guerrero', 'Sabueso de Guerra', 'Lancero', 'Hamer', 'Espadachin', 'Asesina', 'Arquera', 'Witch'],
+  narrativeEnemies: ['Narada', 'Akay', 'La bruja del paramo', 'Capitan Oscuro', 'Demonic'],
+  teamA: [null, 'Xall', 'Veraldin', null],
   events: [
     {
       type: 'enfrentamiento',
@@ -25,7 +25,7 @@ const modoLibre = {
       description: 'El viento murmura entre las rocas.',
       dialog: [
         { text: 'El silencio se abre paso entre el polvo del camino.' },
-        { speaker: 4, text: 'El destino os espera, pero no estáis listos.' }
+        { speaker: 'Narada', text: 'El destino os espera, pero no estáis listos.' }
       ]
     },
     {
@@ -43,27 +43,27 @@ const modoLibre = {
       type: 'reclutamiento',
       title: 'recluta druida',
       description: 'Una druida del bosque ofrece acompañarte.',
-      character: 1
+      character: 'La druida'
     },
     {
       type: 'reclutamiento',
       title: 'recluta tanque',
       description: 'Un caballero ofrece acompañarte.',
-      character: 2
+      character: 'Urbol'
     },
     {
       type: 'enfrentamiento',
       narrativo: true,
       title: 'Equipo full',
       description: '4 integrantes.',
-      enemyTeam: [11, 13, 15, 3]
+      enemyTeam: ['Hamer', 'Asesina', 'Witch', 'Sacerdotiza oscura']
     },
     {
       type: 'enfrentamiento',
       narrativo: true,
       title: 'Final',
       description: 'Una amenaza ineludible se cierne sobre ti.',
-      enemyTeam: [4, 5, 17, 6]
+      enemyTeam: ['Narada', 'Akay', 'Demonic', 'La bruja del paramo']
     },
   ]
 };

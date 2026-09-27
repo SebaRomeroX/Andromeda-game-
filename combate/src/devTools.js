@@ -1,7 +1,7 @@
 import { ROLE_BY_INDEX, getLevelStats } from './models.js';
 import { pickNextEvent } from './eventGenerator.js';
 import { rollVictoryOrbs } from './gameFlow.js';
-import characters from '../data/characters.js';
+import { getCharacter } from '../data/characters.js';
 
 function initialRun() {
   return { stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0, fired: new Set(), choices: {}, currentNodeId: null, flags: {}, orbes: { mind: 0, power: 0, body: 0, wealth: 0 }, pendingRandomId: null };
@@ -34,8 +34,8 @@ function applyEvent(ev, run, roster, choices = {}) {
       orbes[k] = (orbes[k] ?? 0) + gained[k];
     });
   } else if (ev.type === 'reclutamiento') {
-    const char = characters[ev.character];
-    const slot = ROLE_BY_INDEX.indexOf(char?.role);
+    const char = getCharacter(ev.character);
+    const slot = ROLE_BY_INDEX.indexOf(char?.role ?? '');
     if (slot >= 0) roster[slot] = ev.character;
   } else if (ev.type === 'eleccion') {
     if (ev.id && ev.options?.length) {
@@ -119,13 +119,8 @@ export function buildJumpPayload(story, stageNumber, choices = {}) {
 
   const hp = [];
   const levels = [];
-  roster.forEach((idx) => {
-    if (idx == null || idx < 0) {
-      hp.push(null);
-      levels.push(null);
-      return;
-    }
-    const base = characters[idx];
+  roster.forEach((name) => {
+    const base = getCharacter(name);
     if (!base) {
       hp.push(null);
       levels.push(null);
@@ -136,10 +131,11 @@ export function buildJumpPayload(story, stageNumber, choices = {}) {
     hp.push(getLevelStats({ ...base, level }).hp);
   });
 
+  const protagonistChar = getCharacter(story.protagonist);
   return {
     payload: {
       playerTeam: roster,
-      protagonistSlot: ROLE_BY_INDEX.indexOf(characters[story.protagonist ?? 0].role),
+      protagonistSlot: ROLE_BY_INDEX.indexOf(protagonistChar?.role ?? ''),
       run,
       team: { hp, levels }
     }

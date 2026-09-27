@@ -364,3 +364,35 @@ const characters = [
 ];
 
 export default characters;
+
+// ── Registro por nombre ──
+// El nombre es la clave estable de un personaje: las historias, el equipo
+// del run y los guardados lo referencian por nombre, nunca por posicion
+// dentro de este array (borrar o reordenar personajes no rompe nada).
+const charactersByName = new Map();
+characters.forEach(char => {
+  if (charactersByName.has(char.name)) {
+    console.error(`[personajes] nombre duplicado "${char.name}": las referencias por nombre seran ambiguas.`);
+    return;
+  }
+  charactersByName.set(char.name, char);
+});
+
+/** Personaje por nombre exacto. Devuelve null si no existe (o si el
+ * argumento es null/undefined, para poder encadenar sin guardar nulos). */
+export function getCharacter(name) {
+  if (typeof name !== 'string') return null;
+  return charactersByName.get(name) ?? null;
+}
+
+/** true si existe un personaje con ese nombre. */
+export function hasCharacter(name) {
+  return getCharacter(name) != null;
+}
+
+/** SOLO para migracion de guardados antiguos: posicion -> nombre.
+ * Un guardado con indices numericos se convierte a nombres al cargarlo. */
+export function characterAt(index) {
+  if (!Number.isInteger(index) || index < 0) return null; // -1 = ranura vacia
+  return characters[index]?.name ?? null;
+}

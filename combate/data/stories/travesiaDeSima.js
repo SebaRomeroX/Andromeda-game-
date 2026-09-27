@@ -3,11 +3,11 @@ const travesiaDeSima = {
   title: 'La Travesia de Sima',
   description: 'Sima la audaz se adentra en tierras desconocidas en busca de un unico objetivo.',
   sequential: true,
-  protagonist: 0,
-  allies: [1, 2, 9, 18],
-  genericEnemies: [3, 7, 8, 10, 11, 12, 13, 14, 15],
-  narrativeEnemies: [4, 5, 6, 16, 17],
-  teamA: [-1, 0, -1, -1],
+  protagonist: 'Sima',
+  allies: ['La druida', 'Urbol', 'Aracnida', 'Piedrita'],
+  genericEnemies: ['Sacerdotiza oscura', 'Guerrero', 'Sabueso de Guerra', 'Lancero', 'Hamer', 'Espadachin', 'Asesina', 'Arquera', 'Witch'],
+  narrativeEnemies: ['Narada', 'Akay', 'La bruja del paramo', 'Capitan Oscuro', 'Demonic'],
+  teamA: [null, 'Sima', null, null],
   campAfterFights: 3,
   expectedStages: 21,
 
@@ -22,9 +22,9 @@ const travesiaDeSima = {
       description: 'El pueblo de Sima ya no existe.',
       dialog: [
         { text: 'Un humo gris se eleva de las ruinas de lo que un dia fue tu pueblo.' },
-        { speaker: 0, text: 'Aun puedo sentir el fuego y oir los gritos de los que no pudieron huir.' },
+        { speaker: 'Sima', text: 'Aun puedo sentir el fuego y oir los gritos de los que no pudieron huir.' },
         { text: 'La legion oscura de Narada no dejo mas que desolacion.' },
-        { speaker: 0, text: 'Narada... no hay muro, ni montana, ni ejercito que te esconda de mi.' },
+        { speaker: 'Sima', text: 'Narada... no hay muro, ni montana, ni ejercito que te esconda de mi.' },
         { text: 'Con el corazon en un puno, Sima se pone en marcha. Desde hoy, su lanza solo apunta en una direccion.' }
       ],
       next: 'elegir-camino'
@@ -55,7 +55,7 @@ const travesiaDeSima = {
       description: 'El camino serpentea entre los arboles.',
       dialog: [
         { text: 'El bosque se cierra sobre el camino, umbrio y susurrante.' },
-        { speaker: 0, text: 'No hay atajos en la venganza. Pero este bosque esconde algo... lo siento.' },
+        { speaker: 'Sima', text: 'No hay atajos en la venganza. Pero este bosque esconde algo... lo siento.' },
         { text: 'Entre la maleza, el crujir de ramas acompana cada paso. Sima continua, vigilante.' }
       ],
       conditions: { campamentos: 1 },
@@ -69,10 +69,10 @@ const travesiaDeSima = {
       description: 'Algo se mueve entre las hojas.',
       dialog: [
         { text: 'Una figura sale a tu encuentro, se acerca, con lagrimas en el rostro.' },
-        { speaker: 1, text: 'Oh Sima ... ya me he enterado ... Como lo siento mi querida amiga.' },
-        { speaker: 0, text: '...' },
-        { speaker: 1, text: 'Se a donde te dirijes. Por favor, deja que te acompanie.' },
-        { speaker: 0, text: 'Seria pedirte demasiado, no puedo prometerte que volveras ... Pero necesito tu ayuda.' },
+        { speaker: 'La druida', text: 'Oh Sima ... ya me he enterado ... Como lo siento mi querida amiga.' },
+        { speaker: 'Sima', text: '...' },
+        { speaker: 'La druida', text: 'Se a donde te dirijes. Por favor, deja que te acompanie.' },
+        { speaker: 'Sima', text: 'Seria pedirte demasiado, no puedo prometerte que volveras ... Pero necesito tu ayuda.' },
       ],
       conditions: { campamentos: 2 },
       next: 'reclutamiento-druida'
@@ -82,7 +82,7 @@ const travesiaDeSima = {
       type: 'reclutamiento',
       title: 'Una amable compania',
       description: 'La druida del bosque cuidara tu espalda en esta travesia.',
-      character: 1,
+      character: 'La druida',
       conditions: { campamentos: 2 },
       next: 'dialogo-akay'
     },
@@ -97,11 +97,11 @@ const travesiaDeSima = {
         { text: 'Sin embargo, los obstaculos nunca faltan.' },
         { text: 'Emboscada !!!' },
         { text: 'Sima reacciona justo a tiempo para detener el ataque ...' },
-        { speaker: 5, text: 'Jajaja parece que un cachorro se a perdido.' },
-        { speaker: 0, text: 'Te conozco, alimaña rastrera. Eres una de las espadas de Narada' },
-        { speaker: 5, text: 'Ahhh asi que vas tras la comandante oscura.' },
-        { speaker: 5, text: 'Que bella forma de buscar tu propia destruccion jajaja.' },
-        { speaker: 5, text: 'Sin embargo no puedo permitirlo ...' },
+        { speaker: 'Akay', text: 'Jajaja parece que un cachorro se a perdido.' },
+        { speaker: 'Sima', text: 'Te conozco, alimaña rastrera. Eres una de las espadas de Narada' },
+        { speaker: 'Akay', text: 'Ahhh asi que vas tras la comandante oscura.' },
+        { speaker: 'Akay', text: 'Que bella forma de buscar tu propia destruccion jajaja.' },
+        { speaker: 'Akay', text: 'Sin embargo no puedo permitirlo ...' },
         { text: 'Akay, la hoja certera de los oscuros, se avalanza hacia ti.' }
       ],
       conditions: { campamentos: 3 },
@@ -113,7 +113,7 @@ const travesiaDeSima = {
       narrativo: true,
       title: 'La espada mas veloz',
       description: 'Una emboscada por parte de la hoja mas certera del ejercito oscuro.',
-      enemyTeam: [-1, 5, 14, -1],
+      enemyTeam: [null, 'Akay', 'Arquera', null],
       conditions: { campamentos: 3 },
       next: 'dialogo-urbol'
     },
@@ -125,10 +125,10 @@ const travesiaDeSima = {
       description: 'Un veterano caballero.',
       dialog: [
         { text: 'El camino se corta ante una mole de acero, un noble guerrero.' },
-        { speaker: 2, text: 'Dicen que persigues a Narada. La gente baja la voz cuando pronuncia ese nombre.' },
-        { speaker: 0, text: 'No lo hago por capricho. Me impulsa la sangre derramada de mi pueblo.' },
-        { speaker: 2, text: 'He visto a sus tropas borrar reinos enteros del mapa. Y me quede de brazos cruzados.' },
-        { speaker: 2, text: 'Tu causa es justa y yo me debo a la justicia. Cuenta conmigo, capitana.' },
+        { speaker: 'Urbol', text: 'Dicen que persigues a Narada. La gente baja la voz cuando pronuncia ese nombre.' },
+        { speaker: 'Sima', text: 'No lo hago por capricho. Me impulsa la sangre derramada de mi pueblo.' },
+        { speaker: 'Urbol', text: 'He visto a sus tropas borrar reinos enteros del mapa. Y me quede de brazos cruzados.' },
+        { speaker: 'Urbol', text: 'Tu causa es justa y yo me debo a la justicia. Cuenta conmigo, capitana.' },
         { text: 'Sima asiente. Con companeros a su lado el camino parece menos duro.' }
       ],
       conditions: { campamentos: 4 },
@@ -139,7 +139,7 @@ const travesiaDeSima = {
       type: 'reclutamiento',
       title: 'El gran Urbol',
       description: 'Un poderoso caballero se une a tu mision.',
-      character: 2,
+      character: 'Urbol',
       conditions: { campamentos: 4 },
       next: 'dialogo-capitan-oscuro-bosque'
     },
@@ -151,10 +151,10 @@ const travesiaDeSima = {
       description: 'La ceniza flotando en el aire recuerda a Sima la noche que lo cambio todo.',
       dialog: [
         { text: 'Ceniza cae del cielo como nieve. Un aroma de madera quemada llena el aire.' },
-        { speaker: 0, text: 'Esta imagen... la conozco. Se que estas cerca.' },
+        { speaker: 'Sima', text: 'Esta imagen... la conozco. Se que estas cerca.' },
         { text: 'Una sola figura se distingue entre rescoldo y ruinas.' },
-        { speaker: 16, text: 'No daras ni un paso mas hacia la comandante, aqui se acaba tu vano intento de venganza.' },
-        { speaker: 0, text: 'Eso lo veremos.' },
+        { speaker: 'Capitan Oscuro', text: 'No daras ni un paso mas hacia la comandante, aqui se acaba tu vano intento de venganza.' },
+        { speaker: 'Sima', text: 'Eso lo veremos.' },
         { text: 'Sima avanza...' },
       ],
       conditions: { campamentos: 5 },
@@ -166,7 +166,7 @@ const travesiaDeSima = {
       narrativo: true,
       title: 'Ruinas',
       description: 'Por fin el objetivo a la vista.',
-      enemyTeam: [16, 8, 14, 3],
+      enemyTeam: ['Capitan Oscuro', 'Sabueso de Guerra', 'Arquera', 'Sacerdotiza oscura'],
       reward: { mind: 1, power: 1 },
       conditions: { campamentos: 5 },
       next: 'dialogo-final-bosque'
@@ -179,10 +179,10 @@ const travesiaDeSima = {
       description: 'Un paso antes de la batalla definitiva.',
       dialog: [
         { text: 'El ultimo santuario se alza entre columnas partidas.' },
-        { speaker: 0, text: 'Tras esas puertas esta quien me lo arrebato todo.. Todo.' },
-        { speaker: 1, text: 'No todo, tus companeros estan a tu lado. No te fallaremos.' },
-        { speaker: 2, text: 'La justicia no se proclama, se ejecuta.' },
-        { speaker: 0, text: 'Entonces vamos. Tenemos que acabar con una bestia.' },
+        { speaker: 'Sima', text: 'Tras esas puertas esta quien me lo arrebato todo.. Todo.' },
+        { speaker: 'La druida', text: 'No todo, tus companeros estan a tu lado. No te fallaremos.' },
+        { speaker: 'Urbol', text: 'La justicia no se proclama, se ejecuta.' },
+        { speaker: 'Sima', text: 'Entonces vamos. Tenemos que acabar con una bestia.' },
         { text: 'Sima avanza, su lanza en la mano, el viento en su cabello, el recuerdo de su gente en el corazon y el enemigo frente a sus ojos.' },
       ],
       conditions: { campamentos: 5 },
@@ -194,7 +194,7 @@ const travesiaDeSima = {
       narrativo: true,
       title: 'Enfrentamiento final',
       description: 'Entre los escombros del santuario, Narada te espera.',
-      enemyTeam: [4, 12, 17, 6],
+      enemyTeam: ['Narada', 'Espadachin', 'Demonic', 'La bruja del paramo'],
       reward: { mind: 1, power: 1, body: 1 },
       conditions: { campamentos: 5 },
       next: 'conclusion-bosque'
@@ -207,8 +207,8 @@ const travesiaDeSima = {
       description: 'La venganza se ha consumado. La travesia de Sima llega a su fin.',
       dialog: [
         { text: 'El silencio desciende sobre el santuario. Narada toma su ultimo aliento entre las piedras.' },
-        { speaker: 4, text: 'T... todo... termina... en ceniza...' },
-        { speaker: 0, text: 'Puede ser. Pero tu fuego no volvera a quemar nada.' },
+        { speaker: 'Narada', text: 'T... todo... termina... en ceniza...' },
+        { speaker: 'Sima', text: 'Puede ser. Pero tu fuego no volvera a quemar nada.' },
         { text: 'Sima clava su hoja en el suelo y alza la vista.' },
         { text: 'Su pueblo se perdio. Pero se ha cumplido su venganza, se ha hecho justicia.' }
       ],
@@ -244,7 +244,7 @@ const travesiaDeSima = {
       description: 'Vas por la derecha y te adentras en unas cavernas.',
       dialog: [
         { text: 'La boca de unas cavernas se cierra sobre ti, oscuras y humedas.' },
-        { speaker: 0, text: 'La luz se pierde aqui. Este camino no me gusta.' },
+        { speaker: 'Sima', text: 'La luz se pierde aqui. Este camino no me gusta.' },
         { text: 'El eco del agua gotea entre las piedras. Algo se agita en la oscuridad.' }
       ],
       next: 'dialogo-aracnida'
@@ -257,10 +257,10 @@ const travesiaDeSima = {
       description: 'Te encuentras a un extraño ser.',
       dialog: [
         { text: 'En lo profundo de la caverna te encuentras a un ser aracnido atrapado.' },
-        { speaker: 9, text: 'Por favor ayudame. Los secuases de Narada nos atacaron.' },
-        { speaker: 0, text: 'Como se que puedo confiar en ti ?' },
-        { speaker: 9, text: 'Tambien eres su enemiga verdad ? Liberame y te ayudare a luchar contra ella.' },
-        { speaker: 0, text: 'Te advierto que no perdono la traicion ...' },
+        { speaker: 'Aracnida', text: 'Por favor ayudame. Los secuases de Narada nos atacaron.' },
+        { speaker: 'Sima', text: 'Como se que puedo confiar en ti ?' },
+        { speaker: 'Aracnida', text: 'Tambien eres su enemiga verdad ? Liberame y te ayudare a luchar contra ella.' },
+        { speaker: 'Sima', text: 'Te advierto que no perdono la traicion ...' },
       ],
       next: 'reclutamiento-aracnida'
     },
@@ -269,7 +269,7 @@ const travesiaDeSima = {
       type: 'reclutamiento',
       title: 'Aliado inesperado',
       description: 'La aracnida promete ayudarte a cambio de su libertad.',
-      character: 9,
+      character: 'Aracnida',
       next: 'dialogo-bruja'
     },
 
@@ -280,8 +280,8 @@ const travesiaDeSima = {
       description: 'Ayuda a los aracnidos.',
       dialog: [
         { text: 'En una amplia caberna, La bruja del paramo, quien mantiene cautivos a los aracnidos.' },
-        { speaker: 9, text: 'Libera a mi gente, maldita !' },
-        { speaker: 6, text: 'Y porque haria tal cosa ?' },
+        { speaker: 'Aracnida', text: 'Libera a mi gente, maldita !' },
+        { speaker: 'La bruja del paramo', text: 'Y porque haria tal cosa ?' },
         { text: 'La bruja los mira con una sonrisa burlona.' },
         { text: 'Tu companera aracnida pierde los nervios. Sima sujeta firme su escudo y da un paso al frente.' },
       ],
@@ -294,7 +294,7 @@ const travesiaDeSima = {
       narrativo: true,
       title: 'La bruja del paramo',
       description: 'La bruja que mantiene cautivo a los aracnidos.',
-      enemyTeam: [-1, 12, 14, 6],
+      enemyTeam: [null, 'Espadachin', 'Arquera', 'La bruja del paramo'],
       conditions: { campamentos: 3 },
       next: 'dialogo-bruja-derrotada'
     },
@@ -306,11 +306,11 @@ const travesiaDeSima = {
       description: 'La bruja ha sido vencida.',
       dialog: [
         { text: 'Con la Bruja del paramo vencida, los aracnidos son libres.' },
-        { speaker: 9, text: 'Gracias por ayudarnos, buena suerte en tu viaje ...' },
+        { speaker: 'Aracnida', text: 'Gracias por ayudarnos, buena suerte en tu viaje ...' },
         { text: 'Sima la mira seriamente.' },
-        { speaker: 0, text: 'Hicimos un trato ...' },
+        { speaker: 'Sima', text: 'Hicimos un trato ...' },
         { text: 'La aracnida agacha la cabeza.' },
-        { speaker: 9, text: 'Esta bien ... te seguire' },
+        { speaker: 'Aracnida', text: 'Esta bien ... te seguire' },
       ],
       conditions: { campamentos: 3 },
       next: 'dialogo-final-cueva'
@@ -323,9 +323,9 @@ const travesiaDeSima = {
       description: 'Un paso antes de la batalla definitiva.',
       dialog: [
         { text: 'El ultimo santuario se alza entre columnas partidas.' },
-        { speaker: 0, text: 'Tras esas puertas esta quien me lo arrebato todo.. Todo.' },
-        { speaker: 9, text: 'Yo te cubro la espalda Sima, no te fallare.' },
-        { speaker: 0, text: 'Entonces vamos. Tenemos que acabar con una bestia.' },
+        { speaker: 'Sima', text: 'Tras esas puertas esta quien me lo arrebato todo.. Todo.' },
+        { speaker: 'Aracnida', text: 'Yo te cubro la espalda Sima, no te fallare.' },
+        { speaker: 'Sima', text: 'Entonces vamos. Tenemos que acabar con una bestia.' },
         { text: 'Sima avanza, su lanza en la mano, el viento en su cabello, el recuerdo de su gente en el corazon y el enemigo frente a sus ojos.' },
       ],
       conditions: { campamentos: 5 },
@@ -337,7 +337,7 @@ const travesiaDeSima = {
       narrativo: true,
       title: 'Enfrentamiento final',
       description: 'Entre los escombros del santuario, Narada te espera.',
-      enemyTeam: [4, 5, 17, 3],
+      enemyTeam: ['Narada', 'Akay', 'Demonic', 'Sacerdotiza oscura'],
       reward: { mind: 1, power: 1, body: 1 },
       conditions: { campamentos: 5 },
       next: 'conclusion-cueva'
@@ -350,8 +350,8 @@ const travesiaDeSima = {
       description: 'La venganza se ha consumado. La travesia de Sima llega a su fin.',
       dialog: [
         { text: 'El silencio desciende sobre el santuario. Narada toma su ultimo aliento entre las piedras.' },
-        { speaker: 4, text: 'T... todo... termina... en ceniza...' },
-        { speaker: 0, text: 'Puede ser. Pero tu fuego no volvera a quemar nada.' },
+        { speaker: 'Narada', text: 'T... todo... termina... en ceniza...' },
+        { speaker: 'Sima', text: 'Puede ser. Pero tu fuego no volvera a quemar nada.' },
         { text: 'Sima clava su hoja en el suelo y alza la vista.' },
         { text: 'Su pueblo se perdio. Pero se ha cumplido su venganza, se ha hecho justicia.' }
       ],
@@ -371,9 +371,9 @@ const travesiaDeSima = {
       dialog: [
         { text: 'A lo lejos vez a soldados oscuros atacando a una pequena figura.' },
         { text: 'Parece ser un nino, pero al acercarte te das cuenta que no es un nino como tal.' },
-        { speaker: 18, text: 'Prrrr rr Qrrr !!' },
+        { speaker: 'Piedrita', text: 'Prrrr rr Qrrr !!' },
         { text: 'Es una cria de golem, los saldados estan atormentandolo.' },
-        { speaker: 0, text: 'Sus despreciables vidas han llegado a su fin' },
+        { speaker: 'Sima', text: 'Sus despreciables vidas han llegado a su fin' },
       ],
       next: 'reclutamiento-piedrita'
     },
@@ -382,7 +382,7 @@ const travesiaDeSima = {
       type: 'reclutamiento',
       title: 'Pequeno en aprietos',
       description: 'Ayudas a una criatura que te necesita.',
-      character: 18,
+      character: 'Piedrita',
       next: 'dialogo-demonica'
     },
 
@@ -395,9 +395,9 @@ const travesiaDeSima = {
         { text: 'Avanzas varios kilometros casi sin contratiempos.' },
         { text: 'El camino se ensancha, al final del terraplen, una inquietante figura.' },
         { text: 'Se gira y se acerca flotando hacia ti.' },
-        { speaker: 17, text: 'Dahal ba selak gotur malak !' },
-        { speaker: 0, text: 'No entiendo tus palabras, pero tampoco me interesan.' },
-        { speaker: 0, text: 'Eres otra de los subordinados de esa escoria y caeras como el resto de ellos.' },
+        { speaker: 'Demonic', text: 'Dahal ba selak gotur malak !' },
+        { speaker: 'Sima', text: 'No entiendo tus palabras, pero tampoco me interesan.' },
+        { speaker: 'Sima', text: 'Eres otra de los subordinados de esa escoria y caeras como el resto de ellos.' },
         { text: 'Sima apunta su lanza hacia el enemigo, decision en su mirada.' },
       ],
       conditions: { campamentos: 3 },
@@ -409,7 +409,7 @@ const travesiaDeSima = {
       narrativo: true,
       title: 'Demonica',
       description: 'La segunda bajo el mando de la legion oscura.',
-      enemyTeam: [-1, 13, 17, -1],
+      enemyTeam: [null, 'Asesina', 'Demonic', null],
       conditions: { campamentos: 3 },
       next: 'dialogo-capitan-oscuro-directo'
     },
@@ -421,14 +421,14 @@ const travesiaDeSima = {
       description: 'La ceniza flotando en el aire recuerda a Sima la noche que lo cambio todo.',
       dialog: [
         { text: 'Ceniza cae del cielo como nieve. Un aroma de madera quemada llena el aire.' },
-        { speaker: 0, text: 'Esta imagen... la conozco. Se que estas cerca.' },
+        { speaker: 'Sima', text: 'Esta imagen... la conozco. Se que estas cerca.' },
         { text: 'Una sola figura se distingue entre rescoldo y ruinas.' },
-        { speaker: 4, text: 'El fuego que borro tu aldea deberia haberte servido de leccion.' },
-        { speaker: 0, text: 'Asi fue, ahora la compartire contigo.' },
-        { speaker: 4, text: 'No tienes la fuerza para lograrlo, audaz. Ya no tienes nada.' },
+        { speaker: 'Narada', text: 'El fuego que borro tu aldea deberia haberte servido de leccion.' },
+        { speaker: 'Sima', text: 'Asi fue, ahora la compartire contigo.' },
+        { speaker: 'Narada', text: 'No tienes la fuerza para lograrlo, audaz. Ya no tienes nada.' },
         { text: 'Sima avanza... pero' },
         { text: 'Una figura se atraviesa en su camino' },
-        { speaker: 16, text: 'No daras ni un paso mas hacia la comandante, aqui se acaba tu vano intento de venganza.' },
+        { speaker: 'Capitan Oscuro', text: 'No daras ni un paso mas hacia la comandante, aqui se acaba tu vano intento de venganza.' },
       ],
       conditions: { campamentos: 4 },
       next: 'sin-salida-directo'
@@ -439,7 +439,7 @@ const travesiaDeSima = {
       narrativo: true,
       title: 'Ruinas',
       description: 'Por fin el objetivo a la vista.',
-      enemyTeam: [16, 8, -1, -1],
+      enemyTeam: ['Capitan Oscuro', 'Sabueso de Guerra', null, null],
       reward: { mind: 1, power: 1 },
       conditions: { campamentos: 4 },
       next: 'dialogo-narada-escape'
@@ -452,8 +452,8 @@ const travesiaDeSima = {
       description: 'Narada se retira entre el humo.',
       dialog: [
         { text: 'Narada se aleja mientras sus tropas le cubren las espaldas.' },
-        { speaker: 4, text: 'Esto no termina aqui, hoja suelta. El fuego siempre vuelve.' },
-        { speaker: 0, text: 'Huye, entonces. La proxima vez no tendras a nadie que te salve de mi.' },
+        { speaker: 'Narada', text: 'Esto no termina aqui, hoja suelta. El fuego siempre vuelve.' },
+        { speaker: 'Sima', text: 'Huye, entonces. La proxima vez no tendras a nadie que te salve de mi.' },
         { text: 'Observan la cobarde figura perderse.' }
       ],
       conditions: { campamentos: 4 },
@@ -467,9 +467,9 @@ const travesiaDeSima = {
       description: 'Un paso antes de la batalla definitiva.',
       dialog: [
         { text: 'El ultimo santuario se alza entre columnas partidas.' },
-        { speaker: 0, text: 'Tras esas puertas esta quien me lo arrebato todo.. Todo.' },
-        { speaker: 18, text: 'Grrr Gr.' },
-        { speaker: 0, text: 'Vamos. Tenemos que acabar con una bestia.' },
+        { speaker: 'Sima', text: 'Tras esas puertas esta quien me lo arrebato todo.. Todo.' },
+        { speaker: 'Piedrita', text: 'Grrr Gr.' },
+        { speaker: 'Sima', text: 'Vamos. Tenemos que acabar con una bestia.' },
         { text: 'Sima avanza, su lanza en la mano, el viento en su cabello, el recuerdo de su gente en el corazon y el enemigo frente a sus ojos.' },
       ],
       conditions: { campamentos: 5 },
@@ -481,7 +481,7 @@ const travesiaDeSima = {
       narrativo: true,
       title: 'Enfrentamiento final',
       description: 'Entre los escombros del santuario, Narada te espera.',
-      enemyTeam: [4, 5, 14, 6],
+      enemyTeam: ['Narada', 'Akay', 'Arquera', 'La bruja del paramo'],
       reward: { mind: 1, power: 1, body: 1 },
       conditions: { campamentos: 5 },
       next: 'conclusion-directo'
@@ -494,8 +494,8 @@ const travesiaDeSima = {
       description: 'La venganza se ha consumado. La travesia de Sima llega a su fin.',
       dialog: [
         { text: 'El silencio desciende sobre el santuario. Narada toma su ultimo aliento entre las piedras.' },
-        { speaker: 4, text: 'T... todo... termina... en ceniza...' },
-        { speaker: 0, text: 'Puede ser. Pero tu fuego no volvera a quemar nada.' },
+        { speaker: 'Narada', text: 'T... todo... termina... en ceniza...' },
+        { speaker: 'Sima', text: 'Puede ser. Pero tu fuego no volvera a quemar nada.' },
         { text: 'Sima clava su hoja en el suelo y alza la vista.' },
         { text: 'Su pueblo se perdio. Pero se ha cumplido su venganza, se ha hecho justicia.' }
       ],

@@ -1,5 +1,28 @@
-const SAVE_VERSION = 1;
+import { characterAt } from '../data/characters.js';
+
+const SAVE_VERSION = 2;
 const SAVE_PREFIX = 'andromeda-progress:';
+
+// Guardados v1: el equipo y el aspirante pendiente se referenciaban por
+// POSICION dentro de characters.js. Se convierten a nombres al cargar
+// (la posicion sigue resolviendose con el array actual) para no perder
+// la partida. Ningun guardado se descarta por este cambio de formato.
+function migrateV1toV2(data) {
+  if (Array.isArray(data.playerTeam)) {
+    data.playerTeam = data.playerTeam.map(value =>
+      typeof value === 'number' ? characterAt(value) : value
+    );
+  }
+  const pending = data.run?.pendingRecruit;
+  if (pending && typeof pending.charIdx === 'number' && pending.charName == null) {
+    const name = characterAt(pending.charIdx);
+    if (name == null) data.run.pendingRecruit = null;
+    else {
+      pending.charName = name;
+      delete pending.charIdx;
+    }
+  }
+}
 
 // Normaliza los orbes guardados a { mind, power, body, wealth }.
 // Compatibilidad: un guardado antiguo con `orbes` numerico se interpreta
@@ -86,8 +109,9 @@ export function loadGame(storyId) {
   if (raw == null) return null;
   try {
     const data = JSON.parse(raw);
-    if (data.version !== SAVE_VERSION || data.storyId !== storyId) return null;
+    if (typeof data.version !== 'number' || data.version > SAVE_VERSION || data.storyId !== storyId) return null;
     if (!data.run) return null;
+    if (data.version < SAVE_VERSION) migrateV1toV2(data);
     return {
       playerTeam: Array.isArray(data.playerTeam) ? data.playerTeam : null,
       protagonistSlot: typeof data.protagonistSlot === 'number' ? data.protagonistSlot : 0,

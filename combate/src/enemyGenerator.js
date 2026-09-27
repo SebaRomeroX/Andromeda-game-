@@ -1,4 +1,4 @@
-import characters from '../data/characters.js';
+import { getCharacter } from '../data/characters.js';
 
 const ROLE_SLOT = { tanque: 0, asesino: 1, rango: 2, soporte: 3 };
 
@@ -22,12 +22,13 @@ export const FORMATIONS = [
 
 const MAX_TEAM = 4;
 
+// Pools por rol de `genericEnemies` (nombres de personaje).
 function buildRolePools(story) {
   const pools = {};
-  (story.genericEnemies ?? []).forEach(idx => {
-    const role = characters[idx]?.role;
+  (story.genericEnemies ?? []).forEach(name => {
+    const role = getCharacter(name)?.role;
     if (role && ROLE_SLOT[role] != null) {
-      (pools[role] ??= []).push(idx);
+      (pools[role] ??= []).push(name);
     }
   });
   return pools;
@@ -58,16 +59,18 @@ function pickFormation(candidates, targetSize) {
 }
 
 export function generateEnemyTeam({ story, playerMemberCount, playerAvgLevel, peakEnemyLevel, enemyTeamOverride }) {
+  // Ranuras vacias: `null` (nunca usar comparaciones numericas con null,
+  // porque `null >= 0` es true).
   const enemyMemberCount = enemyTeamOverride
-    ? enemyTeamOverride.filter(idx => idx >= 0).length
+    ? enemyTeamOverride.filter(name => name != null).length
     : computeTargetSize(playerMemberCount);
 
   const level = computeEnemyLevel(playerAvgLevel, playerMemberCount, enemyMemberCount, peakEnemyLevel);
 
   if (enemyTeamOverride) {
     const team = [null, null, null, null];
-    enemyTeamOverride.forEach((idx, i) => {
-      if (idx >= 0) team[i] = { index: idx, level };
+    enemyTeamOverride.forEach((name, i) => {
+      if (name != null) team[i] = { name, level };
     });
     const newPeakEnemyLevel = Math.max(peakEnemyLevel ?? 0, level);
     return { team, newPeakEnemyLevel };
@@ -81,7 +84,7 @@ export function generateEnemyTeam({ story, playerMemberCount, playerAvgLevel, pe
   const team = [null, null, null, null];
   formation.roles.forEach(role => {
     const pool = rolePools[role];
-    team[ROLE_SLOT[role]] = { index: pool[Math.floor(Math.random() * pool.length)], level };
+    team[ROLE_SLOT[role]] = { name: pool[Math.floor(Math.random() * pool.length)], level };
   });
   const newPeakEnemyLevel = Math.max(peakEnemyLevel ?? 0, level);
   return { team, newPeakEnemyLevel };

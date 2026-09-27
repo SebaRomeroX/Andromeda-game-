@@ -5,11 +5,11 @@ const nuevaHistoria = {
   description: 'Historia actualmente incompleta',
   sequential: true,
   noProtagonist: true,
-  allies: [19, 20],
-  genericEnemies: [3, 7, 8, 10, 11, 12, 13, 14, 15],
-  // Akay (5) solo combate en la Prueba de Fuerza; no es generico.
-  narrativeEnemies: [5],
-  teamA: [-1, 19, 20, -1],
+  allies: ['Xall', 'Veraldin'],
+  genericEnemies: ['Sacerdotiza oscura', 'Guerrero', 'Sabueso de Guerra', 'Lancero', 'Hamer', 'Espadachin', 'Asesina', 'Arquera', 'Witch'],
+  // Akay solo combate en la Prueba de Fuerza; no es generico.
+  narrativeEnemies: ['Akay'],
+  teamA: [null, 'Xall', 'Veraldin', null],
   campAfterFights: 3,
 
   // ── Eventos aleatorios ──
@@ -49,7 +49,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Prueba de Fuerza',
       description: 'Akay, la hoja certera, bloquea el paso con una escolta.',
-      enemyTeam: [-1, 5, 15, -1],
+      enemyTeam: [null, 'Akay', 'Witch', null],
       reward: { power: 1, body: 1 },
       next: 'prueba-final'
     },
@@ -106,7 +106,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Viajero en apuros',
       description: 'Tres bandidos se abalanzan sobre ti.',
-      enemyTeam: [7, 12, 14, -1],
+      enemyTeam: ['Guerrero', 'Espadachin', 'Arquera', null],
       reward: { wealth: 1 },
       next: 'viajero-final'
     },
@@ -156,7 +156,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Dama afligida',
       description: 'La senda se cierra a tu espalda: la hermana perdida era cebo.',
-      enemyTeam: [11, 13, 14, -1],
+      enemyTeam: ['Hamer', 'Asesina', 'Arquera', null],
       reward: { mind: 1, power: 1, wealth: 1 },
       next: 'dama-final'
     },
@@ -208,7 +208,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'Una vanguardia de bandidos corta el paso a la columna.',
-      enemyTeam: [-1, 12, 14, -1],
+      enemyTeam: [null, 'Espadachin', 'Arquera', null],
       next: 'escolta-combate-2'
     },
 
@@ -217,7 +217,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'Una segunda oleada embiste los carros.',
-      enemyTeam: [10, -1, -1, 3],
+      enemyTeam: ['Lancero', null, null, 'Sacerdotiza oscura'],
       next: 'escolta-combate-3'
     },
 
@@ -226,7 +226,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'La emboscada se cierra sobre el camino.',
-      enemyTeam: [7, -1, 14, -1],
+      enemyTeam: ['Guerrero', null, 'Arquera', null],
       next: 'escolta-combate-4'
     },
 
@@ -235,7 +235,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'Los jefes de la banda cargan por ultima vez.',
-      enemyTeam: [11, 13, 15, -1],
+      enemyTeam: ['Hamer', 'Asesina', 'Witch', null],
       reward: { wealth: 2 },
       next: 'escolta-final'
     },
@@ -271,7 +271,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'Los asaltantes no piensan dejar testigos.',
-      enemyTeam: [7, 8, 14, 3],
+      enemyTeam: ['Guerrero', 'Sabueso de Guerra', 'Arquera', 'Sacerdotiza oscura'],
       reward: { wealth: 2 },
       next: 'escolta-asalto-final'
     },
@@ -491,7 +491,7 @@ const nuevaHistoria = {
       narrativo: true,
       title: 'Los enemigos del aspirante',
       description: 'Los enemigos del aspirante te cortan el paso en el camino.',
-      enemyTeam: [10, 13, 14, 3],
+      enemyTeam: ['Lancero', 'Asesina', 'Arquera', 'Sacerdotiza oscura'],
       next: 'reclutas-exito'
     },
 
