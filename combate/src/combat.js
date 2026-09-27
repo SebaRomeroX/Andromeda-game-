@@ -77,6 +77,17 @@ function applyEffect(actorTeam, actorIndex, targetTeam, targetIndex, skill, outc
   const multInfo = outcome.atkMult !== 1 ? ` (x${outcome.atkMult.toFixed(2)} atq)` : "";
   log(`💥 ${actor.name} usa ${skill.name} en ${target.name}: ${outcome.rawDmg} de ataque${multInfo}${defInfo} → ${outcome.finalDmg} de daño`);
 
+  if ((outcome.drain ?? 0) > 0) {
+    const oldHp = actor.currentHp;
+    actor.currentHp = Math.min(actor.currentHp + outcome.drain, actor.hp);
+    const healed = actor.currentHp - oldHp;
+    if (healed > 0) {
+      log(`🩸 ${actor.name} absorbe ${healed} de vida (${outcome.drainPct}% del daño)`);
+    } else {
+      log(`🩸 ${actor.name} ya tiene la vida completa y no absorbe nada`);
+    }
+  }
+
   if (outcome.stun) {
     target.stunned = true;
     target.stunTurns = 2;

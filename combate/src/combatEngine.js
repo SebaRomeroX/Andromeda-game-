@@ -71,7 +71,7 @@ export function computeEffect(actor, target, skill, { precision, evasion, atkMul
   const rawDmg = Math.round(scaled.power * (atkMult ?? 1));
   const finalDmg = Math.max(0, rawDmg - def);
 
-  return {
+  const outcome = {
     type: SKILL_TYPES.ATTACK,
     rawDmg,
     finalDmg,
@@ -81,6 +81,14 @@ export function computeEffect(actor, target, skill, { precision, evasion, atkMul
     stun: scaled.stun && finalDmg > 0,
     wound: scaled.herida && finalDmg > 0
   };
+
+  // Absorción vampírica: recupera un % del daño realmente infligido
+  if ((scaled.drain ?? 0) > 0 && finalDmg > 0) {
+    outcome.drainPct = scaled.drain;
+    outcome.drain = Math.round(finalDmg * scaled.drain / 100);
+  }
+
+  return outcome;
 }
 
 export function getAttackTargets(actorIndex, targetTeam, aliveIndices) {

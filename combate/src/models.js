@@ -54,6 +54,7 @@ export const ATTACK_ROUTES = {
  * | power        | ✅     | ✅   | ✅      | —    |
  * | stun         | ◻️     | —    | —       | —    |
  * | herida       | ◻️     | —    | —       | —    |
+ * | drain        | ◻️     | —    | —       | —    |
  * | target       | —      | —    | —       | ✅   |
  * | scope        | —      | —    | —       | ◻️   |
  * | stat         | —      | —    | —       | ✅   |
@@ -69,6 +70,7 @@ export const ATTACK_ROUTES = {
  * @property {number} [power] - Daño (attack), cura (cura), o defensa (defense)
  * @property {boolean} [stun] - Aturde al rival (solo attack)
  * @property {boolean} [herida] - Hiere al rival (solo attack)
+ * @property {number} [drain=0] - % del daño infligido que se absorbe como vida (solo attack)
  * @property {BuffTarget} [target] - Objetivo del buff (solo buff)
  * @property {BuffScope} [scope="one"] - one = un objetivo, all = todos los válidos (solo buff)
  * @property {BuffStat} [stat] - Estadística a modificar (solo buff)
@@ -110,17 +112,17 @@ export const ATTACK_ROUTES = {
  *
  * Propiedades mejorables por tipo:
  *
- * | Tipo     | power | precision | stun | herida | value | duration | scope |
- * |----------|-------|-----------|------|--------|-------|----------|-------|
- * | attack   | ✅    | ✅        | ✅   | ✅     | —     | —        | —     |
+ * | Tipo     | power | precision | stun | herida | value | duration | scope | drain |
+ * |----------|-------|-----------|------|--------|-------|----------|-------|-------|
+ * | attack   | ✅    | ✅        | ✅   | ✅     | —     | —        | —     | ✅    |
  * | defense  | ✅    | —         | —    | —      | —     | —        | —     |
  * | cura     | ✅    | —         | —    | —      | —     | —        | —     |
  * | buff     | —     | —         | —    | —      | ✅    | ✅       | ✅    |
  *
  * Los bonuses se suman incrementalmente nivel a nivel.
- * `power`, `precision`, `value` y `duration` son acumulativos (+N por nivel,
- * `duration` con tope de 10); `stun`, `herida` y `scope` son absolutos
- * (se ganan o se pierden al llegar al nivel indicado).
+ * `power`, `precision`, `value`, `duration` y `drain` son acumulativos
+ * (+N por nivel, `duration` con tope de 10); `stun`, `herida` y `scope`
+ * son absolutos (se ganan o se pierden al llegar al nivel indicado).
  * Si una habilidad tiene levelBonuses, reemplaza el escalado por defecto (+5 power/nivel).
  *
  * Ejemplo attack — "Devastador":
@@ -163,6 +165,7 @@ export const ATTACK_ROUTES = {
  * @param {number} [opts.power]     - Requerido para attack/cura/defense
  * @param {boolean} [opts.stun]     - Solo attack
  * @param {boolean} [opts.herida]   - Solo attack
+ * @param {number} [opts.drain]     - Solo attack: % del daño infligido que se absorbe como vida
  * @param {BuffTarget} [opts.target] - Solo buff
  * @param {BuffStat} [opts.stat]    - Solo buff
  * @param {number} [opts.value]     - Solo buff
@@ -172,7 +175,7 @@ export const ATTACK_ROUTES = {
  * @param {Function} [opts.customEffect] - Función de efecto personalizado (actor, target, skill, ctx) => outcome
  * @returns {Skill}
  */
-export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, target, scope, stat, value, duration = 3, level = 1, levelBonuses, description, customEffect }) {
+export function createSkill({ name, type, precision = 80, aparicion = 1, power, stun, herida, drain, target, scope, stat, value, duration = 3, level = 1, levelBonuses, description, customEffect }) {
   if (!name) throw new Error('createSkill: name es requerido');
   if (!type) throw new Error('createSkill: type es requerido');
 
@@ -183,7 +186,7 @@ export function createSkill({ name, type, precision = 80, aparicion = 1, power, 
 
   switch (type) {
     case SKILL_TYPES.ATTACK:
-      return { ...base, power: power ?? 10, stun: !!stun, herida: !!herida };
+      return { ...base, power: power ?? 10, stun: !!stun, herida: !!herida, drain: drain ?? 0 };
     case SKILL_TYPES.CURA:
       return { ...base, power: power ?? 10 };
     case SKILL_TYPES.DEFENSE:
@@ -299,7 +302,7 @@ export function simulateUpgrade(skill) {
  * attack/cura/defense → +5 power por nivel.
  *
  * @param {Skill} skill
- * @returns {{ power?: number, precision: number, value?: number, stun?: boolean, herida?: boolean, scope?: string, duration?: number, level: number }}
+ * @returns {{ power?: number, precision: number, value?: number, stun?: boolean, herida?: boolean, scope?: string, duration?: number, drain?: number, level: number }}
  */
 export function getSkillScaledStats(skill) {
   const level = skill.level ?? 1;
@@ -313,6 +316,7 @@ export function getSkillScaledStats(skill) {
       herida: skill.herida,
       scope: skill.scope,
       duration: skill.duration,
+      drain: skill.drain,
       level
     };
 
@@ -322,6 +326,7 @@ export function getSkillScaledStats(skill) {
       result.power     = (result.power ?? 0) + (bonus.power ?? 0);
       result.precision = (result.precision ?? 0) + (bonus.precision ?? 0);
       result.value     = (result.value ?? 0) + (bonus.value ?? 0);
+      result.drain     = (result.drain ?? 0) + (bonus.drain ?? 0);
       if (bonus.stun !== undefined)     result.stun = bonus.stun;
       if (bonus.herida !== undefined)   result.herida = bonus.herida;
       if (bonus.scope !== undefined)    result.scope = bonus.scope;
@@ -340,6 +345,7 @@ export function getSkillScaledStats(skill) {
     duration: skill.duration,
     stun: skill.stun,
     herida: skill.herida,
+    drain: skill.drain,
     level
   };
 }

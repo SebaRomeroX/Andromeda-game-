@@ -91,7 +91,9 @@ export function formatSkillStats(skill, actorCtx) {
     if (scaled.stun) effects += '⚡';
     if (scaled.herida) effects += '🩸';
     const powerText = skill.customEffect ? 'variable' : wrapStat(power, powerClass);
-    return `⚔️${effects ? ' ' + effects : ''} ${powerText}`;
+    let text = `⚔️${effects ? ' ' + effects : ''} ${powerText}`;
+    if ((scaled.drain ?? 0) > 0) text += ` · 🧛 ${scaled.drain}%`;
+    return text;
   }
   if (skill.type === SKILL_TYPES.CURA) return `💚 ${wrapStat(power, powerClass)}`;
   if (skill.type === SKILL_TYPES.DEFENSE) return `🛡️ ${wrapStat(power, powerClass)}`;
@@ -143,6 +145,9 @@ export function describeSkill(skill, actorCtx) {
   if (skill.description) {
     let text = skill.description;
     if (skill.type === SKILL_TYPES.ATTACK) {
+      if ((scaled.drain ?? 0) > 0) {
+        text += `<br>Absorbe ${scaled.drain}% del daño como vida`;
+      }
       text += `<br>${wrapStat(precision, precisionClass)}% de posibilidad de exito`;
     } else if (skill.type === SKILL_TYPES.CURA || skill.type === SKILL_TYPES.BUFF) {
       text += `<br>${wrapStat(precision, precisionClass)}% de exito`;
@@ -157,6 +162,9 @@ export function describeSkill(skill, actorCtx) {
     if (scaled.herida) effects.push('"sangrado" (hasta ser curado)');
     if (effects.length) {
       text += `<br>Si impacta, causa efecto ${effects.join(' y ')}`;
+    }
+    if ((scaled.drain ?? 0) > 0) {
+      text += `<br>Absorbe ${scaled.drain}% del daño como vida`;
     }
     return text;
   }
@@ -294,6 +302,9 @@ export function describeUpgrade(skill) {
   }
   if (current.precision !== next.precision) {
     parts.push(`precisión ${current.precision} → ${next.precision}`);
+  }
+  if ((current.drain ?? 0) !== (next.drain ?? 0)) {
+    parts.push(`absorción ${current.drain ?? 0}% → ${next.drain ?? 0}%`);
   }
   if (skill.type === SKILL_TYPES.BUFF) {
     if (current.value !== next.value) {
