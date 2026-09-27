@@ -87,7 +87,7 @@ const nuevaHistoria = {
 
     // ── Evento aleatorio: viajero atacado por bandidos (repeatable) ──
     'viajero': {
-      chance: 30,
+      chance: 20,
       repeatable: true,
       type: 'eleccion',
       narrativo: true,
