@@ -266,6 +266,7 @@ export function startLevelUpPhase(members, onComplete) {
 
     lvlTitle().innerHTML = `Puedes usar orbes verdes para subir de nivel a tus personajes · ${BODY_DOT}Orbes: ${orbes}`;
     lvlGrid().classList.remove('hidden');
+    lvlGrid().classList.add('member-grid');
     lvlGrid().innerHTML = '';
     lvlPreview().classList.add('hidden');
     lvlConfirm().style.display = 'none';
@@ -299,6 +300,7 @@ export function startLevelUpPhase(members, onComplete) {
     const next = getNextLevelStats(member);
 
     lvlGrid().classList.add('hidden');
+    lvlGrid().classList.remove('member-grid');
     lvlPreview().classList.remove('hidden');
     lvlTitle().textContent = `${member.name} sube de nivel`;
     lvlPreviewImg().src = member.image ?? '';
@@ -403,6 +405,7 @@ export function startLearnPhase(members, onComplete) {
     }
 
     learnTitle().innerHTML = `Puedes usar orbes azules para que uno de tus personajes aprenda una nueva habilidad · ${MIND_DOT}Orbes: ${orbes}`;
+    learnGrid().classList.add('member-grid');
     learnGrid().innerHTML = '';
     learnConfirm().style.display = 'none';
     learnSkip().textContent = 'Omitir';
@@ -436,6 +439,7 @@ export function startLearnPhase(members, onComplete) {
     }
 
     const options = pickRandom(pool, 3);
+    learnGrid().classList.remove('member-grid');
     learnGrid().innerHTML = '';
     learnTitle().innerHTML = `${member.name} aprende una nueva habilidad · ${MIND_DOT}Orbes: ${state.run.orbes?.mind ?? 0}`;
     learnConfirm().style.display = '';
@@ -548,6 +552,7 @@ export function startSkillUpgrades(members, onComplete) {
     }
 
     title().innerHTML = `Puedes usar orbes rojos para que uno de tus personajes mejore una habilidad · ${POWER_DOT}Orbes: ${orbes}`;
+    grid().classList.add('member-grid');
     grid().innerHTML = '';
     confirmBtn().style.display = 'none';
     skipBtn().textContent = 'Omitir';
@@ -584,6 +589,7 @@ export function startSkillUpgrades(members, onComplete) {
       return;
     }
 
+    grid().classList.remove('member-grid');
     grid().innerHTML = '';
     title().innerHTML = `${member.name} mejora una habilidad · ${POWER_DOT}Orbes: ${state.run.orbes?.power ?? 0}`;
     confirmBtn().style.display = '';
