@@ -142,52 +142,66 @@ const nuevaHistoria = {
     },
 
     // ── Evento aleatorio: dama afligida -> trampa de bandidos (repeatable) ──
+    // Toda la rama en UN solo nodo secuencia: eleccion con ramas inline
+    // (`option.steps`). "Ayudar" ejecuta el preaviso de la emboscada +
+    // combate + desenlace; "No meterte", solo el dialogo de rechazo. El
+    // nodo entero se marca `fired` una sola vez al terminar la rama
+    // elegida (antes: dama -> next a dama-combate -> dama-final, o a
+    // dama-ignorado). El combate hereda el `reward` de la secuencia y la
+    // description de la vieja tarjeta del combate vive ahora como primer
+    // dialogo de la rama.
     'dama': {
       chance: 20,
       repeatable: true,
-      type: 'eleccion',
+      type: 'secuencia',
       narrativo: true,
       title: 'Dama afligida',
       description: 'Una dama suplica tu ayuda junto al bosque.',
-      prompt: 'Una dama, con los ojos hinchados, te dice que su hermana pequeña se ha perdido en el bosque. ¿Que haces?',
-      options: [
-        { id: 'ayudar', label: 'Ayudar a la dama', next: 'dama-combate' },
-        { id: 'ignorar', label: 'No meterte', next: 'dama-ignorado' }
-      ]
-    },
-
-    // ── Rama ayudar: el bosque es una trampa; los bandidos emboscan ──
-    'dama-combate': {
-      type: 'enfrentamiento',
-      narrativo: true,
-      title: 'Dama afligida',
-      description: 'La senda se cierra a tu espalda: la hermana perdida era cebo.',
-      enemyTeam: ['Hamer', 'Asesina', 'Arquera', null],
       reward: { mind: 1, power: 1, wealth: 1 },
-      next: 'dama-final'
-    },
-
-    // ── Rama ayudar: la trampa queda al descubierto (terminal) ──
-    'dama-final': {
-      type: 'dialogo',
-      narrativo: true,
-      title: 'Trampa del bosque',
-      description: 'No hubo hermana perdida: solo cebo.',
-      dialog: [
-        { text: 'Cuando el ultimo bandido cae, buscas a la dama entre los arboles. No esta.' },
-        { text: 'Nunca hubo hermana perdida: el bosque solo tenia cebo y sombra.' }
-      ]
-    },
-
-    // ── Rama no meterte: nada ocurre (terminal) ──
-    'dama-ignorado': {
-      type: 'dialogo',
-      narrativo: true,
-      title: 'No es tu asunto',
-      description: 'Su problema no es el tuyo.',
-      dialog: [
-        { text: 'Le niegas la ayuda con un gesto y sigues tu camino.' },
-        { text: 'Detras de ti, la dama te observa en silencio hasta que te pierdes entre el polvo.' }
+      steps: [
+        {
+          type: 'eleccion',
+          title: 'Dama afligida',
+          prompt: 'Una dama, con los ojos hinchados, te dice que su hermana pequeña se ha perdido en el bosque. ¿Que haces?',
+          options: [
+            {
+              id: 'ayudar',
+              label: 'Ayudar a la dama',
+              steps: [
+                {
+                  type: 'dialogo',
+                  dialog: [
+                    { text: 'La senda se cierra a tu espalda: la hermana perdida era cebo.' }
+                  ]
+                },
+                {
+                  type: 'enfrentamiento',
+                  enemyTeam: ['Hamer', 'Asesina', 'Arquera', null]
+                },
+                {
+                  type: 'dialogo',
+                  dialog: [
+                    { text: 'Cuando el ultimo bandido cae, buscas a la dama entre los arboles. No esta.' },
+                    { text: 'Nunca hubo hermana perdida: el bosque solo tenia cebo y sombra.' }
+                  ]
+                }
+              ]
+            },
+            {
+              id: 'ignorar',
+              label: 'No meterte',
+              steps: [
+                {
+                  type: 'dialogo',
+                  dialog: [
+                    { text: 'Le niegas la ayuda con un gesto y sigues tu camino.' },
+                    { text: 'Detras de ti, la dama te observa en silencio hasta que te pierdes entre el polvo.' }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       ]
     },
 

@@ -301,6 +301,54 @@ if (state.run.campamentos !== 1 || state.run.fightsSinceCamp !== 0) {
   }
 }
 
+// ── 10) Dama: eleccion con ramas inline (option.steps) ──
+// Mismo caso que el viajero pero la rama "ayudar" es preaviso + combate +
+// desenlace: el combate debe heredar el reward { mind, power, wealth }
+// del nodo y "ignorar" no debe tirar nada.
+{
+  const nh = stories.find(s => s.id === 'nueva-historia');
+  const dama = nh?.randomEvents?.['dama'];
+  if (dama?.type !== 'secuencia') {
+    fail('ramas: nueva-historia ya no tiene "dama" como secuencia con option.steps');
+  } else {
+    const steps = expandEventSteps(dama);
+    if (steps.length !== 1 || steps[0]?.type !== 'eleccion') {
+      fail(`ramas(dama): se expandio a ${steps.length} pasos (esperaba solo la eleccion)`);
+    }
+
+    const newRun = () => ({
+      stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0,
+      fired: new Set(), choices: {}, currentNodeId: null, flags: {},
+      orbes: { mind: 0, power: 0, body: 0, wealth: 0 }, pendingRandomId: 'pin'
+    });
+
+    // Ayudar: 1 combate con el reward del nodo heredado (3 tipos fijos).
+    const runA = newRun();
+    applyEvent({ ...dama, id: 'dama' }, runA, [...(nh.teamA ?? [])], { dama: 'ayudar' });
+    if (runA.enfrentamientos !== 1) fail(`ramas(dama,ayudar): enfrentamientos = ${runA.enfrentamientos} (esperaba 1)`);
+    if (runA.fightsSinceCamp !== 1) fail(`ramas(dama,ayudar): fightsSinceCamp = ${runA.fightsSinceCamp} (esperaba 1)`);
+    if (runA.orbes.mind !== 1 || runA.orbes.power !== 1 || runA.orbes.wealth !== 1) {
+      fail(`ramas(dama,ayudar): orbes = ${JSON.stringify(runA.orbes)} (esperaba mind/power/wealth = 1 heredados del reward de la secuencia)`);
+    }
+    if (!runA.fired.has('dama')) fail('ramas(dama,ayudar): no marco fired');
+    if (runA.flags.dama !== true) fail('ramas(dama,ayudar): la secuencia narrativa no dejo flag');
+    if (runA.choices.dama !== 'ayudar') fail(`ramas(dama,ayudar): choices[dama] = ${runA.choices.dama} (esperaba ayudar)`);
+    if (runA.pendingRandomId !== null) fail('ramas(dama,ayudar): no se limpio el pin del evento aleatorio');
+
+    // Ignorar: solo dialogo -> ni combate ni orbes.
+    const runB = newRun();
+    applyEvent({ ...dama, id: 'dama' }, runB, [...(nh.teamA ?? [])], { dama: 'ignorar' });
+    if (runB.enfrentamientos !== 0) fail(`ramas(dama,ignorar): enfrentamientos = ${runB.enfrentamientos} (esperaba 0)`);
+    if (runB.orbes.mind + runB.orbes.power + runB.orbes.body + runB.orbes.wealth !== 0) {
+      fail(`ramas(dama,ignorar): orbes = ${JSON.stringify(runB.orbes)} (esperaba 0)`);
+    }
+    if (!runB.fired.has('dama')) fail('ramas(dama,ignorar): no marco fired');
+    if (runB.flags.dama !== true) fail('ramas(dama,ignorar): la secuencia narrativa no dejo flag');
+    if (runB.choices.dama !== 'ignorar') fail(`ramas(dama,ignorar): choices[dama] = ${runB.choices.dama} (esperaba ignorar)`);
+    if (runB.pendingRandomId !== null) fail('ramas(dama,ignorar): no se limpio el pin del evento aleatorio');
+  }
+}
+
 // ── Resultado ──
 if (problems.length) {
   console.error(`\n${problems.length} problema(s):`);
