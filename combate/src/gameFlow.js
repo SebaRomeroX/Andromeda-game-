@@ -1,9 +1,11 @@
 import state from './state.js';
 
-// Avanza la stage, actualiza contadores de run
-export function advanceStage() {
-  const event = state.session.currentEvent;
-  const type = event?.type;
+// ── Efectos de un PASO completado (contadores por tipo) ──
+// Se aplica en cuanto termina cada paso de un evento (en un evento de un
+// solo paso: al terminar, justo antes de completeEvent). Los efectos de
+// nivel nodo (fired, flags, puntero next, stage) los hace completeEvent.
+export function applyStepEffects(step) {
+  const type = step?.type;
   const story = state.session.selectedStory;
 
   if (type === 'campamento') {
@@ -18,12 +20,23 @@ export function advanceStage() {
   } else if (type === 'reclutamiento_infinite') {
     state.run.needRecruit = false;
   }
+}
+
+// ── Cierre del EVENTO (todos sus pasos ejecutados) ──
+// `event` es siempre el nodo del grafo (nunca un paso): marca `fired`,
+// aplica flags y el puntero `next`, y avanza la stage. Sustituye al
+// antiguo advanceStage: con secuencias los contadores ya se aplicaron
+// paso a paso (applyStepEffects). Sin argumento cierra el evento activo.
+export function completeEvent(event = state.session.currentEvent) {
+  const story = state.session.selectedStory;
 
   if (event?.id) {
     if (!story?.infiniteMode) {
       state.run.fired.add(event.id);
     }
-    if (event.type === 'enfrentamiento' && event.narrativo) {
+    // Auto-flag: victoria en un enfrentamiento narrativo (o en una
+    // secuencia narrativa que lo contiene).
+    if ((event.type === 'enfrentamiento' || event.type === 'secuencia') && event.narrativo) {
       state.run.flags[event.id] = true;
     }
     if (event.setFlags) {

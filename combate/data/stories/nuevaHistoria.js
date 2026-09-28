@@ -101,6 +101,9 @@ const nuevaHistoria = {
     },
 
     // ── Rama ayudar: combate contra los bandidos; el viajero paga ──
+    // Dialogo final integrado con `outroDialog`: el combate y el
+    // agradecimiento son UN solo evento (antes: viajero-combate + next a
+    // viajero-final).
     'viajero-combate': {
       type: 'enfrentamiento',
       narrativo: true,
@@ -108,16 +111,7 @@ const nuevaHistoria = {
       description: 'Tres bandidos se abalanzan sobre ti.',
       enemyTeam: ['Guerrero', 'Espadachin', 'Arquera', null],
       reward: { wealth: 1 },
-      next: 'viajero-final'
-    },
-
-    // ── Rama ayudar: agradecimiento (terminal) ──
-    'viajero-final': {
-      type: 'dialogo',
-      narrativo: true,
-      title: 'Viajero agradecido',
-      description: 'El viajero sobrevive gracias a ti.',
-      dialog: [
+      outroDialog: [
         { text: 'El viajero recobra el aliento y te mira con los ojos muy abiertos.' },
         { text: '—Te debo la vida, andariego. Llevate esto; poco puedo darte, pero es sincero.' }
       ]
@@ -266,24 +260,27 @@ const nuevaHistoria = {
     },
 
     // ── Rama rechazar: los asaltantes te emboscan; el botin es tuyo ──
+    // Secuencia de dos pasos: combate + dialogo en UN solo evento (antes:
+    // escolta-asalto + next a escolta-asalto-final). Los pasos no llevan
+    // id/next: el nodo entero se marca `fired` una sola vez al terminar.
     'escolta-asalto': {
-      type: 'enfrentamiento',
+      type: 'secuencia',
       narrativo: true,
       title: 'Escolta de caravana',
       description: 'Los asaltantes no piensan dejar testigos.',
-      enemyTeam: ['Guerrero', 'Sabueso de Guerra', 'Arquera', 'Sacerdotiza oscura'],
-      reward: { wealth: 2 },
-      next: 'escolta-asalto-final'
-    },
-
-    'escolta-asalto-final': {
-      type: 'dialogo',
-      narrativo: true,
-      title: 'El botin recuperado',
-      description: 'Recuperas lo que se llevaron los bandidos.',
-      dialog: [
-        { text: 'Cuando el ultimo asaltante cae, revisas sus alforjas.' },
-        { text: 'Alli esta el oro de la caravana. Les pertenecia; ahora es tuyo.' }
+      steps: [
+        {
+          type: 'enfrentamiento',
+          enemyTeam: ['Guerrero', 'Sabueso de Guerra', 'Arquera', 'Sacerdotiza oscura'],
+          reward: { wealth: 2 }
+        },
+        {
+          type: 'dialogo',
+          dialog: [
+            { text: 'Cuando el ultimo asaltante cae, revisas sus alforjas.' },
+            { text: 'Alli esta el oro de la caravana. Les pertenecia; ahora es tuyo.' }
+          ]
+        }
       ]
     },
 

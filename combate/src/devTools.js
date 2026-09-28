@@ -1,5 +1,6 @@
 import { ROLE_BY_INDEX, getLevelStats } from './models.js';
 import { pickNextEvent } from './eventGenerator.js';
+import { expandEventSteps } from './eventSteps.js';
 import { rollVictoryOrbs } from './gameFlow.js';
 import { getCharacter } from '../data/characters.js';
 
@@ -12,42 +13,56 @@ function initialRun() {
 // etapas y los saltos son estables (e incluyen el contenido aleatorio).
 const DETERMINISTIC_RNG = () => 0;
 
-function applyEvent(ev, run, roster, choices = {}) {
-  if (ev.type === 'campamento') {
+// Efectos de un PASO al completarse (simulacion: siempre exito). Paridad
+// con applyStepEffects de gameFlow + las recompensas/altas que en el juego
+// real ocurren durante el paso. Se aplica a cada paso de expandEventSteps.
+// Exportado para que validate-stories.mjs compruebe la paridad.
+export function applyEventStep(step, run, roster, choices) {
+  if (step.type === 'campamento') {
     run.campamentos++;
     run.fightsSinceCamp = 0;
-  } else if (ev.type === 'enfrentamiento') {
+  } else if (step.type === 'enfrentamiento') {
     run.enfrentamientos++;
     run.fightsSinceCamp++;
-    // Recompensa de orbes: reward explicito o tirada de azar por defecto
-    // (riqueza 10%, mente 20%, poder 50%, cuerpo 90%; independientes)
-    const gained = rollVictoryOrbs(ev);
+    // Recompensa de orbes: reward explicito (o heredado de la secuencia)
+    // o tirada de azar por defecto (riqueza 10%, mente 20%, poder 50%,
+    // cuerpo 90%; independientes)
+    const gained = rollVictoryOrbs(step);
     const orbes = run.orbes ?? (run.orbes = { mind: 0, power: 0, body: 0, wealth: 0 });
     Object.keys(gained).forEach((k) => {
       orbes[k] = (orbes[k] ?? 0) + gained[k];
     });
-  } else if (ev.type === 'acertijo') {
+  } else if (step.type === 'acertijo') {
     // Simula el acierto: se otorga la recompensa (explicita o tirada por defecto)
-    const gained = rollVictoryOrbs(ev);
+    const gained = rollVictoryOrbs(step);
     const orbes = run.orbes ?? (run.orbes = { mind: 0, power: 0, body: 0, wealth: 0 });
     Object.keys(gained).forEach((k) => {
       orbes[k] = (orbes[k] ?? 0) + gained[k];
     });
-  } else if (ev.type === 'reclutamiento') {
-    const char = getCharacter(ev.character);
+  } else if (step.type === 'reclutamiento') {
+    const char = getCharacter(step.character);
     const slot = ROLE_BY_INDEX.indexOf(char?.role ?? '');
-    if (slot >= 0) roster[slot] = ev.character;
-  } else if (ev.type === 'eleccion') {
-    if (ev.id && ev.options?.length) {
-      const chosenId = choices[ev.id] ?? ev.options[0].id;
-      run.choices[ev.id] = chosenId;
-      const chosenOpt = ev.options.find(o => o.id === chosenId);
+    if (slot >= 0) roster[slot] = step.character;
+  } else if (step.type === 'eleccion') {
+    // Misma clave que en tiempo real (showChoiceEvent): id del paso o titulo.
+    const key = step.id ?? step.title;
+    if (key != null && step.options?.length) {
+      const chosenId = choices[key] ?? step.options[0].id;
+      run.choices[key] = chosenId;
+      const chosenOpt = step.options.find(o => o.id === chosenId);
       if (chosenOpt?.next) run.currentNodeId = chosenOpt.next;
     }
   }
+}
+
+// Efectos de nivel NODO (solo el evento de arriba, nunca un paso):
+// paridad con completeEvent de gameFlow. Exportado para pruebas.
+export function applyEvent(ev, run, roster, choices = {}) {
+  expandEventSteps(ev).forEach(step => applyEventStep(step, run, roster, choices));
+
   if (ev.id) run.fired.add(ev.id);
-  // Auto-flag: victoria en enfrentamiento narrativo
-  if (ev.type === 'enfrentamiento' && ev.narrativo && ev.id) {
+  // Auto-flag: victoria en enfrentamiento narrativo (o secuencia narrativa)
+  if ((ev.type === 'enfrentamiento' || ev.type === 'secuencia') && ev.narrativo && ev.id) {
     run.flags[ev.id] = true;
   }
   // Flags explicitos del nodo
@@ -55,7 +70,7 @@ function applyEvent(ev, run, roster, choices = {}) {
     Object.assign(run.flags, ev.setFlags);
   }
   if (ev.type !== 'eleccion' && ev.next) run.currentNodeId = ev.next;
-  // Paridad con advanceStage: el pin del evento aleatorio se limpia al
+  // Paridad con completeEvent: el pin del evento aleatorio se limpia al
   // completar la etapa.
   run.pendingRandomId = null;
 }

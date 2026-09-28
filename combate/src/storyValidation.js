@@ -111,10 +111,76 @@ export function validateStoryCast(story) {
   (story.teamA ?? []).forEach((n, i) => checkName(n, `teamA[${i}]`));
   checkName(story.protagonist, 'protagonist');
 
+  // Lineas de dialogo de introDialog/outroDialog (mismo formato que un
+  // evento `dialogo`: { speaker?, text }).
+  const checkDialogLines = (lines, where, field) => {
+    if (lines == null) return;
+    if (!Array.isArray(lines) || lines.length === 0) {
+      warn(`Evento ${where}: "${field}" debe ser una lista no vacia de lineas de dialogo.`);
+      return;
+    }
+    lines.forEach((line, j) => {
+      if (line?.text == null) {
+        warn(`Evento ${where}: ${field}[${j + 1}] no tiene "text".`);
+      }
+      checkName(line?.speaker, `Evento ${where}: ${field}[${j + 1}]: speaker`);
+    });
+  };
+
   // Validacion estructural de un evento. `where` identifica el nodo:
   // id entre comillas (pools con clave) o numero (listas legadas).
-  const checkEvent = (event, where) => {
+  // `opts` solo lo pasan las llamadas recursivas (pasos de una secuencia):
+  //   - narrativo: el `narrativo` de la secuencia (los pasos no lo llevan)
+  //   - inheritedReward: la secuencia declara `reward` (vale para sus pasos)
+  const checkEvent = (event, where, opts = {}) => {
     checkRandomType(event, where, warn);
+    checkDialogLines(event.introDialog, where, 'introDialog');
+    checkDialogLines(event.outroDialog, where, 'outroDialog');
+
+    if (event.type === 'secuencia') {
+      const steps = event.steps;
+      if (!Array.isArray(steps) || steps.length === 0) {
+        warn(`Evento ${where}: es una secuencia pero no tiene pasos en "steps".`);
+        return;
+      }
+      const stepOpts = {
+        narrativo: event.narrativo,
+        inheritedReward: event.reward != null
+      };
+      steps.forEach((step, i) => {
+        const at = `${where}, paso ${i + 1}`;
+        if (!step || typeof step !== 'object' || step.type == null) {
+          warn(`Evento ${at}: el paso no tiene "type".`);
+          return;
+        }
+        if (step.type === 'secuencia') {
+          warn(`Evento ${at}: no se permiten secuencias anidadas.`);
+          return;
+        }
+        // Campos de nivel nodo: solo tiene sentido en la secuencia misma
+        // (un paso = contenido, sin id/fired/puntero propio).
+        ['id', 'next', 'final', 'conditions', 'branches', 'setFlags', 'narrativo'].forEach(k => {
+          if (step[k] != null) {
+            warn(`Evento ${at}: el paso define "${k}"; esos campos van en la secuencia.`);
+          }
+        });
+        if (step.type === 'eleccion') {
+          (step.options ?? []).forEach((o, j) => {
+            if (o?.next != null) {
+              warn(`Evento ${at}, opcion ${j + 1}: una eleccion dentro de una secuencia no puede ramificar con "next"; la secuencia fija el orden de los pasos.`);
+            }
+          });
+        }
+        // La oferta encadena su combate por `branches` (puntero que sale
+        // del evento): en una secuencia se romperia el aislamiento.
+        if (step.type === 'reclutamiento_oferta') {
+          warn(`Evento ${at}: una oferta de reclutamiento encadena por "branches" y no puede vivir dentro de una secuencia.`);
+        }
+        checkEvent(step, at, stepOpts);
+      });
+      return;
+    }
+
     if (event.type === 'reclutamiento') {
       checkName(event.character, `Evento ${where}: character`);
       if (event.character != null && !allies.has(event.character)) {
@@ -203,7 +269,7 @@ export function validateStoryCast(story) {
           anyComplete = true;
         }
       });
-      if (anyComplete && event.reward == null) {
+      if (anyComplete && event.reward == null && !opts.inheritedReward) {
         warn(`Evento ${where}: acertijo sin "reward"; al acertar se tirara la recompensa por defecto.`);
       }
       return;
@@ -215,11 +281,13 @@ export function validateStoryCast(story) {
 
     if (event.type !== 'enfrentamiento' || !event.enemyTeam) return;
 
-    const allowed = event.narrativo ? new Set([...generic, ...narrative]) : generic;
+    // Los pasos de una secuencia heredan el `narrativo` de la secuencia.
+    const narrativo = opts.narrativo ?? event.narrativo;
+    const allowed = narrativo ? new Set([...generic, ...narrative]) : generic;
     event.enemyTeam.forEach((name, i) => {
       checkName(name, `Evento ${where}: enemyTeam[${i}]`);
       if (name != null && !allowed.has(name)) {
-        warn(`Evento ${where}: ${name} no deberia aparecer en un enfrentamiento ${event.narrativo ? 'narrativo' : 'generico'}.`);
+        warn(`Evento ${where}: ${name} no deberia aparecer en un enfrentamiento ${narrativo ? 'narrativo' : 'generico'}.`);
       }
     });
   };

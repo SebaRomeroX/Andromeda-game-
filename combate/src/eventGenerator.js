@@ -111,7 +111,7 @@ function pickInfiniteEvent(story, ctx, playerTeam) {
  *
  * `currentNodeId` siempre apunta al proximo nodo que deberia dispararse
  * (o null al inicio para bootstrap). Despues de cada evento:
- *   - No elecciones: advanceStage setea currentNodeId = event.next
+ *   - No elecciones: completeEvent setea currentNodeId = event.next
  *   - Elecciones: el handler setea currentNodeId = option.next
  *
  * La funcion simplemente valida si el nodo apuntado es elegible.

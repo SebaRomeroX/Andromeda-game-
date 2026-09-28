@@ -30,7 +30,7 @@ const runState = {
   recruitOffer: null,
   peakEnemyLevel: 0,
   // Evento aleatorio ya sorteado para la etapa actual (pin de la tarjeta
-  // del mapa). Se limpia en advanceStage para re-tirar en la siguiente.
+  // del mapa). Se limpia en completeEvent para re-tirar en la siguiente.
   pendingRandomId: null,
   // Aspirante elegido en 'reclutamiento_oferta' mientras resuelve su
   // demanda (se conserva a traves del combate; lo limpia la union o el
@@ -47,7 +47,13 @@ const sessionState = {
   selectedStory: null,
   playerTeam: null,
   protagonistSlot: 0,
+  // Nodo completo del grafo (el de la tarjeta del mapa). No cambia
+  // mientras se ejecutan los pasos de su secuencia.
   currentEvent: null,
+  // Paso en curso dentro de currentEvent (ver eventSteps.js). Los
+  // eventos de un solo paso tienen currentStep === currentEvent durante
+  // su ejecución; null cuando no hay nada en curso.
+  currentStep: null,
   // Recompensa de orbes tirada al detectar la victoria; se consume en
   // handleVictory() y se limpia al iniciar cada combate.
   pendingOrbReward: null
@@ -90,7 +96,16 @@ export function resetSessionState() {
   sessionState.playerTeam = null;
   sessionState.protagonistSlot = 0;
   sessionState.currentEvent = null;
+  sessionState.currentStep = null;
   sessionState.pendingOrbReward = null;
+}
+
+/** Evento activo a nivel de PASO: dentro de un evento con varios pasos
+ * (secuencia / introDialog / outroDialog) apunta al paso en curso (con su
+ * propio `reward` si lo tiene); fuera, al propio evento. Lo usan la
+ * victoria de combate y la recompensa por defecto. */
+export function activeEvent() {
+  return sessionState.currentStep ?? sessionState.currentEvent;
 }
 
 // ── Team save helpers ──

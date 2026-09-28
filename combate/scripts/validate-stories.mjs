@@ -24,7 +24,7 @@ const { default: characters, getCharacter } = await import('../data/characters.j
 const { default: stories } = await import('../data/stories/index.js');
 const { validateStoryCast } = await import('../src/storyValidation.js');
 const { generateEnemyTeam } = await import('../src/enemyGenerator.js');
-const { listStages, buildJumpPayload } = await import('../src/devTools.js');
+const { listStages, buildJumpPayload, applyEvent } = await import('../src/devTools.js');
 
 // ── 1) Nombres unicos ──
 const seen = new Set();
@@ -146,6 +146,116 @@ const roundtrip = saved && loadGame('travesia-sima');
 if (!roundtrip) fail('guardado v2 no se pudo guardar/cargar');
 else if (JSON.stringify(roundtrip.playerTeam) !== JSON.stringify(['Sima', null, 'Aracnida', null])) {
   fail(`guardado v2: playerTeam ${JSON.stringify(roundtrip.playerTeam)}`);
+}
+
+// ── 6) Expansion de pasos (introDialog/outroDialog / secuencia) ──
+const { expandEventSteps } = await import('../src/eventSteps.js');
+
+stories.forEach(story => {
+  const pools = [
+    ['storyNodes', story.storyNodes],
+    ['randomEvents', story.randomEvents],
+    ['narrativeEvents', story.narrativeEvents],
+    ['events', story.events]
+  ].filter(([, pool]) => pool != null);
+
+  pools.forEach(([poolName, pool]) => {
+    const entries = Array.isArray(pool)
+      ? pool.map((ev, i) => [String(i + 1), ev])
+      : Object.entries(pool);
+    entries.forEach(([id, ev]) => {
+      const where = `${story.id}/${poolName}:${id}`;
+      let steps;
+      try {
+        steps = expandEventSteps(ev);
+      } catch (e) {
+        fail(`${where}: expandEventSteps lanzo ${e.message}`);
+        return;
+      }
+      if (!Array.isArray(steps) || steps.length === 0) {
+        fail(`${where}: la expansion no produjo ningun paso`);
+        return;
+      }
+      steps.forEach((s, i) => {
+        if (!s || typeof s.type !== 'string') fail(`${where}: paso ${i + 1} sin "type"`);
+      });
+      // Invariante de paridad: un evento simple (sin intro/outro y que no
+      // es secuencia) se expande a [el propio evento], mismo objeto.
+      const isSimple = ev.type !== 'secuencia' && ev.introDialog == null && ev.outroDialog == null;
+      if (isSimple && (steps.length !== 1 || steps[0] !== ev)) {
+        fail(`${where}: un evento simple debe expandirse a [el propio evento]`);
+      }
+      // Una secuencia nunca pierde pasos (p. ej. por anidar otra).
+      if (ev.type === 'secuencia' && steps.length < (ev.steps?.length ?? 1)) {
+        fail(`${where}: la secuencia perdio pasos al expandirse`);
+      }
+    });
+  });
+});
+
+// ── 7) Efectos por paso + cierre de evento (paridad con el flujo real) ──
+const { default: state, resetRunState } = await import('../src/state.js');
+const { applyStepEffects, completeEvent } = await import('../src/gameFlow.js');
+
+const paritySetup = (event) => {
+  resetRunState();
+  state.session.selectedStory = { id: 'test-paridad' };
+  state.session.currentEvent = event;
+  state.run.currentNodeId = 'n1';
+};
+
+// Secuencia: los contadores salen de los PASOS; fired/flags/next del nodo.
+paritySetup({ id: 'n1', type: 'secuencia', narrativo: true, next: 'n2' });
+applyStepEffects({ type: 'enfrentamiento' });
+applyStepEffects({ type: 'dialogo' });
+completeEvent(state.session.currentEvent);
+if (state.run.enfrentamientos !== 1) fail(`paridad: enfrentamientos = ${state.run.enfrentamientos} (esperaba 1)`);
+if (state.run.fightsSinceCamp !== 1) fail(`paridad: fightsSinceCamp = ${state.run.fightsSinceCamp} (esperaba 1)`);
+if (!state.run.fired.has('n1')) fail('paridad: la secuencia no marco fired');
+if (state.run.flags.n1 !== true) fail('paridad: la secuencia narrativa no dejo flag');
+if (state.run.currentNodeId !== 'n2') fail('paridad: la secuencia no aplico next');
+if (state.run.stage !== 1) fail(`paridad: stage = ${state.run.stage} (esperaba 1)`);
+
+// Evento simple: mismo comportamiento que el advanceStage antiguo.
+paritySetup({ id: 'n1', type: 'enfrentamiento', next: 'n2' });
+applyStepEffects(state.session.currentEvent);
+completeEvent(state.session.currentEvent);
+if (state.run.enfrentamientos !== 1) fail(`paridad simple: enfrentamientos = ${state.run.enfrentamientos} (esperaba 1)`);
+if (!state.run.fired.has('n1')) fail('paridad simple: no marco fired');
+if (state.run.currentNodeId !== 'n2') fail('paridad simple: no aplico next');
+if (state.run.stage !== 1) fail(`paridad simple: stage = ${state.run.stage} (esperaba 1)`);
+
+// Campamento: resetea fightsSinceCamp y suma campamentos.
+paritySetup({ id: 'n1', type: 'campamento', next: 'n2' });
+state.run.fightsSinceCamp = 3;
+applyStepEffects(state.session.currentEvent);
+completeEvent(state.session.currentEvent);
+if (state.run.campamentos !== 1 || state.run.fightsSinceCamp !== 0) {
+  fail(`paridad campamento: campamentos=${state.run.campamentos} fightsSinceCamp=${state.run.fightsSinceCamp}`);
+}
+
+// ── 8) Simulacion (devTools) de una secuencia real de las historias ──
+// applyEvent debe aplicar los efectos de CADA paso (combate -> contadores
+// y recompensa; dialogo -> nada) y los de nivel nodo una sola vez.
+{
+  const nh = stories.find(s => s.id === 'nueva-historia');
+  const asalto = nh?.randomEvents?.['escolta-asalto'];
+  if (asalto?.type !== 'secuencia') {
+    fail('simulacion: nueva-historia ya no tiene la secuencia de ejemplo "escolta-asalto"');
+  } else {
+    const run = {
+      stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0,
+      fired: new Set(), choices: {}, currentNodeId: null, flags: {},
+      orbes: { mind: 0, power: 0, body: 0, wealth: 0 }, pendingRandomId: 'pin'
+    };
+    applyEvent({ ...asalto, id: 'escolta-asalto' }, run, [...nh.teamA], {});
+    if (run.enfrentamientos !== 1) fail(`simulacion: enfrentamientos = ${run.enfrentamientos} (esperaba 1)`);
+    if (run.fightsSinceCamp !== 1) fail(`simulacion: fightsSinceCamp = ${run.fightsSinceCamp} (esperaba 1)`);
+    if (run.orbes.wealth !== 2) fail(`simulacion: orbes de riqueza = ${run.orbes.wealth} (esperaba 2 del reward del paso)`);
+    if (!run.fired.has('escolta-asalto')) fail('simulacion: la secuencia no marco fired');
+    if (run.flags['escolta-asalto'] !== true) fail('simulacion: la secuencia narrativa no dejo flag');
+    if (run.pendingRandomId !== null) fail('simulacion: no se limpio el pin del evento aleatorio');
+  }
 }
 
 // ── Resultado ──

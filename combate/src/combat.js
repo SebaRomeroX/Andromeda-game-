@@ -1,4 +1,4 @@
-import state, { aliveMembers, allDead, getGameEndCallback } from './state.js';
+import state, { aliveMembers, allDead, getGameEndCallback, activeEvent } from './state.js';
 import { SKILL_TYPES, TEAMS, TURN_PHASES, BUFF_STATS } from './constants.js';
 import { applyBuff, processBuffs, getMultiplier, getFlatBuffSum, getPrecision, getEvasion, hasNegativeBuff } from './buffs.js';
 import { renderHP, renderStatus, renderBuffs, renderActions, renderTargets, clearTargets, renderTeams, renderCurrentActor, renderActionIndicators, flashObjective, highlightSkill, clearSkillHighlight, renderPendingActions, clearMemberAction, showCombatMessage } from './renderer.js';
@@ -190,7 +190,9 @@ function checkGameOver() {
     // Un solo modal: victoria + (bajas si las hay) + recompensa de orbes.
     // La recompensa se tira UNA sola vez, aqui, al detectar la victoria;
     // handleVictory() la otorga desde pendingOrbReward sin repetir la tirada.
-    const orbs = rollVictoryOrbs(state.session.currentEvent);
+    // El reward sale del paso en curso (un combate dentro de una secuencia
+    // tira el suyo, heredado de la secuencia si no lo declara).
+    const orbs = rollVictoryOrbs(activeEvent());
     state.session.pendingOrbReward = orbs;
     const orbLine = `<strong>Recompensa:</strong><br>${formatOrbGainHtml(orbs)}`;
     const fallenLines = result === 'allies_fallen'

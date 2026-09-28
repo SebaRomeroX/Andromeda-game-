@@ -1,4 +1,4 @@
-import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, clearSavedTeamLearnableSkills, clearSavedTeamLearnedSkills, saveTeamLevels, allDead, resetTeam, clearSavedSlot, exportTeamSave, importTeamSave, resetRunState, resetSessionState } from './state.js';
+import state, { initState, setGameEndCallback, saveTeamState, restoreTeamHp, clearSavedTeamHp, clearSavedTeamLevels, clearSavedTeamSkills, clearSavedTeamLearnableSkills, clearSavedTeamLearnedSkills, saveTeamLevels, allDead, resetTeam, clearSavedSlot, exportTeamSave, importTeamSave, resetRunState, resetSessionState, activeEvent } from './state.js';
 import { ROLE_BY_INDEX } from './models.js';
 import { startTurn, onTargetClick } from './combat.js';
 import { renderTeams, renderHP, renderStatus, renderBuffs, renderActions, clearTargets, renderTeamsHeader } from './renderer.js';
@@ -8,11 +8,12 @@ import { getCharacter } from '../data/characters.js';
 import stories from '../data/stories/index.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
 import { pickNextEvent } from './eventGenerator.js';
+import { expandEventSteps } from './eventSteps.js';
 import { validateStoryCast } from './storyValidation.js';
 import { setupDevPanel } from './devTools.js';
 import { isDev } from './env.js';
 import { TEAMS } from './constants.js';
-import { advanceStage as advanceStageFlow, resolveVictory, getEventOrbs, grantOrbs, formatOrbTotalsHtml, formatOrbGainInlineHtml, emptyOrbs } from './gameFlow.js';
+import { applyStepEffects, completeEvent as completeEventFlow, resolveVictory, getEventOrbs, grantOrbs, formatOrbTotalsHtml, formatOrbGainInlineHtml, emptyOrbs } from './gameFlow.js';
 import { showCampEvent, showRecruitEvent, showInfiniteRecruitEvent, showRecruitOfferEvent, showRecruitJoinEvent, showDialogueEvent, showChoiceEvent, showPuzzleEvent, showEnding, showEndModal } from './eventHandlers.js';
 import './mobile.js';
 import { playChill, playCombat, stopMusic } from './music.js';
@@ -99,8 +100,13 @@ function showScreen(name) {
   if (pauseBtn) pauseBtn.hidden = (name === 'menu');
 }
 
-function advanceStage() {
-  advanceStageFlow();
+// Todos los pasos del evento terminaron: efectos de nivel nodo (fired,
+// flags, puntero next, stage), posible final de historia y vuelta al mapa.
+// Ojo: no se puede renderizar el mapa antes (renderMap re-sortea
+// state.session.currentEvent y pisaria el nodo en curso).
+function completeEventStage() {
+  state.session.currentStep = null;
+  completeEventFlow(state.session.currentEvent);
 
   if (state.session.currentEvent?.final) {
     showEnding(state.session.currentEvent, state.session.selectedStory, resetRunState);
@@ -285,49 +291,73 @@ function renderMap() {
   persistProgress();
 }
 
+// Expande el evento en pasos (eventSteps.js) y los ejecuta en orden.
+// Cada paso termina aplicando sus contadores (applyStepEffects) y
+// encadenando el siguiente; cuando no quedan pasos se cierra el evento
+// completo (completeEventStage).
 function startCombat(event) {
   state.session.currentEvent = event;
+  state.session.currentStep = null;
   // Cada intento de combate parte sin recompensa pendiente: si el anterior
   // se perdio (o quedo un residuo), la proxima victoria vuelve a tirar.
   state.session.pendingOrbReward = null;
 
+  runSteps(expandEventSteps(event), 0);
+}
+
+function runSteps(steps, index) {
+  if (index >= steps.length) {
+    completeEventStage();
+    return;
+  }
+  const step = steps[index];
+  state.session.currentStep = step;
+  runEventStep(step, () => {
+    applyStepEffects(step);
+    runSteps(steps, index + 1);
+  });
+}
+
+// Ejecuta un paso con su handler correspondiente. `onDone` encadena el
+// paso siguiente (en un evento de un solo paso es el cierre clasico).
+function runEventStep(event, onDone) {
   if (event.type === 'campamento') {
-    showCampEvent(event, advanceStage);
+    showCampEvent(event, onDone);
     return;
   }
 
   if (event.type === 'reclutamiento') {
-    showRecruitEvent(event, advanceStage);
+    showRecruitEvent(event, onDone);
     return;
   }
 
   if (event.type === 'reclutamiento_infinite') {
-    showInfiniteRecruitEvent(event, advanceStage);
+    showInfiniteRecruitEvent(event, onDone);
     return;
   }
 
   if (event.type === 'reclutamiento_oferta') {
-    showRecruitOfferEvent(event, advanceStage);
+    showRecruitOfferEvent(event, onDone);
     return;
   }
 
   if (event.type === 'reclutamiento_final') {
-    showRecruitJoinEvent(event, advanceStage);
+    showRecruitJoinEvent(event, onDone);
     return;
   }
 
   if (event.type === 'dialogo') {
-    showDialogueEvent(event, advanceStage);
+    showDialogueEvent(event, onDone);
     return;
   }
 
   if (event.type === 'eleccion') {
-    showChoiceEvent(event, advanceStage);
+    showChoiceEvent(event, onDone);
     return;
   }
 
   if (event.type === 'acertijo') {
-    showPuzzleEvent(event, advanceStage);
+    showPuzzleEvent(event, onDone);
     return;
   }
 
@@ -362,7 +392,7 @@ function startCombat(event) {
 
   setGameEndCallback(() => {
     if (allDead(TEAMS.B)) {
-      handleVictory();
+      handleVictory(onDone);
       return;
     }
     startStory(state.session.selectedStory, { loadSave: false });
@@ -386,7 +416,11 @@ function startCombat(event) {
   startTurn();
 }
 
-function handleVictory() {
+// Victoria detectada en combate (modal de victoria ya confirmado).
+// `onDone` encadena el paso siguiente de la secuencia (o el cierre del
+// evento). Caminos de final (protagonista caido, todo el grupo muerto)
+// no lo llaman: reinician o terminan la historia.
+function handleVictory(onDone) {
   const { result, fallen, protagonistName } = resolveVictory();
   const story = state.session.selectedStory;
 
@@ -404,8 +438,9 @@ function handleVictory() {
   // ── Recompensa de orbes (mente/poder/cuerpo/riqueza) ──
   // La tirada ya se hizo al detectar la victoria (combat.js) y se muestra
   // en el modal; aqui solo se otorga (al pulsar Continuar) y se registra
-  // en el log. Si no hubiera tirada guardada, se tira ahora.
-  const gainedOrbs = state.session.pendingOrbReward ?? getEventOrbs(state.session.currentEvent);
+  // en el log. Si no hubiera tirada guardada, se tira ahora (con el
+  // reward del paso en curso, heredado de la secuencia si no el suyo).
+  const gainedOrbs = state.session.pendingOrbReward ?? getEventOrbs(activeEvent());
   state.session.pendingOrbReward = null;
   grantOrbs(gainedOrbs);
   const gainText = formatOrbGainInlineHtml(gainedOrbs);
@@ -430,7 +465,7 @@ function handleVictory() {
     }
   }
 
-  advanceStage();
+  onDone();
 }
 
 if (isDev()) {
