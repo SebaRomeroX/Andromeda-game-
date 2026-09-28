@@ -23,3 +23,7 @@ pruebas fuerza con mas bosses
 different enemy number team
 randomizable enemy team 
 exteriorize random events
+
+CURRENTLY
+ - sequencialiting random events
+ - creating champs with special unic skills
