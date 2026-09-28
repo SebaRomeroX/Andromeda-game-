@@ -137,6 +137,14 @@ function findNextNode(story, ctx) {
     return ctx.currentNodeId;
   }
 
+  if (!candidate) {
+    // Puntero obsoleto (p. ej. guardado anterior a una edicion del grafo
+    // que elimino el nodo): se limpia y se reintenta como si no hubiera
+    // puntero, en vez de quedarse clavado apuntando a la nada.
+    ctx.currentNodeId = null;
+    return findNextNode(story, ctx);
+  }
+
   return null;
 }
 

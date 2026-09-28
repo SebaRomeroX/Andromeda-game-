@@ -258,6 +258,49 @@ if (state.run.campamentos !== 1 || state.run.fightsSinceCamp !== 0) {
   }
 }
 
+// ── 9) Viajero: eleccion con ramas inline (option.steps) ──
+// Simula las DOS ramas del nodo real: "ayudar" debe ejecutar el combate
+// con el reward HEREDADO de la secuencia; "ignorar", solo el dialogo.
+{
+  const nh = stories.find(s => s.id === 'nueva-historia');
+  const viajero = nh?.randomEvents?.['viajero'];
+  if (viajero?.type !== 'secuencia') {
+    fail('ramas: nueva-historia ya no tiene "viajero" como secuencia con option.steps');
+  } else {
+    const steps = expandEventSteps(viajero);
+    if (steps.length !== 1 || steps[0]?.type !== 'eleccion') {
+      fail(`ramas: viajero se expandio a ${steps.length} pasos (esperaba solo la eleccion)`);
+    }
+
+    const newRun = () => ({
+      stage: 0, enfrentamientos: 0, campamentos: 0, fightsSinceCamp: 0,
+      fired: new Set(), choices: {}, currentNodeId: null, flags: {},
+      orbes: { mind: 0, power: 0, body: 0, wealth: 0 }, pendingRandomId: 'pin'
+    });
+
+    // Ayudar: combate dentro de la rama, con el reward del nodo heredado.
+    const runA = newRun();
+    applyEvent({ ...viajero, id: 'viajero' }, runA, [...(nh.teamA ?? [])], { viajero: 'ayudar' });
+    if (runA.enfrentamientos !== 1) fail(`ramas(ayudar): enfrentamientos = ${runA.enfrentamientos} (esperaba 1)`);
+    if (runA.fightsSinceCamp !== 1) fail(`ramas(ayudar): fightsSinceCamp = ${runA.fightsSinceCamp} (esperaba 1)`);
+    if (runA.orbes.wealth !== 1) fail(`ramas(ayudar): orbes de riqueza = ${runA.orbes.wealth} (esperaba 1 heredada del reward de la secuencia)`);
+    if (!runA.fired.has('viajero')) fail('ramas(ayudar): no marco fired');
+    if (runA.flags.viajero !== true) fail('ramas(ayudar): la secuencia narrativa no dejo flag');
+    if (runA.choices.viajero !== 'ayudar') fail(`ramas(ayudar): choices[viajero] = ${runA.choices.viajero} (esperaba ayudar)`);
+    if (runA.pendingRandomId !== null) fail('ramas(ayudar): no se limpio el pin del evento aleatorio');
+
+    // Ignorar: solo dialogo -> ni combate ni orbes.
+    const runB = newRun();
+    applyEvent({ ...viajero, id: 'viajero' }, runB, [...(nh.teamA ?? [])], { viajero: 'ignorar' });
+    if (runB.enfrentamientos !== 0) fail(`ramas(ignorar): enfrentamientos = ${runB.enfrentamientos} (esperaba 0)`);
+    if (runB.orbes.wealth !== 0) fail(`ramas(ignorar): orbes = ${JSON.stringify(runB.orbes)} (esperaba 0)`);
+    if (!runB.fired.has('viajero')) fail('ramas(ignorar): no marco fired');
+    if (runB.flags.viajero !== true) fail('ramas(ignorar): la secuencia narrativa no dejo flag');
+    if (runB.choices.viajero !== 'ignorar') fail(`ramas(ignorar): choices[viajero] = ${runB.choices.viajero} (esperaba ignorar)`);
+    if (runB.pendingRandomId !== null) fail('ramas(ignorar): no se limpio el pin del evento aleatorio');
+  }
+}
+
 // ── Resultado ──
 if (problems.length) {
   console.error(`\n${problems.length} problema(s):`);

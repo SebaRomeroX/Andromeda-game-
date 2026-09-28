@@ -8,7 +8,7 @@ import { getCharacter } from '../data/characters.js';
 import stories from '../data/stories/index.js';
 import { generateEnemyTeam } from './enemyGenerator.js';
 import { pickNextEvent } from './eventGenerator.js';
-import { expandEventSteps } from './eventSteps.js';
+import { expandEventSteps, expandOptionSteps } from './eventSteps.js';
 import { validateStoryCast } from './storyValidation.js';
 import { setupDevPanel } from './devTools.js';
 import { isDev } from './env.js';
@@ -312,9 +312,16 @@ function runSteps(steps, index) {
   }
   const step = steps[index];
   state.session.currentStep = step;
-  runEventStep(step, () => {
+  // `onDone` recibe la opcion elegida (solo una eleccion la pasa): sus
+  // `option.steps` se expanden con los derechos de cualquier paso
+  // (herencia de reward del nodo) y se insertan detras de la eleccion,
+  // antes de lo que quede en la cola. Sin rama: cola normal.
+  runEventStep(step, (option) => {
     applyStepEffects(step);
-    runSteps(steps, index + 1);
+    const branch = option?.steps?.length
+      ? expandOptionSteps(option.steps, state.session.currentEvent)
+      : [];
+    runSteps([...branch, ...steps.slice(index + 1)], 0);
   });
 }
 
@@ -352,7 +359,19 @@ function runEventStep(event, onDone) {
   }
 
   if (event.type === 'eleccion') {
-    showChoiceEvent(event, onDone);
+    // Dentro de una secuencia la eleccion es un paso, no el nodo: se le
+    // inyecta el id del nodo (la clave de `choices` queda igual que en un
+    // evento top-level) y se quita `option.next` (los punteros de grafo
+    // no salen de una secuencia; la validacion avisa si se declaran).
+    const node = state.session.currentEvent;
+    const step = node?.type === 'secuencia' && node !== event
+      ? {
+          ...event,
+          id: event.id ?? node.id,
+          options: (event.options ?? []).map(({ next, ...o }) => o)
+        }
+      : event;
+    showChoiceEvent(step, onDone);
     return;
   }
 

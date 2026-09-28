@@ -127,11 +127,44 @@ export function validateStoryCast(story) {
     });
   };
 
+  // Validacion de un PASO: el de una secuencia o el de una rama inline
+  // (option.steps). Los campos de nivel nodo solo tienen sentido en el
+  // evento contenedor (un paso = contenido, sin id/fired/puntero propio).
+  // `opts` lo pasan las llamadas recursivas:
+  //   - narrativo: el `narrativo` del contenedor (los pasos no lo llevan)
+  //   - inheritedReward: el contenedor declara `reward` (vale para sus pasos)
+  // Llama a checkEvent (definida abajo; se resuelve en tiempo de llamada).
+  const checkStep = (step, at, opts) => {
+    if (!step || typeof step !== 'object' || step.type == null) {
+      warn(`Evento ${at}: el paso no tiene "type".`);
+      return;
+    }
+    if (step.type === 'secuencia') {
+      warn(`Evento ${at}: no se permiten secuencias anidadas.`);
+      return;
+    }
+    ['id', 'next', 'final', 'conditions', 'branches', 'setFlags', 'narrativo'].forEach(k => {
+      if (step[k] != null) {
+        warn(`Evento ${at}: el paso define "${k}"; esos campos van en la secuencia.`);
+      }
+    });
+    if (step.type === 'eleccion') {
+      (step.options ?? []).forEach((o, j) => {
+        if (o?.next != null) {
+          warn(`Evento ${at}, opcion ${j + 1}: una eleccion dentro de una secuencia no puede ramificar con "next"; usa "steps" para la rama o saca la eleccion de la secuencia.`);
+        }
+      });
+    }
+    // La oferta encadena su combate por `branches` (puntero que sale
+    // del evento): en una secuencia se romperia el aislamiento.
+    if (step.type === 'reclutamiento_oferta') {
+      warn(`Evento ${at}: una oferta de reclutamiento encadena por "branches" y no puede vivir dentro de una secuencia.`);
+    }
+    checkEvent(step, at, opts);
+  };
+
   // Validacion estructural de un evento. `where` identifica el nodo:
   // id entre comillas (pools con clave) o numero (listas legadas).
-  // `opts` solo lo pasan las llamadas recursivas (pasos de una secuencia):
-  //   - narrativo: el `narrativo` de la secuencia (los pasos no lo llevan)
-  //   - inheritedReward: la secuencia declara `reward` (vale para sus pasos)
   const checkEvent = (event, where, opts = {}) => {
     checkRandomType(event, where, warn);
     checkDialogLines(event.introDialog, where, 'introDialog');
@@ -147,37 +180,7 @@ export function validateStoryCast(story) {
         narrativo: event.narrativo,
         inheritedReward: event.reward != null
       };
-      steps.forEach((step, i) => {
-        const at = `${where}, paso ${i + 1}`;
-        if (!step || typeof step !== 'object' || step.type == null) {
-          warn(`Evento ${at}: el paso no tiene "type".`);
-          return;
-        }
-        if (step.type === 'secuencia') {
-          warn(`Evento ${at}: no se permiten secuencias anidadas.`);
-          return;
-        }
-        // Campos de nivel nodo: solo tiene sentido en la secuencia misma
-        // (un paso = contenido, sin id/fired/puntero propio).
-        ['id', 'next', 'final', 'conditions', 'branches', 'setFlags', 'narrativo'].forEach(k => {
-          if (step[k] != null) {
-            warn(`Evento ${at}: el paso define "${k}"; esos campos van en la secuencia.`);
-          }
-        });
-        if (step.type === 'eleccion') {
-          (step.options ?? []).forEach((o, j) => {
-            if (o?.next != null) {
-              warn(`Evento ${at}, opcion ${j + 1}: una eleccion dentro de una secuencia no puede ramificar con "next"; la secuencia fija el orden de los pasos.`);
-            }
-          });
-        }
-        // La oferta encadena su combate por `branches` (puntero que sale
-        // del evento): en una secuencia se romperia el aislamiento.
-        if (step.type === 'reclutamiento_oferta') {
-          warn(`Evento ${at}: una oferta de reclutamiento encadena por "branches" y no puede vivir dentro de una secuencia.`);
-        }
-        checkEvent(step, at, stepOpts);
-      });
+      steps.forEach((step, i) => checkStep(step, `${where}, paso ${i + 1}`, stepOpts));
       return;
     }
 
@@ -228,6 +231,24 @@ export function validateStoryCast(story) {
         warn(`Evento ${where}: es una eleccion pero no tiene opciones en "options".`);
       } else if (event.options.some(o => o.id == null)) {
         warn(`Evento ${where}: todas las opciones deben tener un "id".`);
+      } else {
+        // option.steps: rama inline que el motor ejecuta tras elegir (en
+        // una secuencia o como contenido del propio evento top-level).
+        const branchOpts = {
+          narrativo: opts.narrativo ?? event.narrativo,
+          inheritedReward: opts.inheritedReward ?? event.reward != null
+        };
+        event.options.forEach((o, j) => {
+          if (o?.steps == null) return;
+          if (o.next != null) {
+            warn(`Evento ${where}, opcion ${j + 1}: declara "next" y "steps"; usa solo "steps" (la rama vive dentro del evento).`);
+          }
+          if (!Array.isArray(o.steps) || o.steps.length === 0) {
+            warn(`Evento ${where}, opcion ${j + 1}: "steps" debe ser una lista no vacia de pasos.`);
+            return;
+          }
+          o.steps.forEach((s, k) => checkStep(s, `${where}, opcion ${j + 1}, paso ${k + 1}`, branchOpts));
+        });
       }
       return;
     }

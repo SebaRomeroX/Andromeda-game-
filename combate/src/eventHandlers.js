@@ -563,7 +563,9 @@ export function showChoiceEvent(event, advanceStageCb) {
       state.run.choices[event.id ?? event.title] = option.id;
       if (option.next) state.run.currentNodeId = option.next;
       overlay.classList.add('hidden');
-      advanceStageCb();
+      // La opcion se entrega al encadenador: una eleccion dentro de una
+      // secuencia usa sus `option.steps` como rama siguiente.
+      advanceStageCb(option);
     };
     optionsEl.appendChild(btn);
   });

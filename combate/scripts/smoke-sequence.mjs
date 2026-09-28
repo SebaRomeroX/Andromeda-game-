@@ -6,7 +6,10 @@
 //   1) evento con `introDialog` (dialogo antes de la eleccion),
 //   2) eleccion que ramifica a un `type: 'secuencia'`,
 //   3) secuencia: combate (equipo enemigo vacio -> victoria automatica)
-//      -> dialogo post-victoria -> cierre del evento (fired/flags/next).
+//      -> dialogo post-victoria -> cierre del evento (fired/flags/next),
+//   4) secuencia cuyo paso es una eleccion con ramas inline
+//      (`option.steps`): elige la rama sin combate, se ejecuta el
+//      dialogo de la rama, se salta el combate y el nodo cierra una vez.
 // Comprueba contadores, orbes, puntero del grafo y que la validacion de
 // la historia no avisa. Sale con codigo 1 si algo falla.
 
@@ -193,6 +196,42 @@ try {
         ]
       }
     ],
+    next: 'prueba-ramas'
+  };
+
+  // 'prueba-ramas': secuencia cuyo UNICO paso es una eleccion con ramas
+  // inline (option.steps). El smoke elige la rama SIN combate para
+  // comprobar que la rama se ejecuta, que el combate se salta y que el
+  // nodo cierra una sola vez. (La rama CON combate la cubre la
+  // validacion, seccion 9, con el viajero real.)
+  nh.randomEvents['prueba-ramas'] = {
+    type: 'secuencia',
+    narrativo: true,
+    title: 'Prueba de Ramas',
+    description: '[TEST] Secuencia con eleccion y ramas inline.',
+    reward: { mind: 1 },
+    steps: [
+      {
+        type: 'eleccion',
+        title: 'Prueba de Ramas',
+        prompt: '[TEST] ¿Que rama tomas?',
+        options: [
+          {
+            id: 'pasar',
+            label: '[TEST] Pasar de largo',
+            steps: [{ type: 'dialogo', dialog: [{ text: '[TEST] Rama sin combate.' }] }]
+          },
+          {
+            id: 'pelear',
+            label: '[TEST] Pelear',
+            steps: [
+              { type: 'enfrentamiento', enemyTeam: [null, null, null, null] },
+              { type: 'dialogo', dialog: [{ text: '[TEST] Rama con combate.' }] }
+            ]
+          }
+        ]
+      }
+    ],
     next: 'prueba-final'
   };
 
@@ -265,9 +304,43 @@ try {
   assert(state.run.stage === 2, `al cerrar la secuencia stage = ${state.run.stage} (esperaba 2)`);
   assert(state.run.fired.has('prueba-fuerza'), 'la secuencia no quedo marcada como fired');
   assert(state.run.flags['prueba-fuerza'] === true, 'la secuencia narrativa no dejo su flag');
-  assert(state.run.currentNodeId === 'prueba-final', `puntero = ${state.run.currentNodeId} (esperaba prueba-final)`);
+  assert(state.run.currentNodeId === 'prueba-ramas', `puntero = ${state.run.currentNodeId} (esperaba prueba-ramas)`);
   assert(state.session.currentStep == null, 'currentStep no se limpio al cerrar el evento');
   assert(state.run.enfrentamientos === 1, `enfrentamientos finales = ${state.run.enfrentamientos} (esperaba 1)`);
+
+  // ── 5. Secuencia con eleccion -> rama inline SIN combate ──
+  const cardRamas = mapEvents().find(c => c.innerHTML.includes('Prueba de Ramas'));
+  assert(cardRamas, 'no aparecio la tarjeta de la secuencia con ramas (prueba-ramas)');
+  if (cardRamas) dispatchClick(cardRamas);
+
+  // El UNICO paso es la eleccion: el modal aparece sin dialogo previo.
+  assert(!choiceOverlay.classList.contains('hidden'), 'la eleccion de la rama no se mostro');
+  assert(dialogOverlay.classList.contains('hidden'), 'mostro un dialogo antes de la eleccion');
+
+  const optPasar = documentStub.getElementById('choice-options')
+    .children.find(b => b.textContent.includes('[TEST] Pasar de largo'));
+  assert(optPasar, 'no se encontro la opcion de la rama');
+  if (optPasar) dispatchClick(optPasar);
+
+  // La rama elegida se ejecuta justo detras: dialogo, sin combate.
+  assert(!dialogOverlay.classList.contains('hidden'), 'el dialogo de la rama no se mostro');
+  assert(state.session.currentStep?.type === 'dialogo', 'el paso activo no es el dialogo de la rama');
+  assert(state.run.stage === 2, `con la rama abierta stage = ${state.run.stage} (esperaba 2)`);
+  assert(state.run.currentNodeId === 'prueba-ramas', 'el puntero avanzo antes de terminar la rama');
+  assert(state.run.enfrentamientos === 1, `enfrentamientos con la rama sin combate = ${state.run.enfrentamientos} (esperaba 1: el combate se salto)`);
+  assert(state.run.choices['prueba-ramas'] === 'pasar',
+    `choices[prueba-ramas] = ${state.run.choices['prueba-ramas']} (esperaba pasar)`);
+
+  dispatchClick(dialogOverlay); // unica linea -> cierra la rama y el nodo
+
+  assert(dialogOverlay.classList.contains('hidden'), 'el dialogo de la rama no se cerro');
+  assert(state.run.stage === 3, `al cerrar la rama stage = ${state.run.stage} (esperaba 3)`);
+  assert(state.run.fired.has('prueba-ramas'), 'la secuencia con ramas no quedo marcada como fired');
+  assert(state.run.flags['prueba-ramas'] === true, 'la secuencia con ramas no dejo su flag');
+  assert(state.run.currentNodeId === 'prueba-final', `puntero = ${state.run.currentNodeId} (esperaba prueba-final)`);
+  assert(state.session.currentStep == null, 'currentStep no se limpio al cerrar la rama');
+  assert(state.run.orbes.mind === 0, `orbes de mente = ${state.run.orbes.mind} (esperaba 0: sin combate no se tira el reward)`);
+  assert(state.run.enfrentamientos === 1, `enfrentamientos tras la rama = ${state.run.enfrentamientos} (esperaba 1)`);
 
   const card3 = mapEvents().find(c => c.innerHTML.includes('Prueba superada'));
   assert(card3, 'no aparecio la tarjeta siguiente (prueba-final)');
@@ -283,4 +356,4 @@ if (problems.length) {
   problems.forEach(p => console.error(' -', p));
   process.exit(1);
 }
-console.log('OK · smoke-sequence: introDialog -> eleccion -> secuencia (combate + dialogo) -> cierre.');
+console.log('OK · smoke-sequence: introDialog -> eleccion -> secuencia (combate + dialogo) -> rama inline -> cierre.');

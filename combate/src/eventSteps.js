@@ -18,13 +18,26 @@
 //      `id`/`next`/`final`/`conditions`: esos campos viven en la
 //      secuencia (un solo nodo del grafo = un solo `fired`/`next`).
 //
+//   3) Ramas inline: una opcion de eleccion puede declarar sus propios
+//      `steps: [...]`. Al elegirla, el motor los expande (con los mismos
+//      derechos que cualquier paso: herencia de reward, intro/outro) y
+//      los ejecuta justo detras de la eleccion, antes de lo que quede en
+//      la cola. Asi UN nodo ramifica sin punteros `next` que salgan de
+//      el (la validacion avisa si se declaran).
+//
+//        steps: [{ type: 'eleccion', options: [
+//          { id: 'ayudar', label: 'Ayudar', steps: [{ type: 'enfrentamiento', ... }, ...] },
+//          { id: 'ignorar', label: 'Seguir', steps: [{ type: 'dialogo', ... }] }
+//        ]}]
+//
 // Invariantes:
 //   - Un evento sin introDialog/outroDialog que no es secuencia se
 //     expande a [el propio evento] (mismo objeto, identidad conservada):
 //     cero cambio de comportamiento para las historias existentes.
 //   - Los pasos no declaran `reward` propio: heredan el de la secuencia
 //     (si la hay), de modo que `reward` en la secuencia premia a cada
-//     paso que otorgue orbes.
+//     paso que otorgue orbes. Lo mismo vale para los pasos de una rama
+//     (heredan del nodo contenedor).
 
 // Lineas -> paso de dialogo (el motor ya sabe renderizarlas).
 function dialogSteps(lines) {
@@ -45,6 +58,21 @@ function expandSingle(step, top) {
 }
 
 /**
+ * Pasos en linea de una opcion de eleccion (`option.steps`): misma
+ * expansion que un paso normal de la secuencia, con `top` = nodo
+ * contenedor (de ahi heredan el reward). Formas invalidas se ignoran
+ * (la validacion avisa): entradas que no son objetos y secuencias
+ * anidadas.
+ */
+export function expandOptionSteps(steps, top) {
+  if (!Array.isArray(steps)) return [];
+  return steps.flatMap(step => {
+    if (!step || typeof step !== 'object' || step.type === 'secuencia') return [];
+    return expandSingle(step, top);
+  });
+}
+
+/**
  * Devuelve la lista de pasos (no vacía) que ejecutará el motor para un
  * evento. Nunca lanza con datos authorados; la validación estructural
  * (storyValidation.js) avisa de formas inválidas.
@@ -56,12 +84,7 @@ export function expandEventSteps(event) {
     return expandSingle(event, event);
   }
 
-  const steps = Array.isArray(event.steps) ? event.steps : [];
-  const core = steps.flatMap(step => {
-    // Defensa: la validacion avisa; una secuencia anidada se ignora.
-    if (!step || typeof step !== 'object' || step.type === 'secuencia') return [];
-    return expandSingle(step, event);
-  });
+  const core = expandOptionSteps(event.steps, event);
 
   return [...dialogSteps(event.introDialog), ...core, ...dialogSteps(event.outroDialog)];
 }

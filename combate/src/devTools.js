@@ -1,6 +1,6 @@
 import { ROLE_BY_INDEX, getLevelStats } from './models.js';
 import { pickNextEvent } from './eventGenerator.js';
-import { expandEventSteps } from './eventSteps.js';
+import { expandEventSteps, expandOptionSteps } from './eventSteps.js';
 import { rollVictoryOrbs } from './gameFlow.js';
 import { getCharacter } from '../data/characters.js';
 
@@ -16,8 +16,14 @@ const DETERMINISTIC_RNG = () => 0;
 // Efectos de un PASO al completarse (simulacion: siempre exito). Paridad
 // con applyStepEffects de gameFlow + las recompensas/altas que en el juego
 // real ocurren durante el paso. Se aplica a cada paso de expandEventSteps.
+// `node` es el nodo del grafo contenedor (para un evento top-level es el
+// propio paso): fija la clave de `choices` de una eleccion sin id (paso
+// de secuencia -> id del nodo, igual que en runSteps) y hace que
+// `option.next` no salga del nodo.
+// Devuelve los pasos de la rama elegida (`option.steps`) ya expandidos:
+// applyEvent los inserta en la cola, igual que runSteps en main.js.
 // Exportado para que validate-stories.mjs compruebe la paridad.
-export function applyEventStep(step, run, roster, choices) {
+export function applyEventStep(step, run, roster, choices, node = step) {
   if (step.type === 'campamento') {
     run.campamentos++;
     run.fightsSinceCamp = 0;
@@ -44,21 +50,36 @@ export function applyEventStep(step, run, roster, choices) {
     const slot = ROLE_BY_INDEX.indexOf(char?.role ?? '');
     if (slot >= 0) roster[slot] = step.character;
   } else if (step.type === 'eleccion') {
-    // Misma clave que en tiempo real (showChoiceEvent): id del paso o titulo.
-    const key = step.id ?? step.title;
+    const inSequence = node !== step;
+    // Misma clave que en tiempo real (showChoiceEvent): id del paso y,
+    // si es un paso de secuencia, el id del nodo inyectado por runSteps.
+    const key = step.id ?? (inSequence ? node.id : null) ?? step.title;
     if (key != null && step.options?.length) {
-      const chosenId = choices[key] ?? step.options[0].id;
+      // Si la semilla guarda una opcion que ya no existe, la simulacion
+      // cae en la primera (determinismo), como haria un jugador nuevo.
+      const chosenId = step.options.some(o => o.id === choices[key])
+        ? choices[key]
+        : step.options[0].id;
       run.choices[key] = chosenId;
       const chosenOpt = step.options.find(o => o.id === chosenId);
-      if (chosenOpt?.next) run.currentNodeId = chosenOpt.next;
+      if (chosenOpt?.next && !inSequence) run.currentNodeId = chosenOpt.next;
+      return expandOptionSteps(chosenOpt?.steps, node);
     }
   }
+  return [];
 }
 
 // Efectos de nivel NODO (solo el evento de arriba, nunca un paso):
 // paridad con completeEvent de gameFlow. Exportado para pruebas.
 export function applyEvent(ev, run, roster, choices = {}) {
-  expandEventSteps(ev).forEach(step => applyEventStep(step, run, roster, choices));
+  // Cola de pasos igual que runSteps: una eleccion puede inyectar su
+  // rama (option.steps) justo detras del paso elegido. expandEventSteps
+  // siempre devuelve un array nuevo (la historia no se toca).
+  const queue = expandEventSteps(ev);
+  for (let i = 0; i < queue.length; i++) {
+    const branch = applyEventStep(queue[i], run, roster, choices, ev);
+    if (branch.length) queue.splice(i + 1, 0, ...branch);
+  }
 
   if (ev.id) run.fired.add(ev.id);
   // Auto-flag: victoria en enfrentamiento narrativo (o secuencia narrativa)
@@ -217,8 +238,20 @@ export function setupDevPanel(stories, onJump) {
       ...(story.storyNodes ? dictNodes(story.storyNodes) : (story.narrativeEvents ?? [])),
       ...dictNodes(story.randomEvents)
     ];
-    const elecciones = allNodes
-      .filter(ev => ev.type === 'eleccion' && ev.id && Array.isArray(ev.options) && ev.options.length > 0);
+    // Una fila por eleccion sembrable: top-level o el primer paso de
+    // eleccion de una secuencia (p. ej. 'viajero'); en ambos casos la
+    // clave de choices es el id del nodo, igual que en tiempo real.
+    const elecciones = [];
+    allNodes.forEach(ev => {
+      if (!ev.id) return;
+      if (ev.type === 'eleccion' && Array.isArray(ev.options) && ev.options.length > 0) {
+        elecciones.push(ev);
+      } else if (ev.type === 'secuencia') {
+        const step = (ev.steps ?? []).find(s => s?.type === 'eleccion'
+          && Array.isArray(s.options) && s.options.length > 0);
+        if (step) elecciones.push({ ...ev, options: step.options });
+      }
+    });
 
     elecciones.forEach(ev => {
       const row = document.createElement('div');

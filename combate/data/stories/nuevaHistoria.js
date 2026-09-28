@@ -86,46 +86,58 @@ const nuevaHistoria = {
 
 
     // ── Evento aleatorio: viajero atacado por bandidos (repeatable) ──
+    // Toda la rama en UN solo nodo secuencia: eleccion con ramas inline
+    // (`option.steps`). "Ayudar" ejecuta combate + agradecimiento;
+    // "Seguir de largo" solo el dialogo de ignorar. El nodo entero se
+    // marca `fired` una sola vez al terminar la rama elegida (antes:
+    // viajero -> next a viajero-combate / viajero-ignorado). El combate
+    // hereda el `reward` de la secuencia.
     'viajero': {
       chance: 20,
       repeatable: true,
-      type: 'eleccion',
+      type: 'secuencia',
       narrativo: true,
       title: 'Viajero en apuros',
       description: 'Un grupo de bandidos ha cercado a un viajero.',
-      prompt: 'Bandidos cercan a un viajero desvalido entre el polvo del camino. ¿Que haces?',
-      options: [
-        { id: 'ayudar', label: 'Ayudar al viajero', next: 'viajero-combate' },
-        { id: 'ignorar', label: 'Seguir de largo', next: 'viajero-ignorado' }
-      ]
-    },
-
-    // ── Rama ayudar: combate contra los bandidos; el viajero paga ──
-    // Dialogo final integrado con `outroDialog`: el combate y el
-    // agradecimiento son UN solo evento (antes: viajero-combate + next a
-    // viajero-final).
-    'viajero-combate': {
-      type: 'enfrentamiento',
-      narrativo: true,
-      title: 'Viajero en apuros',
-      description: 'Tres bandidos se abalanzan sobre ti.',
-      enemyTeam: ['Guerrero', 'Espadachin', 'Arquera', null],
       reward: { wealth: 1 },
-      outroDialog: [
-        { text: 'El viajero recobra el aliento y te mira con los ojos muy abiertos.' },
-        { text: '—Te debo la vida, andariego. Llevate esto; poco puedo darte, pero es sincero.' }
-      ]
-    },
-
-    // ── Rama ignorar: nada ocurre (terminal) ──
-    'viajero-ignorado': {
-      type: 'dialogo',
-      narrativo: true,
-      title: 'Siguiendo de largo',
-      description: 'No te implican en lo que no es tuyo.',
-      dialog: [
-        { text: 'Pasas de largo. Detras de ti, los gritos se apagan poco a poco.' },
-        { text: 'No todo lo que ocurre en el camino es cosa tuya.' }
+      steps: [
+        {
+          type: 'eleccion',
+          title: 'Viajero en apuros',
+          prompt: 'Bandidos cercan a un viajero desvalido entre el polvo del camino. ¿Que haces?',
+          options: [
+            {
+              id: 'ayudar',
+              label: 'Ayudar al viajero',
+              steps: [
+                {
+                  type: 'enfrentamiento',
+                  enemyTeam: ['Guerrero', 'Espadachin', 'Arquera', null]
+                },
+                {
+                  type: 'dialogo',
+                  dialog: [
+                    { text: 'El viajero recobra el aliento y te mira con los ojos muy abiertos.' },
+                    { text: '—Te debo la vida, andariego. Llevate esto; poco puedo darte, pero es sincero.' }
+                  ]
+                }
+              ]
+            },
+            {
+              id: 'ignorar',
+              label: 'Seguir de largo',
+              steps: [
+                {
+                  type: 'dialogo',
+                  dialog: [
+                    { text: 'Pasas de largo. Detras de ti, los gritos se apagan poco a poco.' },
+                    { text: 'No todo lo que ocurre en el camino es cosa tuya.' }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
       ]
     },
 
