@@ -366,6 +366,28 @@ const characters = [
       // createSkill({ name: "Concentracion",  type: "buff",    target: "ally",  stat: "precision",  value: 1,  precision: 99, aparicion: 50 }),
     ]
   }),
+
+
+
+  createCharacter({
+    name: "Helleata",
+    image: "assets/images/Helleata.jpg",
+    hp: 120,
+    evasion: 5,
+    role: "asesino",
+    skills: [
+      createSkill({ name: "Derribar",    type: "attack",  power: 12,       precision: 90,     aparicion: 40,
+        levelBonuses: { 2: { power: 4, stun: true }, 3: { power: 5, precision: 3 }, 4: { power: 7 } }
+       }),
+      createSkill({ name: "Corte grave",        type: "attack",  power: 14,   precision: 90,    aparicion: 70,   herida: true }),
+      createSkill({
+        name: "Vampirico",  type: "attack",  power: 15,  precision: 85,  aparicion: 20,  drain: 30,
+        description: "Inflige daño y absorbe parte de ese daño para curarse",
+        levelBonuses: { 2: { power: 4, drain: 10 }, 3: { power: 4, drain: 10 }, 4: { power: 5, drain: 10 } }
+      }),
+    ],
+    learnableSkills: []
+  }),
 ];
 
 export default characters;
