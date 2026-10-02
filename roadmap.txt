@@ -9,7 +9,6 @@ MECHANIC:
 
 NARRATIVE:
   mas dialogos *
-  integrate dialogs in events ****
   
   map routes visualization *
   eleccion dialogos
