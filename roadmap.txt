@@ -26,3 +26,8 @@ exteriorize random events
 CURRENTLY
  - sequencialiting random events
  - creating champs with special unic skills
+ 
+ 
+GAME TYPES
+ deck building
+unique champs
